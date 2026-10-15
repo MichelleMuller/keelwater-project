@@ -22,7 +22,7 @@ What to find out before committing the squad. Sources: the brainstorm ([brainsto
 | ID | Question | Why it matters |
 |---|---|---|
 | DQ-01 | What exactly does "time to sort" measure: from claim arrival to sorted, or handler working time? Is it business hours or clock time? | Decides whether the 4h+ tail is queue wait or real effort. A claim arriving Friday 5pm passes 4h without anyone being slow |
-| DQ-02 | Can we get the full time-to-sort distribution (histogram), not just median and the >4h share? | The median says nothing about the tail. Our shape (fast majority + stalled tail) is inferred from two points |
+| DQ-02 | **First ask.** Can we get the full time-to-sort distribution (histogram), not just median and the >4h share? | The median says nothing about the tail. Our shape (fast majority + stalled tail) is inferred from two points, see [time-to-sort-distribution.md](../02-research/time-to-sort-distribution.md) |
 | DQ-03 | Split time-to-sort and the >4h share by customer, pile, claim type, and arrival day/time | Pain is likely concentrated in a few large accounts; tells us which segment to pilot with |
 | DQ-04 | Why do the >4h claims stall: missing info, waiting on a background check, fraud review queue, out-of-hours arrival? | Each cause points to a different fix (chase claimant vs automate vs nothing) |
 | DQ-05 | The 3.4% re-sorts: which direction (Simple → Suspicious or the reverse) and which transitions are most common? | Defines the human error baseline and which mistakes are costly (fraud paid out) vs cheap (extra review) |
@@ -30,6 +30,7 @@ What to find out before committing the squad. Sources: the brainstorm ([brainsto
 | DQ-07 | The prototype: what model (rules / classic ML / LLM), trained on what data, how accurate, and why was it put on hold? | Reuse vs restart; may already answer feasibility |
 | DQ-08 | Can the prototype's decisions be explained per claim? | The hard constraint: every decision must be explainable to the customer and the regulator |
 | DQ-09 | Are we allowed to use customer claims data for training or evaluation? Is PII redaction already in the pipeline? | Decides whether we need synthetic data or per-customer models |
+| DQ-10 | How is total handler time and customer waiting time split between the fast majority and the >4h tail? | Tests A-16. If handler effort sits in the fast majority, automating Simple saves effort; if waiting time sits in the tail, unsticking it is the speed win |
 
 ### Engineering (tech lead, squad)
 

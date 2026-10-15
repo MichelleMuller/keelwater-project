@@ -18,6 +18,8 @@ The brief allows us to invent detail as long as it's flagged. Status: **open** (
 | A-12 | Rule-based logic is sufficient for the Simple pile | Brainstorm | Test rules against historical sorted claims | open |
 | A-13 | Information-missing claims, not fraud, drive most of the 15% taking >4h | Research: missing info is the largest non-straight-through category in industry examples | Cross time-to-sort with pile and reason; sample 50 slow claims | open |
 | A-14 | Most Keelwater customers already run a fraud model or vendor; Keelwater should integrate, not build | Research: ~80% of insurers use predictive fraud modelling (III) | Customer interviews; CSM survey | open |
+| A-15 | For the problem we're solving, the slow end (the 15% of claims taking >4h) matters more than the typical claim (median 11 min) | Inferred from median vs tail, see [time-to-sort-distribution.md](../02-research/time-to-sort-distribution.md) | Real histogram (DQ-02); ask Sales/CS what pain the deals and accounts describe (SQ-01, CQ-01) | open |
+| A-16 | The slow end holds most of the total handler time and customer waiting time | Illustrative curve fitted to median and >4h share | Split waiting vs working time (DQ-01); total time per bucket (DQ-10). May hold for waiting time but not handler time | open |
 
 ## Invented for the exercise
 
