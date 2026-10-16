@@ -38,9 +38,9 @@
 
 | From the notebook | How it applies to Keelwater |
 |---|---|
-| **Remove leakage** (`CLM_AMT`) | Don't train on anything known only after sorting: final outcome, later re-sorts, engineer's report. The prototype learned from handler decisions, a related trap ([internal-data.md §6](internal-data.md)) |
+| **Remove leakage** (`CLM_AMT`) | Don't train on anything known only after sorting: final outcome, later re-sorts, engineer's report. Learning from handler decisions is a related trap: the model copies their mistakes |
 | **Balanced accuracy** for a minority class | Suspicious is a small pile. Overall accuracy hides missed fraud; measure each pile, and weight errors by direction ([discovery-answers.md §3](discovery-answers.md)) |
-| **Simple model nearly as good as complex** (logistic regression 71.9% vs LightGBM ~74%) | A strong argument for **explainable models**. Two points of accuracy rarely justify losing per-claim reasons, which examiners require ([examiner-requirements.md](examiner-requirements.md)) |
+| **Simple model nearly as good as complex** (logistic regression 71.9% vs LightGBM ~74%) | A strong argument for **explainable models**. Two points of accuracy rarely justify extra complexity. Tree models like LightGBM can still give per-claim reasons by tracing which features drove each prediction, but those explain the model, not the claim, and are harder to defend to examiners than a rule ([examiner-requirements.md](examiner-requirements.md)) |
 | **Overfitting check** (train vs test gap) | Validate on held-out claims and on customers the model hasn't seen, since claim mix varies by customer |
 | **History features:** prior claims, years as a customer, licence revoked, record points | Candidate fraud gate signals. Claimants have more prior claims (1.23 vs 0.65) and shorter tenure (4.8 vs 5.5 years), in line with "claim soon after policy start" ([motor-claims-triage-and-fraud.md §4](motor-claims-triage-and-fraud.md)) |
 | **Claim amount distribution** | A starting point for the Simple value threshold: in this data, 90% of claims are under ~$8k and 7% over $10k. To set per customer |

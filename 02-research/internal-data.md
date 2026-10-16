@@ -89,12 +89,15 @@ This supports A-13: complex and waiting-on-information claims drive the tail, no
 | | |
 |---|---|
 | **Model** | Classic ML: a gradient-boosted classifier |
-| **Trained on** | ~600k claims from 12 customers who consented, labelled with the **pile handlers chose**, not final outcomes |
-| **Inputs** | Structured fields only: claim type, amount, policy age, parties, prior claims within the insurer. No free text, no fraud score |
-| **Accuracy** | 89% agreement with handlers overall; **weak on Suspicious** (catches ~55%) |
-| **Explainability** | Feature importance across the model, but **no reasons per claim** |
+| **Trained on** | A **public sample dataset** (the Kaggle car insurance claim data, ~10k US policies) with pile labels the data team **generated from simple rules**. Customer claims couldn't be used without consent and data agreements (A-08) |
+| **Inputs** | Structured fields in the sample: claim amount, vehicle type and value, prior claims, years as a customer, licence revoked, record points. No free text, no fraud score, no third party or injury fields |
+| **Accuracy** | High agreement with its own rule-made labels on held-out sample data. That only shows it can relearn the rules. **Never tested on real Keelwater claims** |
+| **Explainability** | **Reasons per claim are possible.** For tree models, the features that pushed each claim towards a pile can be traced (e.g. "prior claims: 3" pushed it towards Suspicious). The data team showed this for a handful of claims; it isn't built into the prototype |
 | **Why it stopped** | Data team moved to a reporting project; no product owner |
 | **Shown to customers?** | No |
 
-- **Can it be shown to customers?** Only as a concept. Without per-claim reasons it fails the explainability constraint.
-- **What's reusable:** the feature pipeline and the labelled dataset. **What isn't:** learning from handler decisions copies their mistakes, and it misses too much fraud to sit before the Simple pile (A-11).
+- **Useful as a concept, not something we can rely on.** It shows what a suggested pile with reasons could look like, which helps in customer sessions. It can't tell us how accurate auto-sorting would be: the data isn't Keelwater's, the labels came from rules, and it has none of the complexity or fraud signals.
+- **On the per-claim reasons:** they explain what drove the *model's* suggestion, not why the claim is genuinely complex or suspicious. Related features can share or swap credit, and raw feature names need turning into reasons a handler understands. Good enough for a "why this suggestion" panel; checked by a human, never the basis for an adverse decision ([examiner-requirements.md](examiner-requirements.md)).
+- **What's reusable:** the feature pipeline and the per-claim reason approach. **What isn't:** the model or its accuracy figure (A-11).
+
+> Revised 2026-10-16: an earlier version said the prototype was trained on ~600k real claims from 12 customers, labelled with handlers' piles, with 89% agreement and **no reasons per claim**. Michelle pointed out that a gradient-boosted model can trace which features drove each prediction, and suggested a sample-data prototype is more realistic for a team that had no product owner or customer data agreements.

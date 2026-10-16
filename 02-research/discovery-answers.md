@@ -55,7 +55,7 @@ Not answerable by research. Needs product leadership and the original decision r
 
 ## 6. What's in the prototype: model type, training data, why it stopped, can customers see it? 🔒
 
-Not answerable by research. Needs the data team (DQ-07, DQ-08, PQ-02). Research tells us **what to check it against**: can every prediction be explained with reasons? Was it trained on outcomes or on handler decisions? Does it handle the fraud gate? See [examiner-requirements.md](examiner-requirements.md). **[INVENTED]** answer: classic ML trained on handler decisions, weak on Suspicious, no per-claim reasons, stopped for lack of an owner. See [internal-data.md §6](internal-data.md).
+Not answerable by research. Needs the data team (DQ-07, DQ-08, PQ-02). Research tells us **what to check it against**: can every prediction be explained with reasons? Was it trained on outcomes or on handler decisions? Does it handle the fraud gate? See [examiner-requirements.md](examiner-requirements.md). **[INVENTED]** answer: classic ML (gradient-boosted) trained on a public sample dataset with rule-made labels; per-claim reasons are possible but not built; useful as a concept, not something we can rely on; stopped for lack of an owner. See [internal-data.md §6](internal-data.md).
 
 ## 7. Deterministic vs probabilistic: is any incorrect sort acceptable? Is this a good LLM use case? ✅
 
