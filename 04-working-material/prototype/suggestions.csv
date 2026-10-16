@@ -1,0 +1,688 @@
+claim,claim_type,claim_amount,suggested_pile,confidence,reasons,status,label,rule_pile
+0,vandalism,4771.0,Suspicious,0.95,no third party; claim is 250% of the car's value; 8 driving record points,,Suspicious,Suspicious
+1,vandalism,5101.0,Simple,0.97,"claimed $5,101; claim is 41% of the car's value; no third party",senior review before payment,Simple,Simple
+2,collision,6101.0,Needs a closer look,0.98,"claimed $6,101; claim is 36% of the car's value; claim 90 days after policy start",,Needs a closer look,Needs a closer look
+3,other damage,3432.0,Simple,0.97,"claimed $3,432; claim is 62% of the car's value; no third party",,Simple,Simple
+4,collision,4232.0,Simple,0.98,"claimed $4,232; claim is 23% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+5,collision,8809.0,Needs a closer look,1.0,1 prior claim in 5 years; 4 driving record points; claim 1330 days after policy start,waiting on claimant: police report,Needs a closer look,Needs a closer look
+6,other damage,1896.0,Simple,0.97,"claimed $1,896; claim is 13% of the car's value; no third party",,Needs a closer look,Simple
+7,collision,8662.0,Needs a closer look,0.97,3 prior claims in 5 years; claim 2434 days after policy start; 2 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+8,collision,2518.0,Simple,0.9,claim is 31% of the car's value; no third party; no injury,,Simple,Simple
+9,collision,5349.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 2827 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+10,other damage,5440.0,Simple,0.98,"claimed $5,440; no third party; claim is 60% of the car's value",senior review before payment,Simple,Simple
+11,collision,16798.0,Needs a closer look,0.97,"claim is 124% of the car's value; claimed $16,798; 2 driving record points",,Needs a closer look,Needs a closer look
+12,windscreen,573.0,Simple,0.99,claimed $573; no third party; claim is 8% of the car's value,,Simple,Simple
+13,vandalism,4611.0,Simple,0.98,"claimed $4,611; no third party; claim is 26% of the car's value",,Simple,Simple
+14,collision,1550.0,Needs a closer look,0.98,"injury reported; claimed $1,550; 4 driving record points",,Needs a closer look,Needs a closer look
+15,collision,5064.0,Simple,0.98,"claimed $5,064; claim is 63% of the car's value; no third party",senior review before payment,Needs a closer look,Simple
+16,collision,4442.0,Needs a closer look,0.94,"injury reported; claimed $4,442; 1 prior claim in 5 years",,Needs a closer look,Needs a closer look
+17,collision,4820.0,Needs a closer look,0.93,"claim is 73% of the car's value; 4 driving record points; car worth $6,590",,Needs a closer look,Needs a closer look
+18,collision,5201.0,Needs a closer look,0.93,claim is 101% of the car's value; 4 driving record points; car is 11 years old,,Needs a closer look,Needs a closer look
+19,collision,1133.0,Needs a closer look,0.98,third party involved; claim 5038 days after policy start; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+20,windscreen,1312.0,Suspicious,0.97,claim 22 days after policy start; no third party; claim is 6% of the car's value,,Suspicious,Suspicious
+21,collision,4057.0,Simple,0.96,"claimed $4,057; claim is 50% of the car's value; no third party",,Simple,Simple
+22,other damage,2318.0,Simple,0.96,"claim is 14% of the car's value; no third party; claimed $2,318",,Simple,Simple
+23,other damage,4656.0,Simple,0.98,"claimed $4,656; no third party; claim is 41% of the car's value",,Simple,Simple
+24,theft,6409.0,Suspicious,0.86,"theft claim; $3,267 claimed before; commercial vehicle",,Needs a closer look,Suspicious
+25,collision,60838.0,Suspicious,0.94,no third party; claim is 222% of the car's value; car is 9 years old,,Suspicious,Suspicious
+26,theft,4254.0,Suspicious,0.98,"theft claim; $18,287 claimed before; claim 1157 days after policy start",waiting on claimant: police report,Suspicious,Suspicious
+27,collision,5185.0,Suspicious,0.98,"no third party; claim is 209% of the car's value; claimed $5,185",,Suspicious,Suspicious
+28,collision,706.0,Simple,0.99,no third party; claimed $706; claim is 3% of the car's value,,Simple,Simple
+29,other damage,4193.0,Simple,0.98,"claimed $4,193; claim is 21% of the car's value; no third party",,Simple,Simple
+30,windscreen,830.0,Simple,0.99,"car worth $9,640; claimed $830; no third party",,Simple,Simple
+31,other damage,4037.0,Simple,0.98,"claimed $4,037; claim is 30% of the car's value; no third party",,Simple,Simple
+32,windscreen,841.0,Simple,0.98,claimed $841; no third party; claim is 4% of the car's value,waiting on claimant: photos,Simple,Simple
+33,collision,2075.0,Simple,0.98,"car worth $28,800; claim is 7% of the car's value; no third party",,Simple,Simple
+34,collision,3581.0,Needs a closer look,0.97,third party involved; 0 prior claims in 5 years; claim 57 days after policy start,waiting on claimant: police report,Needs a closer look,Needs a closer look
+35,collision,6857.0,Needs a closer look,0.94,1 prior claim in 5 years; claim 2137 days after policy start; 5 driving record points,,Needs a closer look,Needs a closer look
+36,collision,1647.0,Suspicious,0.99,4 prior claims in 5 years; claim is 24% of the car's value; third party involved,waiting on claimant: police report,Suspicious,Suspicious
+37,windscreen,319.0,Simple,0.98,claimed $319; no third party; claim is 2% of the car's value,,Simple,Simple
+38,vandalism,6597.0,Needs a closer look,0.94,"claimed $6,597; claim is 30% of the car's value; claim 3453 days after policy start",,Needs a closer look,Needs a closer look
+39,collision,3643.0,Simple,0.99,"claimed $3,643; no third party; claim is 26% of the car's value",,Simple,Simple
+40,collision,7692.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 2014 days after policy start; 0 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+41,collision,3725.0,Needs a closer look,0.99,claim 2115 days after policy start; 0 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+42,windscreen,314.0,Simple,0.99,claimed $314; claim is 2% of the car's value; no third party,,Simple,Simple
+43,vandalism,3110.0,Suspicious,0.99,claim 11 days after policy start; no third party; claim is 76% of the car's value,,Suspicious,Suspicious
+44,collision,4862.0,Simple,0.98,"claimed $4,862; no third party; claim is 21% of the car's value",,Simple,Simple
+45,collision,5771.0,Suspicious,0.84,licence revoked before; not a theft; 7 driving record points,waiting on claimant: photos,Suspicious,Suspicious
+46,vandalism,4477.0,Simple,0.83,no injury; no third party; 0 driving record points,,Simple,Simple
+47,vandalism,2175.0,Simple,0.97,"claim is 12% of the car's value; claimed $2,175; no third party",,Simple,Simple
+48,other damage,2641.0,Suspicious,0.97,claim 18 days after policy start; no third party; claim is 42% of the car's value,,Suspicious,Suspicious
+49,collision,3921.0,Simple,0.96,"claimed $3,921; claim is 61% of the car's value; no third party",,Simple,Simple
+50,collision,1556.0,Needs a closer look,0.99,claim 1246 days after policy start; third party involved; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+51,collision,3128.0,Needs a closer look,0.99,claim 4651 days after policy start; third party involved; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+52,windscreen,853.0,Simple,0.98,claimed $853; no third party; claim is 6% of the car's value,,Simple,Simple
+53,windscreen,510.0,Simple,0.98,no third party; claimed $510; claim is 6% of the car's value,,Simple,Simple
+54,collision,7443.0,Needs a closer look,0.99,claim 3375 days after policy start; 0 prior claims in 5 years; 0 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+55,collision,2121.0,Needs a closer look,0.98,1 prior claim in 5 years; 4 driving record points; third party involved,,Needs a closer look,Needs a closer look
+56,vandalism,7369.0,Needs a closer look,0.97,"claimed $7,369; claim is 40% of the car's value; claim 293 days after policy start",,Needs a closer look,Needs a closer look
+57,theft,3981.0,Suspicious,0.96,theft claim; $0 claimed before; claim 1919 days after policy start,,Suspicious,Suspicious
+58,windscreen,1474.0,Simple,0.98,"claimed $1,474; claim is 32% of the car's value; no third party",,Simple,Simple
+59,collision,1009.0,Suspicious,0.97,claim 13 days after policy start; no third party; claim is 4% of the car's value,waiting on claimant: photos,Suspicious,Suspicious
+60,windscreen,537.0,Simple,0.98,claimed $537; claim is 3% of the car's value; no third party,,Simple,Simple
+61,collision,4289.0,Simple,0.95,"claimed $4,289; claim is 33% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+62,vandalism,2959.0,Simple,0.99,"claimed $2,959; no third party; claim is 16% of the car's value",,Simple,Simple
+63,collision,5430.0,Needs a closer look,0.99,third party involved; claim is 147% of the car's value; claim 958 days after policy start,,Needs a closer look,Needs a closer look
+64,collision,3505.0,Needs a closer look,0.96,0 prior claims in 5 years; third party involved; claim 250 days after policy start,,Needs a closer look,Needs a closer look
+65,windscreen,1141.0,Simple,0.98,"claimed $1,141; claim is 13% of the car's value; no third party",,Simple,Simple
+66,collision,4178.0,Needs a closer look,0.98,2 prior claims in 5 years; claim 1374 days after policy start; third party involved,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+67,collision,224.0,Simple,0.98,claimed $224; no third party; claim is 5% of the car's value,,Simple,Simple
+68,other damage,6799.0,Needs a closer look,0.97,"claim is 74% of the car's value; claimed $6,799; claim 3364 days after policy start",,Needs a closer look,Needs a closer look
+69,vandalism,3858.0,Simple,0.97,"claimed $3,858; claim is 28% of the car's value; no third party",,Simple,Simple
+70,collision,3854.0,Needs a closer look,0.99,claim 353 days after policy start; 2 prior claims in 5 years; third party involved,waiting on claimant: photos,Needs a closer look,Needs a closer look
+71,collision,1729.0,Simple,0.95,"claimed $1,729; claim is 26% of the car's value; no third party",,Simple,Simple
+72,collision,52490.0,Suspicious,0.92,no third party; claim is 290% of the car's value; no injury,,Suspicious,Suspicious
+73,collision,5800.0,Needs a closer look,0.93,0 prior claims in 5 years; third party involved; claim 241 days after policy start,,Needs a closer look,Needs a closer look
+74,windscreen,744.0,Simple,0.98,claimed $744; no third party; claim is 4% of the car's value,,Simple,Simple
+75,collision,5913.0,Needs a closer look,0.93,"claim is 98% of the car's value; car worth $6,050; car is 17 years old",,Needs a closer look,Needs a closer look
+76,collision,710.0,Needs a closer look,0.94,third party involved; 2 prior claims in 5 years; 4 driving record points,,Needs a closer look,Needs a closer look
+77,collision,1076.0,Needs a closer look,0.98,claim 340 days after policy start; third party involved; 0 prior claims in 5 years,waiting on claimant: police report,Needs a closer look,Needs a closer look
+78,collision,5069.0,Needs a closer look,0.99,claim 1125 days after policy start; 0 prior claims in 5 years; third party involved,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+79,collision,1473.0,Suspicious,1.0,licence revoked before; not a theft; 13 driving record points,,Suspicious,Suspicious
+80,windscreen,373.0,Simple,0.97,claimed $373; no third party; claim is 4% of the car's value,,Simple,Simple
+81,vandalism,3158.0,Simple,0.97,"claimed $3,158; no third party; claim is 21% of the car's value",,Simple,Simple
+82,collision,3501.0,Suspicious,0.99,4 prior claims in 5 years; third party involved; claim is 13% of the car's value,,Suspicious,Suspicious
+83,other damage,109.0,Simple,0.98,claimed $109; no third party; claim is 2% of the car's value,,Simple,Simple
+84,collision,2392.0,Suspicious,0.99,4 prior claims in 5 years; no third party; claim is 24% of the car's value,,Suspicious,Suspicious
+85,other damage,7491.0,Needs a closer look,0.97,"claim is 84% of the car's value; claimed $7,491; 9 driving record points",waiting on claimant: photos,Needs a closer look,Needs a closer look
+86,other damage,3193.0,Simple,0.98,"claimed $3,193; no third party; claim is 25% of the car's value",,Simple,Simple
+87,windscreen,1012.0,Suspicious,0.98,4 prior claims in 5 years; no third party; claim is 6% of the car's value,,Suspicious,Suspicious
+88,collision,7776.0,Suspicious,0.98,claim 8 days after policy start; no third party; claim is 58% of the car's value,,Suspicious,Suspicious
+89,vandalism,4259.0,Needs a closer look,0.95,"claim is 93% of the car's value; car worth $4,600; claim 2170 days after policy start",,Needs a closer look,Needs a closer look
+90,other damage,2190.0,Simple,0.97,"claimed $2,190; claim is 25% of the car's value; no third party",,Simple,Simple
+91,collision,3278.0,Suspicious,1.0,claim 16 days after policy start; no third party; claim is 84% of the car's value,,Suspicious,Suspicious
+92,collision,1277.0,Needs a closer look,1.0,claim 1923 days after policy start; third party involved; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+93,other damage,4083.0,Simple,0.97,"claimed $4,083; no third party; claim is 36% of the car's value",,Simple,Simple
+94,collision,6484.0,Needs a closer look,0.99,claim 306 days after policy start; 0 prior claims in 5 years; 0 driving record points,,Suspicious,Needs a closer look
+95,collision,5117.0,Simple,0.93,"claimed $5,117; claim is 42% of the car's value; no third party",senior review before payment,Simple,Simple
+96,collision,2401.0,Needs a closer look,0.97,third party involved; claim 4524 days after policy start; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+97,collision,3235.0,Needs a closer look,0.98,third party involved; 3 prior claims in 5 years; claim 2144 days after policy start,,Needs a closer look,Needs a closer look
+98,collision,2358.0,Simple,0.98,"claimed $2,358; no third party; claim is 14% of the car's value",,Simple,Simple
+99,collision,3274.0,Needs a closer look,0.77,third party involved; licence never revoked; 3 prior claims in 5 years,,Needs a closer look,Needs a closer look
+100,collision,3386.0,Simple,0.98,"claimed $3,386; claim is 16% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+101,collision,8615.0,Suspicious,0.97,"no third party; claim is 154% of the car's value; $38,312 claimed before",,Suspicious,Suspicious
+102,collision,3136.0,Needs a closer look,0.95,3 prior claims in 5 years; third party involved; claim 1950 days after policy start,waiting on claimant: police report,Needs a closer look,Needs a closer look
+103,collision,2115.0,Simple,0.98,"claimed $2,115; claim is 12% of the car's value; no third party",,Simple,Simple
+104,windscreen,765.0,Simple,0.99,claimed $765; no third party; claim is 8% of the car's value,waiting on claimant: photos,Simple,Simple
+105,other damage,2432.0,Simple,0.94,"claim is 19% of the car's value; claimed $2,432; no third party",,Simple,Simple
+106,collision,1766.0,Simple,0.98,"claimed $1,766; car worth $25,420; claim is 7% of the car's value",,Simple,Simple
+107,collision,4314.0,Needs a closer look,0.99,0 prior claims in 5 years; third party involved; 0 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+108,collision,5342.0,Needs a closer look,0.92,third party involved; licence never revoked; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+109,windscreen,787.0,Simple,0.99,claimed $787; no third party; claim is 4% of the car's value,,Simple,Simple
+110,vandalism,2976.0,Simple,0.68,"claimed $2,976; no injury; no third party",,Simple,Simple
+111,collision,1651.0,Simple,0.98,"claimed $1,651; claim is 11% of the car's value; no third party",,Simple,Simple
+112,collision,2891.0,Simple,0.99,"claimed $2,891; claim is 43% of the car's value; no third party",,Simple,Simple
+113,other damage,5812.0,Simple,0.9,"claimed $5,812; claim is 47% of the car's value; no third party",senior review before payment,Simple,Simple
+114,collision,2463.0,Simple,0.97,"claim is 27% of the car's value; no third party; claimed $2,463",,Simple,Simple
+115,windscreen,798.0,Simple,0.98,claimed $798; no third party; claim is 12% of the car's value,,Simple,Simple
+116,collision,3305.0,Simple,1.0,"claimed $3,305; claim is 17% of the car's value; no third party",,Simple,Simple
+117,windscreen,1039.0,Simple,0.98,"claimed $1,039; no third party; claim is 8% of the car's value",,Simple,Simple
+118,collision,5800.0,Simple,0.98,"car worth $26,440; claimed $5,800; claim is 22% of the car's value",senior review before payment,Simple,Simple
+119,theft,6143.0,Suspicious,0.96,theft claim; $0 claimed before; claim 4409 days after policy start,waiting on claimant: police report,Suspicious,Suspicious
+120,vandalism,779.0,Simple,0.98,claimed $779; no third party; claim is 7% of the car's value,,Simple,Simple
+121,collision,5822.0,Needs a closer look,0.98,0 prior claims in 5 years; third party involved; claim 4257 days after policy start,waiting on claimant: police report,Needs a closer look,Needs a closer look
+122,vandalism,8420.0,Needs a closer look,0.97,"claimed $8,420; claim is 22% of the car's value; private vehicle",,Needs a closer look,Needs a closer look
+123,collision,3396.0,Suspicious,0.96,"claim 28 days after policy start; third party involved; car worth $22,420",,Suspicious,Suspicious
+124,collision,8798.0,Needs a closer look,0.99,2 prior claims in 5 years; claim 2001 days after policy start; 4 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+125,other damage,3850.0,Suspicious,0.97,"no third party; claim is 257% of the car's value; claimed $3,850",,Suspicious,Suspicious
+126,windscreen,373.0,Simple,0.99,claimed $373; no third party; claim is 4% of the car's value,,Simple,Simple
+127,collision,7205.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 3872 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+128,other damage,1237.0,Simple,0.98,"claimed $1,237; claim is 7% of the car's value; no third party",,Simple,Simple
+129,collision,5686.0,Simple,0.95,"claimed $5,686; claim is 42% of the car's value; no third party",waiting on claimant: photos; senior review before payment,Simple,Simple
+130,collision,6331.0,Needs a closer look,0.98,0 prior claims in 5 years; claim 1394 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+131,other damage,2415.0,Simple,0.96,"claim is 28% of the car's value; no third party; claimed $2,415",,Simple,Simple
+132,windscreen,705.0,Simple,0.93,claimed $705; no third party; claim is 4% of the car's value,,Simple,Simple
+133,theft,3854.0,Suspicious,0.96,"theft claim; $5,194 claimed before; 8 driving record points",,Suspicious,Suspicious
+134,windscreen,329.0,Simple,0.98,claim is 2% of the car's value; claimed $329; no third party,,Simple,Simple
+135,collision,5063.0,Needs a closer look,0.96,0 prior claims in 5 years; third party involved; claim 224 days after policy start,,Needs a closer look,Needs a closer look
+136,other damage,9605.0,Needs a closer look,0.99,"claim is 93% of the car's value; claimed $9,605; claim 165 days after policy start",,Needs a closer look,Needs a closer look
+137,collision,2797.0,Needs a closer look,0.94,1 prior claim in 5 years; third party involved; 2 driving record points,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+138,vandalism,3009.0,Simple,0.98,"claimed $3,009; claim is 13% of the car's value; no third party",,Simple,Simple
+139,windscreen,942.0,Simple,0.98,claimed $942; claim is 3% of the car's value; no third party,,Simple,Simple
+140,vandalism,2233.0,Simple,0.98,"no third party; claim is 9% of the car's value; claimed $2,233",waiting on claimant: photos,Simple,Simple
+141,vandalism,707.0,Simple,0.98,claimed $707; no third party; claim is 16% of the car's value,,Simple,Simple
+142,collision,2007.0,Needs a closer look,0.96,1 prior claim in 5 years; third party involved; claim 245 days after policy start,,Needs a closer look,Needs a closer look
+143,windscreen,702.0,Simple,0.99,claimed $702; no third party; claim is 4% of the car's value,,Simple,Simple
+144,collision,4214.0,Needs a closer look,0.97,0 prior claims in 5 years; third party involved; claim 2051 days after policy start,,Needs a closer look,Needs a closer look
+145,windscreen,1076.0,Simple,0.98,"claimed $1,076; no third party; claim is 6% of the car's value",,Simple,Simple
+146,vandalism,4644.0,Simple,0.99,"claimed $4,644; no third party; claim is 19% of the car's value",,Simple,Simple
+147,windscreen,285.0,Simple,0.99,claim is 2% of the car's value; claimed $285; no third party,,Simple,Simple
+148,collision,3419.0,Suspicious,0.98,claim 15 days after policy start; third party involved; 0 driving record points,,Suspicious,Suspicious
+149,collision,15721.0,Needs a closer look,0.99,3 prior claims in 5 years; claim 1902 days after policy start; 1 driving record points,,Needs a closer look,Needs a closer look
+150,windscreen,421.0,Suspicious,0.98,claim 3 days after policy start; no third party; claim is 9% of the car's value,,Suspicious,Suspicious
+151,collision,3868.0,Needs a closer look,0.95,0 prior claims in 5 years; third party involved; claim 1922 days after policy start,,Needs a closer look,Needs a closer look
+152,collision,3180.0,Needs a closer look,0.98,third party involved; 0 prior claims in 5 years; claim 148 days after policy start,waiting on claimant: police report,Needs a closer look,Needs a closer look
+153,collision,3969.0,Simple,0.99,"claimed $3,969; no third party; claim is 15% of the car's value",,Simple,Simple
+154,other damage,6208.0,Needs a closer look,1.0,"claim is 124% of the car's value; claimed $6,208; claim 146 days after policy start",,Needs a closer look,Needs a closer look
+155,collision,6079.0,Needs a closer look,0.98,claim 319 days after policy start; licence never revoked; 2 prior claims in 5 years,,Needs a closer look,Needs a closer look
+156,collision,773.0,Needs a closer look,0.98,third party involved; claim 2247 days after policy start; 0 prior claims in 5 years,waiting on claimant: police report,Needs a closer look,Needs a closer look
+157,theft,2492.0,Suspicious,0.99,theft claim; $0 claimed before; claim 2250 days after policy start,waiting on claimant: police report,Suspicious,Suspicious
+158,other damage,8927.0,Suspicious,0.98,no third party; claim is 154% of the car's value; 9 driving record points,,Suspicious,Suspicious
+159,other damage,3886.0,Needs a closer look,0.93,claim is 75% of the car's value; 5 driving record points; claim 337 days after policy start,,Needs a closer look,Needs a closer look
+160,vandalism,1335.0,Simple,0.98,"claimed $1,335; car worth $32,270; claim is 4% of the car's value",,Simple,Simple
+161,vandalism,4057.0,Simple,0.97,"claimed $4,057; claim is 36% of the car's value; no third party",,Simple,Simple
+162,collision,3350.0,Simple,0.98,"claimed $3,350; claim is 15% of the car's value; no third party",,Simple,Simple
+163,collision,4036.0,Needs a closer look,0.86,"claim is 75% of the car's value; car worth $5,400; claim 251 days after policy start",,Needs a closer look,Needs a closer look
+164,collision,4045.0,Needs a closer look,0.99,1 prior claim in 5 years; claim 2073 days after policy start; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+165,windscreen,560.0,Suspicious,0.97,claim 7 days after policy start; no third party; claim is 2% of the car's value,,Suspicious,Suspicious
+166,collision,5226.0,Needs a closer look,0.94,3 prior claims in 5 years; claim 955 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+167,collision,7803.0,Suspicious,0.97,"no third party; claim is 520% of the car's value; $57,037 claimed before",,Suspicious,Suspicious
+168,windscreen,876.0,Simple,0.98,claimed $876; no third party; claim is 5% of the car's value,,Simple,Simple
+169,collision,14386.0,Needs a closer look,0.99,2 prior claims in 5 years; claim 2045 days after policy start; 0 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+170,collision,2956.0,Simple,0.97,"claimed $2,956; no third party; claim is 24% of the car's value",,Simple,Simple
+171,collision,4181.0,Needs a closer look,0.98,"claim is 87% of the car's value; car worth $4,800; claim 1411 days after policy start",,Needs a closer look,Needs a closer look
+172,collision,8220.0,Needs a closer look,0.98,"claim is 86% of the car's value; 5 driving record points; claimed $8,220",,Needs a closer look,Needs a closer look
+173,collision,2235.0,Needs a closer look,0.99,third party involved; 1 prior claim in 5 years; 3 driving record points,,Needs a closer look,Needs a closer look
+174,other damage,2531.0,Simple,0.95,claim is 32% of the car's value; no third party; no injury,,Simple,Simple
+175,collision,2199.0,Needs a closer look,0.98,0 prior claims in 5 years; third party involved; 0 driving record points,,Needs a closer look,Needs a closer look
+176,windscreen,454.0,Simple,0.99,claim is 2% of the car's value; no third party; claimed $454,waiting on claimant: photos,Simple,Simple
+177,collision,6515.0,Suspicious,0.99,4 prior claims in 5 years; no third party; claim is 28% of the car's value,,Suspicious,Suspicious
+178,windscreen,250.0,Simple,0.98,claim is 1% of the car's value; claimed $250; no third party,,Simple,Simple
+179,collision,1107.0,Simple,0.99,"claimed $1,107; no third party; claim is 5% of the car's value",,Simple,Simple
+180,vandalism,2471.0,Simple,0.96,"claimed $2,471; no third party; claim is 22% of the car's value",,Simple,Simple
+181,collision,3782.0,Needs a closer look,0.92,"injury reported; claimed $3,782; 1 prior claim in 5 years",,Needs a closer look,Needs a closer look
+182,collision,1448.0,Needs a closer look,0.98,third party involved; 1 prior claim in 5 years; claim 2025 days after policy start,waiting on claimant: photos,Needs a closer look,Needs a closer look
+183,collision,1877.0,Needs a closer look,1.0,claim 354 days after policy start; 4 driving record points; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+184,collision,4579.0,Needs a closer look,0.99,claim 1959 days after policy start; 1 prior claim in 5 years; third party involved,,Needs a closer look,Needs a closer look
+185,collision,3570.0,Simple,0.97,"claimed $3,570; claim is 28% of the car's value; no third party",,Simple,Simple
+186,collision,4926.0,Needs a closer look,0.94,2 prior claims in 5 years; third party involved; claim 1154 days after policy start,,Needs a closer look,Needs a closer look
+187,collision,6988.0,Needs a closer look,0.97,2 prior claims in 5 years; 5 driving record points; claim 2226 days after policy start,waiting on claimant: photos,Needs a closer look,Needs a closer look
+188,collision,5272.0,Simple,0.98,"claimed $5,272; claim is 30% of the car's value; no third party",senior review before payment,Simple,Simple
+189,collision,3613.0,Needs a closer look,0.98,claim 904 days after policy start; third party involved; licence never revoked,,Needs a closer look,Needs a closer look
+190,windscreen,544.0,Simple,0.98,claimed $544; no third party; claim is 5% of the car's value,,Simple,Simple
+191,windscreen,1409.0,Simple,0.95,"claim is 10% of the car's value; no third party; claimed $1,409",,Simple,Simple
+192,collision,3353.0,Simple,0.99,"claimed $3,353; car worth $26,040; claim is 13% of the car's value",,Simple,Simple
+193,windscreen,756.0,Simple,0.98,claimed $756; no third party; claim is 5% of the car's value,waiting on claimant: photos,Simple,Simple
+194,collision,13277.0,Needs a closer look,1.0,claim 734 days after policy start; 0 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+195,collision,2501.0,Simple,0.92,no third party; claim is 22% of the car's value; no injury,,Simple,Simple
+196,windscreen,811.0,Simple,0.96,claimed $811; claim is 15% of the car's value; no third party,,Simple,Simple
+197,windscreen,258.0,Simple,0.98,claimed $258; no third party; claim is 5% of the car's value,waiting on claimant: photos,Simple,Simple
+198,collision,5802.0,Simple,0.96,"no third party; claimed $5,802; claim is 37% of the car's value",senior review before payment,Simple,Simple
+199,collision,4408.0,Simple,0.95,"claimed $4,408; no third party; claim is 36% of the car's value",waiting on claimant: photos,Suspicious,Simple
+200,windscreen,871.0,Simple,0.98,no third party; claim is 4% of the car's value; claimed $871,,Simple,Simple
+201,collision,10215.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 1308 days after policy start; 2 driving record points,waiting on claimant: photos,Needs a closer look,Needs a closer look
+202,windscreen,1281.0,Simple,0.97,"claimed $1,281; car worth $27,830; claim is 5% of the car's value",,Simple,Simple
+203,collision,5381.0,Suspicious,0.99,claim 25 days after policy start; no third party; claim is 100% of the car's value,,Suspicious,Suspicious
+204,collision,3667.0,Needs a closer look,0.98,3 prior claims in 5 years; claim 4510 days after policy start; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+205,collision,1541.0,Needs a closer look,0.99,claim 1018 days after policy start; 4 driving record points; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+206,other damage,4582.0,Simple,0.97,"claimed $4,582; claim is 31% of the car's value; no third party",,Simple,Simple
+207,collision,10958.0,Needs a closer look,0.99,"claim is 90% of the car's value; claimed $10,958; 4 driving record points",,Needs a closer look,Needs a closer look
+208,collision,6571.0,Needs a closer look,0.96,"claimed $6,571; claim is 25% of the car's value; $0 claimed before",,Needs a closer look,Needs a closer look
+209,windscreen,398.0,Simple,0.99,claimed $398; no third party; claim is 7% of the car's value,,Simple,Simple
+210,collision,32038.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 55 days after policy start; third party involved,,Suspicious,Needs a closer look
+211,other damage,2912.0,Simple,0.98,"claimed $2,912; claim is 20% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+212,collision,3627.0,Suspicious,0.98,claim 7 days after policy start; no third party; claim is 14% of the car's value,,Suspicious,Suspicious
+213,collision,10145.0,Needs a closer look,0.95,"claimed $10,145; claim is 56% of the car's value; no third party",,Needs a closer look,Needs a closer look
+214,collision,15846.0,Needs a closer look,0.97,2 prior claims in 5 years; third party involved; claim 82 days after policy start,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+215,windscreen,669.0,Simple,0.98,claimed $669; no third party; claim is 5% of the car's value,waiting on claimant: photos,Simple,Simple
+216,collision,2944.0,Simple,0.99,"claimed $2,944; car worth $34,450; claim is 8% of the car's value",,Simple,Simple
+217,collision,5458.0,Simple,0.98,"claimed $5,458; no third party; claim is 49% of the car's value",senior review before payment,Simple,Simple
+218,collision,4892.0,Needs a closer look,0.98,0 prior claims in 5 years; claim 1881 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+219,collision,5440.0,Needs a closer look,0.87,"claim is 75% of the car's value; car worth $7,290; $0 claimed before",,Needs a closer look,Needs a closer look
+220,collision,1029.0,Simple,0.98,"claimed $1,029; claim is 19% of the car's value; no third party",,Simple,Simple
+221,collision,3748.0,Suspicious,1.0,claim 30 days after policy start; no third party; licence revoked before,waiting on claimant: photos,Suspicious,Suspicious
+222,collision,4901.0,Needs a closer look,0.99,claim 1433 days after policy start; 0 prior claims in 5 years; 5 driving record points,waiting on claimant: photos,Simple,Needs a closer look
+223,collision,2519.0,Needs a closer look,0.99,claim 321 days after policy start; 0 prior claims in 5 years; 4 driving record points,,Needs a closer look,Needs a closer look
+224,collision,4390.0,Simple,0.96,"claimed $4,390; claim is 41% of the car's value; no third party",,Simple,Simple
+225,collision,724.0,Simple,0.99,claimed $724; no third party; claim is 10% of the car's value,,Simple,Simple
+226,collision,5520.0,Suspicious,0.97,"no third party; claim is 368% of the car's value; claimed $5,520",,Suspicious,Suspicious
+227,collision,3101.0,Simple,0.99,"claimed $3,101; no third party; claim is 19% of the car's value",,Simple,Simple
+228,windscreen,1418.0,Simple,0.99,"car worth $9,830; claimed $1,418; claim is 14% of the car's value",,Simple,Simple
+229,theft,1619.0,Suspicious,0.99,theft claim; $0 claimed before; claim 4821 days after policy start,waiting on claimant: police report,Suspicious,Suspicious
+230,other damage,4566.0,Simple,0.97,"claimed $4,566; claim is 41% of the car's value; no third party",,Simple,Simple
+231,collision,2772.0,Simple,0.99,"claimed $2,772; claim is 14% of the car's value; no third party",,Simple,Simple
+232,collision,2842.0,Needs a closer look,0.97,0 prior claims in 5 years; claim 1136 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+233,windscreen,921.0,Simple,0.96,claimed $921; claim is 10% of the car's value; no third party,,Simple,Simple
+234,collision,3801.0,Simple,0.97,"claimed $3,801; claim is 22% of the car's value; no third party",,Simple,Simple
+235,collision,8755.0,Needs a closer look,0.97,"claimed $8,755; claim is 26% of the car's value; claim 991 days after policy start",,Needs a closer look,Needs a closer look
+236,collision,58851.0,Suspicious,0.97,no third party; claim is 250% of the car's value; car is 11 years old,,Suspicious,Suspicious
+237,collision,5175.0,Needs a closer look,0.95,"claim is 90% of the car's value; car worth $5,730; claim 1950 days after policy start",,Needs a closer look,Needs a closer look
+238,collision,5182.0,Simple,0.98,"claimed $5,182; claim is 28% of the car's value; no third party",senior review before payment,Simple,Simple
+239,collision,5591.0,Needs a closer look,0.94,"claim is 98% of the car's value; claim 761 days after policy start; car worth $5,700",,Needs a closer look,Needs a closer look
+240,collision,1009.0,Simple,0.98,"claimed $1,009; claim is 5% of the car's value; no third party",,Simple,Simple
+241,collision,4623.0,Simple,0.98,"claimed $4,623; claim is 30% of the car's value; no third party",,Simple,Simple
+242,collision,4658.0,Needs a closer look,0.98,3 prior claims in 5 years; claim 2119 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+243,collision,6716.0,Suspicious,0.98,"no third party; claim is 448% of the car's value; claimed $6,716",,Suspicious,Suspicious
+244,other damage,20509.0,Needs a closer look,0.99,"claim is 115% of the car's value; claimed $20,509; claim 215 days after policy start",,Needs a closer look,Needs a closer look
+245,collision,1030.0,Simple,0.98,"claimed $1,030; no third party; claim is 10% of the car's value",,Simple,Simple
+246,collision,2820.0,Simple,0.99,"claimed $2,820; claim is 49% of the car's value; no third party",,Simple,Simple
+247,windscreen,550.0,Simple,1.0,claimed $550; no third party; claim is 7% of the car's value,,Simple,Simple
+248,windscreen,1267.0,Simple,0.96,"claimed $1,267; claim is 3% of the car's value; no third party",,Simple,Simple
+249,collision,2124.0,Simple,0.93,"claim is 14% of the car's value; no third party; claimed $2,124",,Simple,Simple
+250,collision,295.0,Simple,0.98,claim is 2% of the car's value; claimed $295; no third party,,Simple,Simple
+251,collision,5434.0,Needs a closer look,0.97,3 prior claims in 5 years; claim 811 days after policy start; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+252,collision,3335.0,Needs a closer look,0.92,third party involved; 1 prior claim in 5 years; 3 driving record points,,Needs a closer look,Needs a closer look
+253,collision,4943.0,Simple,0.97,"claimed $4,943; claim is 44% of the car's value; no third party",,Simple,Simple
+254,vandalism,29613.0,Suspicious,0.95,no third party; claim is 273% of the car's value; no injury,,Suspicious,Suspicious
+255,collision,868.0,Needs a closer look,0.98,third party involved; claim 1214 days after policy start; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+256,collision,20540.0,Suspicious,0.96,"no third party; claim is 194% of the car's value; claimed $20,540",,Suspicious,Suspicious
+257,collision,7843.0,Needs a closer look,0.95,"claimed $7,843; claim is 41% of the car's value; 5 driving record points",,Needs a closer look,Needs a closer look
+258,collision,4277.0,Simple,0.97,"claimed $4,277; claim is 46% of the car's value; no third party",,Simple,Simple
+259,collision,4626.0,Needs a closer look,0.97,0 prior claims in 5 years; third party involved; claim 2316 days after policy start,,Needs a closer look,Needs a closer look
+260,collision,5019.0,Simple,0.99,"claimed $5,019; no third party; claim is 20% of the car's value",senior review before payment,Simple,Simple
+261,collision,5586.0,Simple,0.97,"no third party; claimed $5,586; claim is 35% of the car's value",senior review before payment,Simple,Simple
+262,collision,6217.0,Needs a closer look,1.0,"claim 977 days after policy start; 1 prior claim in 5 years; car worth $4,900",,Needs a closer look,Needs a closer look
+263,collision,3000.0,Needs a closer look,0.95,0 prior claims in 5 years; 5 driving record points; third party involved,,Needs a closer look,Needs a closer look
+264,collision,4573.0,Simple,0.97,"claimed $4,573; claim is 63% of the car's value; no third party",,Simple,Simple
+265,collision,29738.0,Needs a closer look,0.89,"claimed $29,738; claim 985 days after policy start; car worth $20,090",,Needs a closer look,Needs a closer look
+266,theft,2782.0,Suspicious,0.98,theft claim; $0 claimed before; claim is 10% of the car's value,"waiting on claimant: photos, police report",Suspicious,Suspicious
+267,windscreen,1100.0,Simple,0.96,"claimed $1,100; claim is 8% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+268,collision,6623.0,Needs a closer look,0.97,0 prior claims in 5 years; claim 1997 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+269,collision,5548.0,Simple,0.98,"claimed $5,548; no third party; claim is 26% of the car's value",senior review before payment,Simple,Simple
+270,vandalism,4970.0,Simple,0.98,"claimed $4,970; no third party; claim is 27% of the car's value",,Simple,Simple
+271,collision,4719.0,Needs a closer look,0.94,"injury reported; claimed $4,719; $0 claimed before",,Needs a closer look,Needs a closer look
+272,collision,3763.0,Simple,0.98,"claimed $3,763; no third party; claim is 23% of the car's value",,Simple,Simple
+273,other damage,5097.0,Simple,0.98,"claimed $5,097; car worth $30,390; claim is 17% of the car's value",senior review before payment,Simple,Simple
+274,collision,6195.0,Needs a closer look,0.99,"claim is 102% of the car's value; claimed $6,195; claim 342 days after policy start",,Needs a closer look,Needs a closer look
+275,windscreen,1036.0,Simple,0.98,"claimed $1,036; claim is 12% of the car's value; no third party",,Simple,Simple
+276,collision,931.0,Needs a closer look,0.99,0 prior claims in 5 years; third party involved; claimed $931,,Needs a closer look,Needs a closer look
+277,other damage,2091.0,Simple,0.8,no injury; claim 294 days after policy start; no third party,,Simple,Simple
+278,collision,2493.0,Suspicious,0.97,licence revoked before; not a theft; 7 driving record points,,Suspicious,Suspicious
+279,windscreen,334.0,Simple,0.98,claimed $334; no third party; claim is 5% of the car's value,,Simple,Simple
+280,collision,5834.0,Needs a closer look,0.96,third party involved; licence never revoked; 2 prior claims in 5 years,,Needs a closer look,Needs a closer look
+281,theft,5295.0,Suspicious,0.98,theft claim; $0 claimed before; claim is 17% of the car's value,,Suspicious,Suspicious
+282,collision,2786.0,Needs a closer look,0.55,third party involved; 0 prior claims in 5 years; claim 26 days after policy start,waiting on claimant: police report,Suspicious,Suspicious
+283,collision,6506.0,Needs a closer look,0.99,1 prior claim in 5 years; claim 3665 days after policy start; 4 driving record points,,Needs a closer look,Needs a closer look
+284,collision,4256.0,Simple,0.98,"claimed $4,256; no third party; claim is 20% of the car's value",,Simple,Simple
+285,collision,13003.0,Needs a closer look,0.98,"claim is 104% of the car's value; claimed $13,003; 7 driving record points",,Needs a closer look,Needs a closer look
+286,collision,12024.0,Needs a closer look,1.0,claim 991 days after policy start; 0 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+287,collision,5571.0,Needs a closer look,0.99,1 prior claim in 5 years; third party involved; 0 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+288,collision,3769.0,Needs a closer look,0.99,claim 1376 days after policy start; 0 prior claims in 5 years; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+289,theft,5400.0,Suspicious,0.97,"theft claim; $6,195 claimed before; claim 5630 days after policy start",waiting on claimant: police report,Suspicious,Suspicious
+290,collision,4589.0,Simple,0.97,"claimed $4,589; claim is 50% of the car's value; no third party",,Simple,Simple
+291,collision,7802.0,Needs a closer look,0.94,"claimed $7,802; claim is 56% of the car's value; claim 1347 days after policy start",,Needs a closer look,Needs a closer look
+292,collision,9136.0,Needs a closer look,1.0,2 prior claims in 5 years; claim 1874 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+293,collision,3887.0,Needs a closer look,0.97,0 prior claims in 5 years; claim 1160 days after policy start; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+294,collision,2262.0,Needs a closer look,0.95,third party involved; 2 prior claims in 5 years; 3 driving record points,,Needs a closer look,Needs a closer look
+295,vandalism,1356.0,Simple,0.96,"claimed $1,356; claim is 6% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+296,vandalism,1737.0,Simple,0.97,"claimed $1,737; claim is 28% of the car's value; no third party",,Simple,Simple
+297,collision,5190.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 1076 days after policy start; claim is 96% of the car's value,,Needs a closer look,Needs a closer look
+298,collision,14509.0,Needs a closer look,1.0,1 prior claim in 5 years; claim 259 days after policy start; third party involved,waiting on claimant: photos,Needs a closer look,Needs a closer look
+299,theft,6524.0,Suspicious,0.76,theft claim; $0 claimed before; car is 9 years old,waiting on claimant: police report,Suspicious,Suspicious
+300,vandalism,18139.0,Suspicious,0.98,"no third party; claim is 151% of the car's value; claimed $18,139",,Suspicious,Suspicious
+301,theft,1691.0,Suspicious,0.93,"theft claim; claim 2239 days after policy start; claimed $1,691",,Suspicious,Suspicious
+302,collision,4261.0,Suspicious,1.0,4 prior claims in 5 years; claim is 32% of the car's value; third party involved,waiting on claimant: police report,Suspicious,Suspicious
+303,collision,5075.0,Suspicious,0.94,"no third party; claim is 338% of the car's value; claimed $5,075",,Suspicious,Suspicious
+304,collision,845.0,Simple,0.99,claimed $845; claim is 4% of the car's value; no third party,,Simple,Simple
+305,collision,3527.0,Needs a closer look,0.97,claim 1442 days after policy start; third party involved; licence never revoked,waiting on claimant: police report,Needs a closer look,Needs a closer look
+306,collision,5160.0,Needs a closer look,0.98,claim 1170 days after policy start; 3 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+307,collision,3226.0,Needs a closer look,0.98,claim 346 days after policy start; 2 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+308,collision,2160.0,Suspicious,1.0,4 prior claims in 5 years; no third party; claim is 16% of the car's value,,Suspicious,Suspicious
+309,collision,7359.0,Needs a closer look,0.99,0 prior claims in 5 years; 5 driving record points; claim 242 days after policy start,,Needs a closer look,Needs a closer look
+310,collision,2546.0,Simple,0.92,"claimed $2,546; claim is 18% of the car's value; no third party",,Simple,Simple
+311,collision,5383.0,Suspicious,1.0,4 prior claims in 5 years; third party involved; claim is 39% of the car's value,,Suspicious,Suspicious
+312,vandalism,6639.0,Needs a closer look,0.97,"claimed $6,639; $9,019 claimed before; claim 124 days after policy start",,Needs a closer look,Needs a closer look
+313,collision,1153.0,Simple,0.99,"claimed $1,153; no third party; claim is 10% of the car's value",,Simple,Simple
+314,collision,2301.0,Simple,0.97,"claim is 16% of the car's value; claimed $2,301; no third party",,Simple,Simple
+315,collision,2522.0,Suspicious,0.84,licence revoked before; not a theft; 9 driving record points,,Suspicious,Suspicious
+316,theft,7085.0,Suspicious,0.95,theft claim; $0 claimed before; claim 4923 days after policy start,,Suspicious,Suspicious
+317,vandalism,10594.0,Suspicious,0.97,"no third party; claim is 186% of the car's value; claimed $10,594",,Suspicious,Suspicious
+318,collision,2940.0,Needs a closer look,0.96,3 prior claims in 5 years; claim 2372 days after policy start; third party involved,waiting on claimant: photos,Needs a closer look,Needs a closer look
+319,collision,3027.0,Suspicious,0.93,claim 29 days after policy start; no third party; claim is 47% of the car's value,waiting on claimant: photos,Suspicious,Suspicious
+320,windscreen,1157.0,Simple,0.94,"claimed $1,157; claim is 17% of the car's value; no third party",,Simple,Simple
+321,vandalism,3753.0,Simple,0.99,"claimed $3,753; no third party; claim is 15% of the car's value",,Simple,Simple
+322,windscreen,292.0,Simple,0.99,claim 314 days after policy start; claimed $292; claim is 3% of the car's value,waiting on claimant: photos,Simple,Simple
+323,theft,2638.0,Suspicious,0.99,"theft claim; $0 claimed before; car worth $42,320",waiting on claimant: police report,Suspicious,Suspicious
+324,windscreen,1100.0,Simple,0.98,"claimed $1,100; no third party; claim is 7% of the car's value",,Simple,Simple
+325,collision,1760.0,Suspicious,0.97,claim 24 days after policy start; no third party; claim is 6% of the car's value,waiting on claimant: photos,Needs a closer look,Suspicious
+326,collision,4592.0,Suspicious,0.85,licence revoked before; not a theft; 7 driving record points,,Suspicious,Suspicious
+327,collision,5458.0,Needs a closer look,0.98,claim 3427 days after policy start; 0 prior claims in 5 years; 5 driving record points,,Needs a closer look,Needs a closer look
+328,other damage,5188.0,Simple,0.97,"claimed $5,188; claim is 29% of the car's value; no third party",senior review before payment,Simple,Simple
+329,collision,7680.0,Needs a closer look,0.95,"claimed $7,680; claim is 36% of the car's value; no third party",,Needs a closer look,Needs a closer look
+330,windscreen,1034.0,Simple,0.97,claim is 5% of the car's value; no third party; no injury,,Simple,Simple
+331,collision,1511.0,Suspicious,0.99,4 prior claims in 5 years; claim is 6% of the car's value; third party involved,,Suspicious,Suspicious
+332,collision,5387.0,Needs a closer look,0.99,3 prior claims in 5 years; claim is 96% of the car's value; third party involved,,Needs a closer look,Needs a closer look
+333,windscreen,321.0,Simple,0.98,no third party; claim is 2% of the car's value; claimed $321,,Simple,Simple
+334,collision,5313.0,Needs a closer look,0.97,3 prior claims in 5 years; claim 2111 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+335,other damage,15019.0,Needs a closer look,0.99,"claim is 139% of the car's value; claimed $15,019; claim 69 days after policy start",,Needs a closer look,Needs a closer look
+336,collision,1929.0,Needs a closer look,0.98,3 prior claims in 5 years; third party involved; claim 3565 days after policy start,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+337,collision,4191.0,Simple,0.98,"claimed $4,191; no third party; claim is 20% of the car's value",waiting on claimant: photos,Simple,Simple
+338,collision,3670.0,Simple,0.97,"claimed $3,670; claim is 31% of the car's value; no third party",,Simple,Simple
+339,collision,1062.0,Simple,0.99,"claimed $1,062; claim is 3% of the car's value; no third party",,Simple,Simple
+340,theft,6315.0,Suspicious,0.74,"theft claim; $8,352 claimed before; 10 driving record points",waiting on claimant: police report,Suspicious,Suspicious
+341,vandalism,1875.0,Simple,0.96,"claimed $1,875; claim is 35% of the car's value; no third party",,Simple,Simple
+342,collision,22638.0,Needs a closer look,0.99,"claim is 140% of the car's value; claimed $22,638; car is 12 years old",,Needs a closer look,Needs a closer look
+343,other damage,1957.0,Simple,0.95,"claim is 33% of the car's value; claimed $1,957; no third party",waiting on claimant: photos,Simple,Simple
+344,windscreen,1284.0,Simple,0.97,"claimed $1,284; no third party; claim is 11% of the car's value",waiting on claimant: photos,Simple,Simple
+345,windscreen,973.0,Simple,0.98,claimed $973; no third party; claim is 7% of the car's value,,Simple,Simple
+346,collision,3590.0,Needs a closer look,0.89,third party involved; licence never revoked; 3 prior claims in 5 years,,Needs a closer look,Needs a closer look
+347,collision,47520.0,Needs a closer look,0.97,"claim is 125% of the car's value; claimed $47,520; car worth $38,000",,Needs a closer look,Needs a closer look
+348,collision,5792.0,Simple,0.97,"claimed $5,792; claim is 28% of the car's value; no third party",senior review before payment,Simple,Simple
+349,collision,3960.0,Simple,0.98,"claimed $3,960; claim is 62% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+350,collision,13042.0,Suspicious,0.95,"no third party; claim is 217% of the car's value; claimed $13,042",,Suspicious,Suspicious
+351,collision,8000.0,Needs a closer look,0.99,2 prior claims in 5 years; claim 2327 days after policy start; 0 driving record points,,Needs a closer look,Needs a closer look
+352,collision,1834.0,Simple,0.95,"claimed $1,834; claim is 26% of the car's value; no third party",,Simple,Simple
+353,vandalism,4298.0,Simple,0.98,"claimed $4,298; no third party; claim is 16% of the car's value",waiting on claimant: photos,Simple,Simple
+354,windscreen,669.0,Simple,0.98,claimed $669; no third party; claim is 17% of the car's value,waiting on claimant: photos,Simple,Simple
+355,collision,27711.0,Needs a closer look,0.97,3 prior claims in 5 years; third party involved; claim 3858 days after policy start,,Needs a closer look,Needs a closer look
+356,other damage,4739.0,Simple,0.98,"claimed $4,739; claim is 24% of the car's value; no third party",,Suspicious,Simple
+357,collision,262.0,Simple,0.99,claimed $262; no third party; claim is 5% of the car's value,,Simple,Simple
+358,collision,2444.0,Needs a closer look,0.94,third party involved; licence never revoked; 0 prior claims in 5 years,waiting on claimant: police report,Needs a closer look,Needs a closer look
+359,vandalism,2891.0,Simple,0.98,"claimed $2,891; claim is 28% of the car's value; no third party",,Simple,Simple
+360,collision,4284.0,Simple,0.98,"claimed $4,284; no third party; claim is 26% of the car's value",,Simple,Simple
+361,theft,5629.0,Suspicious,0.96,"theft claim; $9,416 claimed before; claim 2164 days after policy start",waiting on claimant: police report,Suspicious,Suspicious
+362,collision,3619.0,Simple,0.99,"claimed $3,619; car worth $9,670; claim is 37% of the car's value",,Simple,Simple
+363,theft,4046.0,Suspicious,1.0,no third party; 4 prior claims in 5 years; claim is 52% of the car's value,,Suspicious,Suspicious
+364,collision,3539.0,Needs a closer look,0.9,0 prior claims in 5 years; 4 driving record points; claim 107 days after policy start,waiting on claimant: police report,Simple,Needs a closer look
+365,collision,1519.0,Needs a closer look,0.97,"injury reported; claimed $1,519; $0 claimed before",,Needs a closer look,Needs a closer look
+366,windscreen,504.0,Simple,0.99,claimed $504; no third party; claim is 5% of the car's value,,Suspicious,Simple
+367,windscreen,616.0,Simple,0.98,claimed $616; no third party; claim is 16% of the car's value,,Simple,Simple
+368,windscreen,284.0,Simple,0.99,claimed $284; no third party; claim is 5% of the car's value,,Simple,Simple
+369,collision,2662.0,Needs a closer look,0.93,2 prior claims in 5 years; third party involved; claim 1132 days after policy start,,Needs a closer look,Needs a closer look
+370,collision,4580.0,Needs a closer look,0.97,0 prior claims in 5 years; claim 3229 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+371,collision,3538.0,Needs a closer look,0.97,0 prior claims in 5 years; third party involved; 1 driving record points,waiting on claimant: photos,Needs a closer look,Needs a closer look
+372,windscreen,1398.0,Simple,0.98,"claimed $1,398; no third party; claim is 7% of the car's value",,Simple,Simple
+373,collision,4930.0,Needs a closer look,0.99,1 prior claim in 5 years; claim 1847 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+374,collision,4402.0,Suspicious,0.97,claim is 164% of the car's value; no third party; car is 21 years old,,Suspicious,Suspicious
+375,collision,22352.0,Suspicious,0.97,no third party; claim is 172% of the car's value; no injury,,Simple,Suspicious
+376,collision,1431.0,Needs a closer look,0.98,0 prior claims in 5 years; third party involved; claim 2274 days after policy start,waiting on claimant: police report,Needs a closer look,Needs a closer look
+377,collision,3361.0,Needs a closer look,0.99,3 prior claims in 5 years; claim 4487 days after policy start; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+378,collision,4635.0,Simple,0.99,"claimed $4,635; no third party; claim is 20% of the car's value",,Simple,Simple
+379,collision,2907.0,Simple,0.98,"claimed $2,907; claim is 28% of the car's value; no third party",,Needs a closer look,Simple
+380,windscreen,1097.0,Simple,0.98,"claimed $1,097; no third party; claim is 8% of the car's value",,Simple,Simple
+381,collision,471.0,Suspicious,0.99,4 prior claims in 5 years; no third party; claim is 2% of the car's value,,Suspicious,Suspicious
+382,collision,1841.0,Simple,0.97,"claimed $1,841; no third party; claim is 10% of the car's value",,Simple,Simple
+383,collision,7893.0,Needs a closer look,1.0,2 prior claims in 5 years; claim 249 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+384,collision,5152.0,Simple,0.98,"claimed $5,152; claim is 38% of the car's value; no third party",senior review before payment,Simple,Simple
+385,windscreen,1292.0,Simple,0.97,"claimed $1,292; claim is 8% of the car's value; no third party",,Simple,Simple
+386,collision,6042.0,Needs a closer look,0.98,claim 2543 days after policy start; 1 prior claim in 5 years; 2 driving record points,,Needs a closer look,Needs a closer look
+387,vandalism,4859.0,Simple,0.98,"claimed $4,859; car worth $34,800; claim is 14% of the car's value",,Simple,Simple
+388,other damage,3993.0,Simple,0.93,"claimed $3,993; claim is 36% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+389,other damage,755.0,Suspicious,1.0,no third party; claim is 17% of the car's value; 4 prior claims in 5 years,,Suspicious,Suspicious
+390,other damage,7308.0,Needs a closer look,0.93,"claimed $7,308; claim is 28% of the car's value; claim 1381 days after policy start",waiting on claimant: photos,Needs a closer look,Needs a closer look
+391,windscreen,1303.0,Simple,0.97,"claimed $1,303; claim is 16% of the car's value; no third party",,Simple,Simple
+392,windscreen,377.0,Simple,0.97,claimed $377; no third party; claim is 2% of the car's value,,Simple,Simple
+393,collision,4080.0,Needs a closer look,0.97,3 prior claims in 5 years; claim 2033 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+394,collision,3752.0,Simple,0.99,"claimed $3,752; no third party; claim is 18% of the car's value",,Simple,Simple
+395,collision,4654.0,Needs a closer look,0.99,1 prior claim in 5 years; claim 3315 days after policy start; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+396,other damage,1956.0,Simple,0.97,"claimed $1,956; claim is 25% of the car's value; no third party",,Simple,Simple
+397,windscreen,898.0,Simple,0.99,claimed $898; claim is 4% of the car's value; no third party,,Simple,Simple
+398,collision,7692.0,Needs a closer look,0.96,third party involved; 0 prior claims in 5 years; claim 1113 days after policy start,,Needs a closer look,Needs a closer look
+399,collision,2287.0,Needs a closer look,0.96,1 prior claim in 5 years; third party involved; claim 224 days after policy start,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+400,collision,3884.0,Simple,0.98,"claimed $3,884; no third party; claim is 24% of the car's value",,Simple,Simple
+401,windscreen,1377.0,Simple,0.98,"claimed $1,377; no third party; claim is 10% of the car's value",,Simple,Simple
+402,collision,2569.0,Needs a closer look,0.97,"claim is 117% of the car's value; car worth $2,190; $11,226 claimed before",,Needs a closer look,Needs a closer look
+403,windscreen,618.0,Simple,0.97,no third party; claimed $618; claim is 8% of the car's value,,Simple,Simple
+404,collision,3310.0,Suspicious,0.97,4 prior claims in 5 years; third party involved; claim is 66% of the car's value,waiting on claimant: police report,Suspicious,Suspicious
+405,windscreen,1199.0,Simple,0.95,"claimed $1,199; claim is 32% of the car's value; no third party",,Simple,Simple
+406,other damage,1853.0,Simple,0.98,"claimed $1,853; claim is 10% of the car's value; no third party",,Simple,Simple
+407,theft,16853.0,Suspicious,0.95,"theft claim; $11,445 claimed before; claim 3656 days after policy start",,Suspicious,Suspicious
+408,collision,19470.0,Suspicious,1.0,no third party; claim 29 days after policy start; claim is 233% of the car's value,waiting on claimant: photos,Suspicious,Suspicious
+409,other damage,10453.0,Needs a closer look,0.95,"claimed $10,453; claim is 59% of the car's value; claim 3315 days after policy start",,Needs a closer look,Needs a closer look
+410,collision,3801.0,Needs a closer look,0.99,third party involved; 0 prior claims in 5 years; 0 driving record points,,Needs a closer look,Needs a closer look
+411,collision,2870.0,Needs a closer look,0.94,0 prior claims in 5 years; third party involved; claim 1055 days after policy start,waiting on claimant: police report,Needs a closer look,Needs a closer look
+412,collision,2186.0,Suspicious,0.99,claim 19 days after policy start; third party involved; 2 driving record points,waiting on claimant: police report,Suspicious,Suspicious
+413,collision,2927.0,Needs a closer look,0.98,0 prior claims in 5 years; 6 driving record points; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+414,collision,3269.0,Needs a closer look,0.97,claim 775 days after policy start; 2 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+415,other damage,5761.0,Simple,0.65,"claimed $5,761; claim is 40% of the car's value; no third party",senior review before payment,Simple,Simple
+416,collision,6287.0,Needs a closer look,0.98,"claimed $6,287; injury reported; claim 225 days after policy start",,Needs a closer look,Needs a closer look
+417,collision,3405.0,Suspicious,0.98,4 prior claims in 5 years; no third party; claim is 29% of the car's value,,Suspicious,Suspicious
+418,collision,4517.0,Simple,0.97,"claimed $4,517; claim is 42% of the car's value; no third party",,Simple,Simple
+419,collision,3686.0,Needs a closer look,0.99,claim 872 days after policy start; 0 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+420,collision,2663.0,Needs a closer look,0.98,"third party involved; 0 prior claims in 5 years; car worth $1,500",waiting on claimant: photos,Needs a closer look,Needs a closer look
+421,collision,5400.0,Simple,0.98,"claimed $5,400; no third party; claim is 38% of the car's value",senior review before payment,Simple,Simple
+422,collision,3901.0,Needs a closer look,0.97,claim 1360 days after policy start; 0 prior claims in 5 years; third party involved,waiting on claimant: photos,Needs a closer look,Needs a closer look
+423,collision,3549.0,Simple,0.88,"claimed $3,549; no injury; no third party",,Simple,Simple
+424,windscreen,1208.0,Simple,0.97,"claimed $1,208; claim is 7% of the car's value; no third party",,Simple,Simple
+425,other damage,11802.0,Needs a closer look,0.92,"claimed $11,802; claim is 50% of the car's value; claim 3354 days after policy start",,Needs a closer look,Needs a closer look
+426,vandalism,856.0,Simple,0.99,claimed $856; no third party; claim is 15% of the car's value,,Simple,Simple
+427,collision,5928.0,Needs a closer look,0.98,"claim is 119% of the car's value; car worth $5,000; 6 driving record points",,Needs a closer look,Needs a closer look
+428,windscreen,521.0,Simple,0.99,claimed $521; no third party; claim is 9% of the car's value,,Simple,Simple
+429,collision,3615.0,Needs a closer look,0.95,0 prior claims in 5 years; third party involved; claim 3601 days after policy start,,Needs a closer look,Needs a closer look
+430,collision,1401.0,Needs a closer look,0.97,claim 2186 days after policy start; third party involved; 1 prior claim in 5 years,,Needs a closer look,Needs a closer look
+431,collision,4367.0,Needs a closer look,0.97,0 prior claims in 5 years; third party involved; 3 driving record points,waiting on claimant: photos,Needs a closer look,Needs a closer look
+432,collision,4506.0,Simple,0.98,"claimed $4,506; no third party; claim is 23% of the car's value",,Simple,Simple
+433,theft,7765.0,Suspicious,0.96,theft claim; $0 claimed before; claim 1995 days after policy start,waiting on claimant: police report,Suspicious,Suspicious
+434,collision,4011.0,Needs a closer look,0.98,claim 1242 days after policy start; 1 prior claim in 5 years; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+435,theft,7481.0,Suspicious,1.0,theft claim; no third party; claim is 173% of the car's value,waiting on claimant: police report,Suspicious,Suspicious
+436,theft,2896.0,Suspicious,0.99,theft claim; $0 claimed before; claim 3308 days after policy start,,Suspicious,Suspicious
+437,collision,6001.0,Needs a closer look,0.94,0 prior claims in 5 years; claim 106 days after policy start; 2 driving record points,,Needs a closer look,Needs a closer look
+438,windscreen,1388.0,Simple,0.97,"claimed $1,388; claim is 21% of the car's value; no third party",,Simple,Simple
+439,collision,4920.0,Needs a closer look,0.99,3 prior claims in 5 years; third party involved; 0 driving record points,waiting on claimant: photos,Needs a closer look,Needs a closer look
+440,collision,6503.0,Needs a closer look,0.98,"claim is 94% of the car's value; claimed $6,503; claim 3899 days after policy start",,Needs a closer look,Needs a closer look
+441,theft,3663.0,Suspicious,0.99,theft claim; $0 claimed before; claim is 20% of the car's value,waiting on claimant: photos,Simple,Suspicious
+442,other damage,2096.0,Simple,0.97,"claimed $2,096; claim is 12% of the car's value; no third party",,Simple,Simple
+443,vandalism,4575.0,Simple,0.97,"claimed $4,575; claim is 53% of the car's value; no third party",,Simple,Simple
+444,collision,3398.0,Needs a closer look,0.93,0 prior claims in 5 years; third party involved; claim 263 days after policy start,,Needs a closer look,Needs a closer look
+445,windscreen,1185.0,Simple,0.96,"claimed $1,185; claim is 10% of the car's value; no third party",,Simple,Simple
+446,collision,8193.0,Needs a closer look,0.98,"claim is 146% of the car's value; claimed $8,193; claim 2804 days after policy start",,Needs a closer look,Needs a closer look
+447,windscreen,647.0,Simple,0.99,claimed $647; no third party; claim is 3% of the car's value,,Simple,Simple
+448,collision,3490.0,Needs a closer look,0.51,claim is 81% of the car's value; claim 34 days after policy start; car is 6 years old,,Simple,Needs a closer look
+449,collision,3440.0,Needs a closer look,0.99,third party involved; 5 driving record points; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+450,other damage,2724.0,Simple,0.98,"claimed $2,724; no third party; claim is 15% of the car's value",,Simple,Simple
+451,theft,2362.0,Suspicious,0.99,"theft claim; $1,052 claimed before; claim 1314 days after policy start",,Suspicious,Suspicious
+452,collision,64182.0,Suspicious,0.95,"no third party; claim is 367% of the car's value; car worth $17,480",,Suspicious,Suspicious
+453,windscreen,732.0,Simple,0.99,claimed $732; no third party; claim is 13% of the car's value,,Simple,Simple
+454,collision,4036.0,Simple,0.98,"claimed $4,036; claim is 22% of the car's value; no third party",,Simple,Simple
+455,collision,3824.0,Suspicious,0.98,claim 16 days after policy start; no third party; claim is 19% of the car's value,,Suspicious,Suspicious
+456,other damage,1043.0,Simple,0.98,"claimed $1,043; no third party; claim is 6% of the car's value",,Simple,Simple
+457,collision,503.0,Needs a closer look,0.98,third party involved; 0 prior claims in 5 years; 1 driving record points,,Needs a closer look,Needs a closer look
+458,collision,1700.0,Needs a closer look,0.99,third party involved; 5 driving record points; 2 prior claims in 5 years,waiting on claimant: police report,Needs a closer look,Needs a closer look
+459,collision,1043.0,Simple,0.98,"claimed $1,043; claim is 13% of the car's value; no third party",,Simple,Simple
+460,windscreen,702.0,Simple,0.98,claimed $702; no third party; claim is 9% of the car's value,,Simple,Simple
+461,collision,6607.0,Needs a closer look,0.77,"claimed $6,607; claim is 27% of the car's value; no third party",,Needs a closer look,Needs a closer look
+462,collision,9388.0,Needs a closer look,0.87,third party involved; licence never revoked; 0 prior claims in 5 years,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+463,collision,2573.0,Needs a closer look,0.99,0 prior claims in 5 years; third party involved; claim 243 days after policy start,,Needs a closer look,Needs a closer look
+464,collision,2890.0,Needs a closer look,0.97,3 prior claims in 5 years; claim 1355 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+465,other damage,35577.0,Suspicious,0.97,no third party; claim is 183% of the car's value; no injury,,Suspicious,Suspicious
+466,vandalism,5521.0,Simple,0.98,"claimed $5,521; no third party; claim is 25% of the car's value",senior review before payment,Simple,Simple
+467,collision,3722.0,Needs a closer look,0.95,3 prior claims in 5 years; third party involved; claim 5892 days after policy start,waiting on claimant: police report,Needs a closer look,Needs a closer look
+468,vandalism,1559.0,Simple,0.98,"claimed $1,559; claim is 11% of the car's value; no third party",,Simple,Simple
+469,collision,5645.0,Needs a closer look,0.99,third party involved; claim 1166 days after policy start; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+470,collision,14929.0,Needs a closer look,0.87,"claim is 45% of the car's value; claimed $14,929; claim 45 days after policy start",,Needs a closer look,Needs a closer look
+471,collision,6389.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 1944 days after policy start; 0 driving record points,,Needs a closer look,Needs a closer look
+472,collision,3166.0,Needs a closer look,0.98,0 prior claims in 5 years; claim 3366 days after policy start; 4 driving record points,,Needs a closer look,Needs a closer look
+473,collision,1842.0,Simple,0.97,"claimed $1,842; claim is 20% of the car's value; no third party",,Simple,Simple
+474,collision,9270.0,Needs a closer look,0.99,third party involved; 0 prior claims in 5 years; claim 6140 days after policy start,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+475,windscreen,719.0,Simple,0.98,claim is 2% of the car's value; claimed $719; no third party,,Simple,Simple
+476,other damage,5075.0,Simple,0.96,"claimed $5,075; claim is 48% of the car's value; no third party",senior review before payment,Simple,Simple
+477,windscreen,920.0,Simple,0.47,claim is 5% of the car's value; no third party; no injury,,Simple,Simple
+478,windscreen,301.0,Simple,0.98,claimed $301; no third party; claim is 3% of the car's value,,Simple,Simple
+479,collision,3692.0,Needs a closer look,0.92,0 prior claims in 5 years; third party involved; 0 driving record points,,Needs a closer look,Needs a closer look
+480,collision,6409.0,Needs a closer look,0.99,claim 3541 days after policy start; 2 prior claims in 5 years; 0 driving record points,,Needs a closer look,Needs a closer look
+481,collision,3509.0,Simple,0.85,"claimed $3,509; no third party; claim is 8% of the car's value",,Simple,Simple
+482,other damage,6290.0,Needs a closer look,0.96,"claimed $6,290; claim is 13% of the car's value; car worth $48,380",,Needs a closer look,Needs a closer look
+483,collision,1748.0,Simple,0.97,"claimed $1,748; claim is 7% of the car's value; no third party",,Simple,Simple
+484,collision,742.0,Simple,0.99,no third party; claimed $742; claim is 13% of the car's value,waiting on claimant: photos,Simple,Simple
+485,windscreen,756.0,Simple,0.99,claimed $756; no third party; claim is 8% of the car's value,waiting on claimant: photos,Simple,Simple
+486,vandalism,8107.0,Needs a closer look,0.92,"claimed $8,107; claim 328 days after policy start; $0 claimed before",,Needs a closer look,Needs a closer look
+487,collision,4487.0,Needs a closer look,0.99,claim 1278 days after policy start; 0 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+488,collision,1020.0,Simple,0.97,"claimed $1,020; no third party; claim is 5% of the car's value",,Simple,Simple
+489,collision,2297.0,Simple,0.95,"claimed $2,297; no third party; claim is 6% of the car's value",waiting on claimant: photos,Simple,Simple
+490,collision,2956.0,Needs a closer look,0.98,0 prior claims in 5 years; claim 3615 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+491,windscreen,380.0,Simple,0.99,no third party; claimed $380; claim is 2% of the car's value,,Simple,Simple
+492,windscreen,1303.0,Simple,0.99,"claimed $1,303; car worth $29,700; claim is 4% of the car's value",,Simple,Simple
+493,vandalism,5487.0,Simple,0.98,"car worth $10,040; claimed $5,487; claim is 55% of the car's value",senior review before payment,Simple,Simple
+494,windscreen,986.0,Simple,0.97,claimed $986; claim is 12% of the car's value; no third party,,Simple,Simple
+495,collision,5219.0,Needs a closer look,0.95,1 prior claim in 5 years; third party involved; 5 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+496,vandalism,3090.0,Simple,0.99,"claimed $3,090; car worth $10,190; claim is 30% of the car's value",,Simple,Simple
+497,other damage,5257.0,Simple,0.98,"claimed $5,257; no third party; claim is 21% of the car's value",senior review before payment,Simple,Simple
+498,windscreen,837.0,Simple,0.95,claim is 5% of the car's value; claimed $837; no third party,,Simple,Simple
+499,collision,2953.0,Needs a closer look,0.87,third party involved; licence never revoked; 1 prior claim in 5 years,,Needs a closer look,Needs a closer look
+500,collision,5791.0,Simple,0.96,"no third party; claimed $5,791; claim is 32% of the car's value",senior review before payment,Simple,Simple
+501,windscreen,1068.0,Simple,0.97,"claimed $1,068; claim is 10% of the car's value; no third party",,Simple,Simple
+502,collision,17001.0,Needs a closer look,0.92,"claim is 73% of the car's value; claimed $17,001; 7 driving record points",,Needs a closer look,Needs a closer look
+503,windscreen,650.0,Simple,0.97,claimed $650; no third party; claim is 7% of the car's value,,Simple,Simple
+504,collision,4978.0,Simple,0.95,"claimed $4,978; claim is 42% of the car's value; no third party",,Simple,Simple
+505,collision,5717.0,Needs a closer look,0.98,claim 1832 days after policy start; 0 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+506,vandalism,6111.0,Needs a closer look,0.96,"claimed $6,111; claim is 40% of the car's value; claim 3510 days after policy start",,Needs a closer look,Needs a closer look
+507,collision,6435.0,Needs a closer look,0.95,licence never revoked; 2 prior claims in 5 years; claim 1881 days after policy start,,Needs a closer look,Needs a closer look
+508,collision,3352.0,Simple,0.98,"claimed $3,352; claim is 51% of the car's value; no third party",,Simple,Simple
+509,collision,1530.0,Needs a closer look,0.99,third party involved; claim 4981 days after policy start; 2 prior claims in 5 years,,Needs a closer look,Needs a closer look
+510,collision,3705.0,Simple,0.98,"claimed $3,705; no third party; claim is 18% of the car's value",,Simple,Simple
+511,collision,5374.0,Needs a closer look,0.96,3 prior claims in 5 years; third party involved; 0 driving record points,,Needs a closer look,Needs a closer look
+512,windscreen,1208.0,Simple,0.99,"car worth $6,330; claimed $1,208; claim is 19% of the car's value",,Simple,Simple
+513,other damage,4296.0,Simple,0.97,"claimed $4,296; claim is 50% of the car's value; no third party",,Simple,Simple
+514,collision,2037.0,Simple,0.96,"claimed $2,037; no third party; claim is 14% of the car's value",,Simple,Simple
+515,collision,5689.0,Simple,0.96,"claimed $5,689; no third party; claim is 35% of the car's value",senior review before payment,Simple,Simple
+516,windscreen,378.0,Simple,0.97,claim is 3% of the car's value; claimed $378; no third party,waiting on claimant: photos,Simple,Simple
+517,collision,39729.0,Suspicious,0.98,no third party; claim is 328% of the car's value; 8 driving record points,,Suspicious,Suspicious
+518,other damage,5996.0,Needs a closer look,0.68,"claim is 26% of the car's value; claimed $5,996; claim 290 days after policy start",,Simple,Simple
+519,collision,4252.0,Simple,0.98,"claimed $4,252; no third party; claim is 34% of the car's value",,Simple,Simple
+520,other damage,698.0,Simple,0.98,claimed $698; no third party; claim is 10% of the car's value,,Simple,Simple
+521,windscreen,1416.0,Simple,0.98,"claimed $1,416; claim is 34% of the car's value; no third party",,Simple,Simple
+522,windscreen,904.0,Simple,0.96,claimed $904; no third party; claim is 17% of the car's value,,Simple,Simple
+523,other damage,3140.0,Simple,0.98,"claimed $3,140; claim is 29% of the car's value; no third party",,Simple,Simple
+524,collision,3776.0,Simple,0.97,"claimed $3,776; claim is 22% of the car's value; no third party",,Simple,Simple
+525,collision,39260.0,Needs a closer look,0.98,6 driving record points; 3 prior claims in 5 years; third party involved,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+526,other damage,8284.0,Needs a closer look,0.98,"claim is 110% of the car's value; claimed $8,284; car is 12 years old",,Needs a closer look,Needs a closer look
+527,collision,2716.0,Needs a closer look,0.84,third party involved; licence never revoked; 1 prior claim in 5 years,waiting on claimant: police report,Needs a closer look,Needs a closer look
+528,windscreen,595.0,Suspicious,0.99,4 prior claims in 5 years; no third party; claim is 4% of the car's value,,Suspicious,Suspicious
+529,windscreen,744.0,Simple,0.99,"no third party; claimed $744; car worth $26,790",waiting on claimant: photos,Simple,Simple
+530,windscreen,831.0,Simple,0.96,claimed $831; no third party; claim is 20% of the car's value,,Simple,Simple
+531,other damage,838.0,Simple,0.98,claimed $838; no third party; claim is 14% of the car's value,,Simple,Simple
+532,collision,6457.0,Needs a closer look,0.99,"claim is 36% of the car's value; claimed $6,457; injury reported",,Needs a closer look,Needs a closer look
+533,vandalism,6190.0,Needs a closer look,0.98,"claimed $6,190; claim is 51% of the car's value; claim 290 days after policy start",,Needs a closer look,Needs a closer look
+534,collision,4805.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 246 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+535,vandalism,4274.0,Simple,0.97,"claimed $4,274; claim is 23% of the car's value; no third party",,Needs a closer look,Simple
+536,collision,2819.0,Needs a closer look,0.99,claim 2150 days after policy start; 0 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+537,collision,5979.0,Needs a closer look,0.98,"car worth $5,000; 2 prior claims in 5 years; claim is 120% of the car's value",waiting on claimant: police report,Needs a closer look,Needs a closer look
+538,theft,4720.0,Suspicious,0.99,theft claim; $0 claimed before; claim is 18% of the car's value,,Suspicious,Suspicious
+539,windscreen,736.0,Simple,0.99,claimed $736; no third party; claim is 2% of the car's value,,Simple,Simple
+540,windscreen,648.0,Simple,0.98,no third party; claimed $648; claim is 43% of the car's value,,Simple,Simple
+541,collision,2651.0,Suspicious,0.93,no third party; claim is 177% of the car's value; 11 driving record points,,Suspicious,Suspicious
+542,collision,3075.0,Needs a closer look,0.99,claim 1372 days after policy start; 0 prior claims in 5 years; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+543,vandalism,3365.0,Simple,0.95,"claimed $3,365; claim is 15% of the car's value; no third party",,Simple,Simple
+544,collision,13770.0,Needs a closer look,0.98,claim 987 days after policy start; 0 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+545,collision,18461.0,Suspicious,1.0,claim is 288% of the car's value; 4 prior claims in 5 years; no third party,waiting on claimant: photos,Suspicious,Suspicious
+546,collision,1379.0,Simple,0.98,"claimed $1,379; claim is 14% of the car's value; no third party",,Simple,Simple
+547,other damage,3758.0,Needs a closer look,0.83,claim is 71% of the car's value; claim 196 days after policy start; licence never revoked,,Needs a closer look,Needs a closer look
+548,collision,4423.0,Simple,0.98,"claimed $4,423; no third party; claim is 40% of the car's value",,Simple,Simple
+549,collision,4979.0,Simple,0.98,"claimed $4,979; claim is 22% of the car's value; no third party",,Simple,Simple
+550,vandalism,3012.0,Simple,0.99,"claimed $3,012; claim is 41% of the car's value; no third party",,Simple,Simple
+551,collision,4370.0,Needs a closer look,0.63,3 prior claims in 5 years; third party involved; 6 driving record points,,Needs a closer look,Needs a closer look
+552,collision,2389.0,Needs a closer look,0.95,1 prior claim in 5 years; 5 driving record points; claim 115 days after policy start,,Needs a closer look,Needs a closer look
+553,collision,1762.0,Simple,0.99,"claimed $1,762; no third party; claim is 8% of the car's value",,Simple,Simple
+554,collision,6879.0,Needs a closer look,0.94,third party involved; 0 prior claims in 5 years; 2 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+555,other damage,4369.0,Simple,0.98,"claimed $4,369; no third party; claim is 16% of the car's value",,Simple,Simple
+556,collision,77907.0,Suspicious,0.96,no third party; claim is 440% of the car's value; car is 6 years old,,Suspicious,Suspicious
+557,collision,2611.0,Simple,0.98,"claimed $2,611; claim is 11% of the car's value; no third party",,Simple,Simple
+558,theft,1758.0,Suspicious,0.55,"theft claim; claimed $1,758; car is 6 years old","waiting on claimant: photos, police report",Suspicious,Suspicious
+559,collision,1779.0,Simple,0.98,"claimed $1,779; claim is 12% of the car's value; no third party",,Simple,Simple
+560,collision,4249.0,Simple,0.99,"claimed $4,249; car worth $24,710; claim is 17% of the car's value",,Simple,Simple
+561,collision,5252.0,Needs a closer look,0.99,claim 329 days after policy start; 1 prior claim in 5 years; third party involved,,Needs a closer look,Needs a closer look
+562,other damage,2528.0,Simple,0.98,claim is 11% of the car's value; no third party; no injury,,Simple,Simple
+563,windscreen,315.0,Simple,0.98,no third party; claimed $315; claim is 2% of the car's value,,Simple,Simple
+564,collision,4586.0,Simple,0.97,"claimed $4,586; claim is 61% of the car's value; no third party",,Simple,Simple
+565,other damage,664.0,Simple,0.99,claimed $664; no third party; claim is 7% of the car's value,,Simple,Simple
+566,windscreen,318.0,Simple,0.97,claimed $318; no third party; claim is 2% of the car's value,waiting on claimant: photos,Simple,Simple
+567,other damage,4017.0,Simple,0.99,"claimed $4,017; car worth $26,940; claim is 15% of the car's value",,Simple,Simple
+568,collision,4419.0,Needs a closer look,0.98,2 prior claims in 5 years; claim 3335 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+569,collision,2421.0,Simple,0.98,"claimed $2,421; no third party; claim is 14% of the car's value",,Simple,Simple
+570,collision,2188.0,Simple,0.99,"claimed $2,188; claim is 42% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+571,collision,6445.0,Needs a closer look,0.97,third party involved; claim 287 days after policy start; 0 prior claims in 5 years,waiting on claimant: police report,Needs a closer look,Needs a closer look
+572,vandalism,6857.0,Needs a closer look,0.66,not a theft; licence never revoked,,Needs a closer look,Needs a closer look
+573,collision,4934.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 2490 days after policy start; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+574,theft,41063.0,Suspicious,1.0,theft claim; no third party; $0 claimed before,waiting on claimant: police report,Suspicious,Suspicious
+575,collision,24720.0,Needs a closer look,0.98,3 prior claims in 5 years; third party involved; claim 171 days after policy start,,Needs a closer look,Needs a closer look
+576,windscreen,1244.0,Simple,0.98,"claimed $1,244; no third party; claim is 11% of the car's value",,Simple,Simple
+577,collision,11213.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 1876 days after policy start; third party involved,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+578,theft,4910.0,Suspicious,0.99,"theft claim; $2,711 claimed before; claim 3467 days after policy start",,Suspicious,Suspicious
+579,collision,7698.0,Needs a closer look,0.93,"claimed $7,698; claim is 23% of the car's value; car worth $33,500",,Needs a closer look,Needs a closer look
+580,vandalism,4125.0,Needs a closer look,0.98,"claim is 90% of the car's value; car worth $4,600; 4 driving record points",,Needs a closer look,Needs a closer look
+581,collision,3611.0,Simple,0.98,"claimed $3,611; claim is 57% of the car's value; no third party",,Simple,Simple
+582,windscreen,720.0,Suspicious,0.99,claim 30 days after policy start; no third party; claim is 6% of the car's value,,Suspicious,Suspicious
+583,windscreen,1370.0,Simple,0.94,"claimed $1,370; claim is 32% of the car's value; no third party",,Simple,Simple
+584,collision,56400.0,Suspicious,0.94,"no third party; claim is 578% of the car's value; car worth $9,760",waiting on claimant: photos,Suspicious,Suspicious
+585,collision,3668.0,Needs a closer look,0.98,claim 2532 days after policy start; 1 prior claim in 5 years; third party involved,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+586,collision,1288.0,Needs a closer look,0.99,claim 3220 days after policy start; third party involved; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+587,other damage,1026.0,Simple,0.96,"claimed $1,026; no third party; claim is 7% of the car's value",,Simple,Simple
+588,vandalism,3321.0,Simple,0.98,"claimed $3,321; claim is 60% of the car's value; no third party",,Simple,Simple
+589,vandalism,1185.0,Simple,0.97,"claimed $1,185; claim is 22% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+590,collision,5871.0,Suspicious,0.99,claim 6 days after policy start; third party involved; 0 driving record points,waiting on claimant: photos,Suspicious,Suspicious
+591,collision,5126.0,Needs a closer look,0.94,"claim is 90% of the car's value; car worth $5,700; claim 252 days after policy start",,Needs a closer look,Needs a closer look
+592,collision,3329.0,Simple,0.99,"claimed $3,329; no third party; claim is 14% of the car's value",,Simple,Simple
+593,collision,29227.0,Needs a closer look,0.98,0 prior claims in 5 years; claim 255 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+594,windscreen,402.0,Simple,0.99,claimed $402; no third party; claim is 5% of the car's value,,Simple,Simple
+595,theft,2363.0,Suspicious,0.99,"theft claim; $1,942 claimed before; claim 1983 days after policy start",,Suspicious,Suspicious
+596,collision,9117.0,Needs a closer look,0.99,third party involved; 3 prior claims in 5 years; claim 152 days after policy start,,Needs a closer look,Needs a closer look
+597,collision,1315.0,Simple,0.99,"claimed $1,315; no third party; claim is 18% of the car's value",,Simple,Simple
+598,windscreen,1090.0,Simple,0.98,"claimed $1,090; claim is 10% of the car's value; no third party",,Simple,Simple
+599,windscreen,1137.0,Simple,0.98,"claim is 4% of the car's value; claimed $1,137; no third party",,Simple,Simple
+600,collision,1697.0,Simple,0.97,"claimed $1,697; no third party; claim is 12% of the car's value",,Simple,Simple
+601,windscreen,652.0,Simple,0.98,no third party; claimed $652; claim is 6% of the car's value,,Simple,Simple
+602,theft,8767.0,Suspicious,0.98,"theft claim; $5,660 claimed before; car worth $11,550",waiting on claimant: police report,Suspicious,Suspicious
+603,other damage,2002.0,Simple,0.98,"car worth $9,800; claimed $2,002; claim is 20% of the car's value",,Simple,Simple
+604,collision,3857.0,Simple,0.95,"claimed $3,857; claim is 37% of the car's value; no third party",,Simple,Simple
+605,collision,6835.0,Needs a closer look,0.96,"claimed $6,835; claim is 64% of the car's value; no third party",,Needs a closer look,Needs a closer look
+606,windscreen,1328.0,Simple,0.98,"claimed $1,328; claim is 18% of the car's value; no third party",,Simple,Simple
+607,collision,196.0,Simple,0.99,claimed $196; no third party; claim is 1% of the car's value,,Simple,Simple
+608,collision,4809.0,Needs a closer look,0.99,claim 301 days after policy start; 0 prior claims in 5 years; claim is 91% of the car's value,,Needs a closer look,Needs a closer look
+609,vandalism,4815.0,Simple,0.98,"claimed $4,815; claim is 22% of the car's value; no third party",,Simple,Simple
+610,windscreen,412.0,Simple,0.98,claimed $412; no third party; claim is 3% of the car's value,,Simple,Simple
+611,collision,4212.0,Simple,0.98,"claimed $4,212; car worth $26,020; claim is 16% of the car's value",,Simple,Simple
+612,collision,8671.0,Suspicious,0.98,"no third party; claim is 165% of the car's value; claimed $8,671",,Suspicious,Suspicious
+613,other damage,5950.0,Simple,0.98,"car worth $9,730; no third party; claim is 61% of the car's value",senior review before payment,Simple,Simple
+614,collision,3404.0,Needs a closer look,0.97,third party involved; licence never revoked; 3 prior claims in 5 years,waiting on claimant: police report,Needs a closer look,Needs a closer look
+615,collision,3143.0,Needs a closer look,0.98,claim 1277 days after policy start; 2 prior claims in 5 years; third party involved,,Suspicious,Needs a closer look
+616,vandalism,4890.0,Simple,0.93,"claimed $4,890; claim is 58% of the car's value; no third party",,Simple,Simple
+617,collision,9893.0,Needs a closer look,0.99,0 prior claims in 5 years; claim 56 days after policy start; 0 driving record points,,Needs a closer look,Needs a closer look
+618,collision,5640.0,Simple,0.94,"claimed $5,640; claim is 27% of the car's value; no third party",senior review before payment,Simple,Simple
+619,vandalism,4435.0,Simple,0.85,"claimed $4,435; claim is 25% of the car's value; no third party",,Simple,Simple
+620,collision,4485.0,Needs a closer look,0.99,1 prior claim in 5 years; claim 1838 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+621,other damage,4953.0,Simple,0.97,"claimed $4,953; claim is 35% of the car's value; no third party",,Simple,Simple
+622,collision,5728.0,Simple,0.97,"no third party; claimed $5,728; claim is 22% of the car's value",senior review before payment,Simple,Simple
+623,collision,5386.0,Needs a closer look,0.99,1 prior claim in 5 years; claim 2173 days after policy start; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+624,collision,4102.0,Needs a closer look,0.84,"claim is 73% of the car's value; car worth $5,620; car is 1 years old",,Needs a closer look,Needs a closer look
+625,collision,6787.0,Needs a closer look,0.99,3 prior claims in 5 years; claim 1955 days after policy start; 2 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+626,collision,3518.0,Needs a closer look,0.97,0 prior claims in 5 years; claim 2424 days after policy start; third party involved,waiting on claimant: photos,Needs a closer look,Needs a closer look
+627,collision,6761.0,Needs a closer look,0.99,3 prior claims in 5 years; claim 1271 days after policy start; 2 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+628,collision,7551.0,Needs a closer look,0.99,"claim is 104% of the car's value; injury reported; claimed $7,551",,Needs a closer look,Needs a closer look
+629,windscreen,674.0,Simple,0.5,claimed $674; no third party; claim is 3% of the car's value,,Suspicious,Suspicious
+630,collision,3611.0,Needs a closer look,0.98,1 prior claim in 5 years; third party involved; 3 driving record points,,Needs a closer look,Needs a closer look
+631,collision,3444.0,Needs a closer look,0.95,"injury reported; claimed $3,444; $0 claimed before",,Needs a closer look,Needs a closer look
+632,vandalism,42499.0,Suspicious,0.96,no third party; claim is 262% of the car's value; licence revoked before,waiting on claimant: photos,Suspicious,Suspicious
+633,collision,4451.0,Simple,0.98,"claimed $4,451; claim is 21% of the car's value; no third party",,Simple,Simple
+634,theft,4566.0,Suspicious,0.99,theft claim; $0 claimed before; claim 1403 days after policy start,,Suspicious,Suspicious
+635,theft,3894.0,Suspicious,1.0,theft claim; $0 claimed before; no third party,waiting on claimant: police report,Suspicious,Suspicious
+636,vandalism,1327.0,Simple,0.99,"claimed $1,327; claim is 8% of the car's value; no third party",,Simple,Simple
+637,collision,2950.0,Simple,0.98,"claimed $2,950; claim is 20% of the car's value; no third party",waiting on claimant: photos,Simple,Simple
+638,collision,2832.0,Needs a closer look,0.94,"injury reported; claimed $2,832; $0 claimed before",waiting on claimant: police report,Needs a closer look,Needs a closer look
+639,collision,4719.0,Needs a closer look,0.99,claim 1347 days after policy start; 3 prior claims in 5 years; third party involved,,Needs a closer look,Needs a closer look
+640,other damage,2295.0,Simple,0.96,"claim is 42% of the car's value; claimed $2,295; no third party",,Simple,Simple
+641,windscreen,592.0,Simple,0.99,no third party; claimed $592; claim is 3% of the car's value,,Simple,Simple
+642,collision,5378.0,Needs a closer look,0.96,2 prior claims in 5 years; third party involved; claim 3530 days after policy start,,Needs a closer look,Needs a closer look
+643,windscreen,1469.0,Simple,0.98,"claimed $1,469; car worth $29,470; claim is 5% of the car's value",,Simple,Simple
+644,vandalism,839.0,Simple,0.96,claimed $839; no third party; claim is 2% of the car's value,,Simple,Simple
+645,collision,5162.0,Needs a closer look,0.97,3 prior claims in 5 years; claim 2395 days after policy start; third party involved,,Needs a closer look,Needs a closer look
+646,collision,3263.0,Needs a closer look,0.93,2 prior claims in 5 years; third party involved; 3 driving record points,waiting on claimant: police report,Needs a closer look,Needs a closer look
+647,windscreen,395.0,Simple,0.99,claimed $395; no third party; claim is 4% of the car's value,waiting on claimant: photos,Simple,Simple
+648,collision,1166.0,Suspicious,0.99,"claim 13 days after policy start; third party involved; car worth $37,180",waiting on claimant: police report,Suspicious,Suspicious
+649,other damage,5899.0,Needs a closer look,0.97,"claim is 95% of the car's value; $0 claimed before; car worth $6,200",,Simple,Needs a closer look
+650,collision,6464.0,Needs a closer look,0.97,"claim is 94% of the car's value; claimed $6,464; 2 driving record points",,Needs a closer look,Needs a closer look
+651,collision,596.0,Simple,0.99,no third party; claimed $596; claim is 3% of the car's value,,Simple,Simple
+652,vandalism,6579.0,Needs a closer look,0.93,"claimed $6,579; licence never revoked",,Needs a closer look,Needs a closer look
+653,collision,8138.0,Needs a closer look,0.92,"claimed $8,138; claim is 26% of the car's value; car worth $31,810",,Needs a closer look,Needs a closer look
+654,collision,3949.0,Simple,0.98,"claimed $3,949; no third party; claim is 15% of the car's value",waiting on claimant: photos,Simple,Simple
+655,collision,1283.0,Suspicious,0.97,licence revoked before; not a theft; 10 driving record points,,Suspicious,Suspicious
+656,collision,6914.0,Needs a closer look,0.99,third party involved; claim 330 days after policy start; 1 prior claim in 5 years,waiting on claimant: police report,Needs a closer look,Needs a closer look
+657,collision,3304.0,Needs a closer look,0.66,third party involved; licence never revoked; 0 prior claims in 5 years,,Needs a closer look,Needs a closer look
+658,theft,2078.0,Suspicious,0.99,"theft claim; $1,294 claimed before; claim is 8% of the car's value",waiting on claimant: police report,Suspicious,Suspicious
+659,windscreen,548.0,Simple,0.99,claimed $548; no third party; claim is 5% of the car's value,,Simple,Simple
+660,windscreen,1254.0,Simple,0.97,"claimed $1,254; claim is 8% of the car's value; no third party",,Simple,Simple
+661,windscreen,277.0,Simple,0.99,claimed $277; no third party; claim is 3% of the car's value,,Simple,Simple
+662,collision,11770.0,Needs a closer look,0.93,"claimed $11,770; claim is 50% of the car's value; 5 driving record points",,Needs a closer look,Needs a closer look
+663,collision,5492.0,Simple,0.94,"claimed $5,492; no third party; claim is 44% of the car's value",senior review before payment,Simple,Simple
+664,collision,4751.0,Simple,0.98,"claimed $4,751; no third party; claim is 23% of the car's value",,Simple,Simple
+665,other damage,6035.0,Needs a closer look,0.9,"claimed $6,035; claim is 23% of the car's value; claim 2201 days after policy start",,Needs a closer look,Needs a closer look
+666,collision,2474.0,Needs a closer look,0.98,2 prior claims in 5 years; third party involved; claim 6198 days after policy start,,Needs a closer look,Needs a closer look
+667,collision,26699.0,Suspicious,0.99,no third party; claim is 283% of the car's value; claim 6133 days after policy start,,Suspicious,Suspicious
+668,collision,2357.0,Suspicious,0.99,4 prior claims in 5 years; third party involved; claim is 10% of the car's value,,Suspicious,Suspicious
+669,collision,4805.0,Needs a closer look,0.83,third party involved; licence never revoked; 3 prior claims in 5 years,,Needs a closer look,Needs a closer look
+670,collision,1399.0,Needs a closer look,0.98,claim 1177 days after policy start; third party involved; 1 prior claim in 5 years,,Needs a closer look,Needs a closer look
+671,other damage,4454.0,Simple,0.84,no injury; no third party; 0 driving record points,,Simple,Simple
+672,collision,3626.0,Needs a closer look,0.81,"claim is 76% of the car's value; car worth $4,790; claim 259 days after policy start",,Needs a closer look,Needs a closer look
+673,collision,2071.0,Needs a closer look,0.98,claim 3628 days after policy start; third party involved; 2 prior claims in 5 years,,Needs a closer look,Needs a closer look
+674,windscreen,543.0,Simple,0.97,no third party; claimed $543; claim is 2% of the car's value,,Simple,Simple
+675,collision,4301.0,Needs a closer look,0.92,3 prior claims in 5 years; third party involved; claim 268 days after policy start,,Needs a closer look,Needs a closer look
+676,collision,4822.0,Needs a closer look,0.99,3 prior claims in 5 years; claim 3704 days after policy start; third party involved,"waiting on claimant: photos, police report",Needs a closer look,Needs a closer look
+677,collision,6777.0,Needs a closer look,0.98,6 driving record points; 2 prior claims in 5 years; third party involved,waiting on claimant: police report,Needs a closer look,Needs a closer look
+678,vandalism,6573.0,Needs a closer look,0.97,"claimed $6,573; claim is 55% of the car's value; claim 311 days after policy start",,Needs a closer look,Needs a closer look
+679,windscreen,747.0,Simple,0.99,claimed $747; no third party; claim is 13% of the car's value,,Simple,Simple
+680,other damage,2040.0,Simple,0.98,"claimed $2,040; no third party; claim is 8% of the car's value",,Simple,Simple
+681,collision,1639.0,Needs a closer look,0.96,"claim is 109% of the car's value; car worth $1,500; 6 driving record points",,Needs a closer look,Needs a closer look
+682,collision,3076.0,Simple,0.96,"claimed $3,076; claim is 31% of the car's value; no third party",,Simple,Simple
+683,vandalism,4347.0,Simple,0.94,"claimed $4,347; claim is 49% of the car's value; no third party",,Needs a closer look,Simple
+684,collision,5206.0,Simple,0.98,"claimed $5,206; no third party; claim is 34% of the car's value",senior review before payment,Simple,Simple
+685,windscreen,974.0,Suspicious,0.98,5 prior claims in 5 years; no third party; claim is 12% of the car's value,,Suspicious,Suspicious
+686,collision,4405.0,Needs a closer look,0.89,"claim is 81% of the car's value; car worth $5,430; claim 185 days after policy start",,Needs a closer look,Needs a closer look

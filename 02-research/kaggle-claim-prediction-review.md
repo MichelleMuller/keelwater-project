@@ -61,6 +61,7 @@
 
 ## 6. Suggested next steps
 
+0. **Done 2026-10-16:** [sorting prototype on sample data](../04-working-material/prototype/results.md), a gradient-boosted model with per-claim reasons, trained on rule-made labels.
 1. **Use it as the seed for a synthetic claims dataset:** keep the history and vehicle fields, drop demographics, and add generated claim-level fields (claim type, third party, injury, documents present, fraud label) with **[INVENTED]** rules.
 2. **Run a dry-run eval** of the decision order in [auto-sorting-requirements.md](auto-sorting-requirements.md) on it, scored with balanced accuracy per pile. This could be the working material for the submission.
 3. **Show the explainability trade-off** in the deck: logistic regression vs LightGBM, two points of accuracy vs per-claim reasons.
