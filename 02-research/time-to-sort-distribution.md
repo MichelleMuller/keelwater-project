@@ -34,4 +34,4 @@ Example with five claims of 5, 8, **11**, 15 and 2,000 min: the median is 11 min
 
 ## Research: first ask to the data team
 
-**The real histogram of time to sort ([DQ-02](../01-thinking/open-questions.md)) is the first thing to ask the data team for**, together with what "time to sort" measures ([DQ-01](../01-thinking/open-questions.md)). Everything above about the shape is inferred from two points; the histogram replaces the hypothesis with data, ideally split by customer, pile and arrival time ([DQ-03](../01-thinking/open-questions.md)).
+**The real histogram of time to sort ([DQ-02](../01-thinking/open-questions.md)) is the first thing to ask the data team for**, together with confirmation of what "time to sort" measures ([DQ-01](../01-thinking/open-questions.md); we assume from a handler first opening the claim to sorted, A-18). Everything above about the shape is inferred from two points; the histogram replaces the hypothesis with data, ideally split by customer, pile and cause ([DQ-03](../01-thinking/open-questions.md)).

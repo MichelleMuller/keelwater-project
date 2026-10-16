@@ -35,7 +35,7 @@ Everything the brief gives us, in one place, plus simple derived figures. Derive
 
 ## What the numbers do and don't tell us
 
-- **Time to sort ≠ time handlers spend sorting.** 11 min median may be mostly queue wait. 4h+ could be waiting, not effort. Need to split wait time vs touch time.
+- **What time to sort measures.** We assume it runs from a handler first opening the claim to sorting it, so queue time isn't counted (A-18). A claim over 4h was opened but couldn't be sorted: waiting on information, working out fault, or escalating.
 - **The 3.4% is the human error baseline.** Any automated sorter is compared against this, not against perfection. Direction matters: Suspicious → Simple misses are costly (fraud paid out); Simple → Suspicious mostly costs time and customer goodwill.
 - **Averages hide the distribution.** ~40 tickets across 180 customers is low; pain is likely concentrated in a few large accounts. Need per-customer breakdown.
 - **Nothing says what's blocking the deals.** "Mentions automatic sorting" could mean speed, headcount, fraud, or a competitive checkbox.

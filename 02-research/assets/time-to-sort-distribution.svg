@@ -29,5 +29,5 @@
 <text x="611.9" y="352.0" text-anchor="middle" fill="#59636e">1 day</text>
 <line x1="743.2" x2="743.2" y1="330.0" y2="335.0" stroke="#8c959f"/>
 <text x="743.2" y="352.0" text-anchor="middle" fill="#59636e">1 week</text>
-<text x="415.0" y="385" text-anchor="middle" fill="#59636e">time from arrival to sorted (log scale)</text>
+<text x="415.0" y="385" text-anchor="middle" fill="#59636e">time from handler first opening the claim to sorted (log scale)</text>
 </svg>

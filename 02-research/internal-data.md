@@ -30,15 +30,14 @@ Weighted, this gives ~15% over 4h, matching the brief.
 
 | Cause | Share of >4h claims |
 |---|---|
-| Waiting on information from the claimant | 38% |
-| Third party / fault to determine | 22% |
-| Arrived out of hours, sat in the queue | 14% |
-| Injury involved | 12% |
-| Above the handler's authority limit | 6% |
-| Fraud check or referral | 5% |
+| Waiting on information from the claimant | 44% |
+| Third party / fault to determine | 26% |
+| Injury involved | 14% |
+| Above the handler's authority limit | 7% |
+| Fraud check or referral | 6% |
 | Other | 3% |
 
-**What "time to sort" measures (DQ-01):** clock time from claim arrival to pile assigned, including nights and weekends. So 14% of the slow tail is queue time, not difficulty.
+**What "time to sort" measures (DQ-01, A-18):** time from when a handler **first opens the claim** to when it's sorted. Queue time before anyone looks at it isn't counted, so a claim over 4h means a handler opened it and couldn't sort it for 4h: they were waiting on information, working out fault, or escalating.
 
 This supports A-13: complex and waiting-on-information claims drive the tail, not fraud.
 

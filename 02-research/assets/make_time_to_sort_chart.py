@@ -105,7 +105,7 @@ for v, label in ticks:
 
 out.append(
     f'<text x="{LEFT + plot_w / 2:.1f}" y="{HEIGHT - 15}" text-anchor="middle" fill="#59636e">'
-    "time from arrival to sorted (log scale)</text>"
+    "time from handler first opening the claim to sorted (log scale)</text>"
 )
 out.append("</svg>")
 
