@@ -58,6 +58,8 @@ What triage optimises for, in order of how often it comes up in sources:
 - **Money and risk** (what insurers' finance and fraud teams feel) sit in pile 3.
 - The 15% of Keelwater claims taking >4h are more likely **complex or waiting-on-information** claims than fraud. To validate (A-13).
 
+**[INVENTED]** All three points match what we heard internally in Gong calls, Teams recordings and CSM/AM sessions. See [customer-signal.md](customer-signal.md).
+
 ## 3. Common motor fraud signals
 
 From [Fraud Conference News](https://www.fraudconferencenews.com/home/spotting-signs-auto-insurance-fraud):
