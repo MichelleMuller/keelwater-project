@@ -2,7 +2,7 @@
 
 Going through the questions from the brainstorm ([brainstorm-organised.md §2](../01-thinking/brainstorm-organised.md)) one by one: what the research already answers, and what only Keelwater's own data can answer.
 
-**Status key:** ✅ answered by research · 🟡 partly answered · 🔒 needs Keelwater internal data (simulated in this exercise, flagged **[INVENTED]** if we fill it in)
+**Status key:** ✅ answered by research · 🟡 partly answered by research · 🔒 needs Keelwater internal data. Every 🔒 item is now filled in with **[INVENTED]** internal data in [internal-data.md](internal-data.md) and [customer-signal.md](customer-signal.md), with how we'd have found it.
 
 > 2026-10-16. Sources are in the linked research files.
 
@@ -25,11 +25,11 @@ Sources: [motor-claims-triage-and-fraud.md §1–2](motor-claims-triage-and-frau
 
 **Why some claims take hours (answered by research, to confirm with data):** third party / fault to determine, injury, disputed liability or cover, total loss, above the handler's authority limit, missing documents. Fraud flags are a small share (4% of claims that don't go straight through in one example). Part of the >4h tail may also be queue time and out-of-hours arrival (DQ-01). See A-13.
 
-**Main problem per customer (🔒):** research says customers differ by claim mix (simple-heavy, complex-heavy, fraud-heavy), so the main problem will too. Which customers are which needs Keelwater data (DQ-03).
+**Main problem per customer (🔒):** research says customers differ by claim mix (simple-heavy, complex-heavy, fraud-heavy), so the main problem will too. Which customers are which needs Keelwater data (DQ-03). **[INVENTED]** answer: three segments (simple-heavy, mixed, complex-heavy), each with a different main problem; and a cause split of the slow tail. See [internal-data.md §1–2](internal-data.md).
 
 ## 2. Breakdown per customer of volume, time to sort, and >4h share 🔒
 
-Not answerable by research. Needs Keelwater data (DQ-02, DQ-03). What we know from the brief: 2.1M claims a year across ~180 customers (~11.7k each on average), median 11 min, 15% over 4h. The real histogram is the first ask ([time-to-sort-distribution.md](time-to-sort-distribution.md)).
+Not answerable by research. Needs Keelwater data (DQ-02, DQ-03). What we know from the brief: 2.1M claims a year across ~180 customers (~11.7k each on average), median 11 min, 15% over 4h. The real histogram is the first ask ([time-to-sort-distribution.md](time-to-sort-distribution.md)). **[INVENTED]** answer: [internal-data.md §1](internal-data.md).
 
 ## 3. The 3.4% re-sorts: which direction, and which transitions are most common? 🔒 (research gives the framing)
 
@@ -43,19 +43,19 @@ Direction needs Keelwater data (DQ-05). Research tells us **which directions mat
 | Suspicious → Simple / Closer look | Time and goodwill; fairness check | An honest claimant was delayed and profiled |
 | Closer look → Simple | Low | Handler time wasted |
 
-A re-sort also isn't always an error: new information can arrive (police report, engineer's report). We'd need to split "wrong first time" from "new information" (A-05).
+A re-sort also isn't always an error: new information can arrive (police report, engineer's report). We'd need to split "wrong first time" from "new information" (A-05). **[INVENTED]** answer: ~60% follow new information, so the true first-sort error rate is ~1.4%; ~6.4k claims a year go Simple → Suspicious. See [internal-data.md §3](internal-data.md).
 
 ## 4. What's in the ~40 support tickets: sorting in general, or doing many at once? 🔒
 
-Not answerable by research. Needs a thematic analysis of the tickets (SUQ-01, SUQ-02), a good AI task. Context: ~40 tickets across 180 customers in 6 months is low, which suggests the pain is concentrated in a few accounts.
+Not answerable by research. Needs a thematic analysis of the tickets (SUQ-01, SUQ-02), a good AI task. Context: ~40 tickets across 180 customers in 6 months is low, which suggests the pain is concentrated in a few accounts. **[INVENTED]** answer: 22 of 40 are about sorting many claims at once; 3 customers filed 18. See [internal-data.md §4](internal-data.md).
 
 ## 5. Why was bulk sorting prioritised? What was validated, which customers are lined up? 🔒
 
-Not answerable by research. Needs product leadership and the original decision record (PQ-01). Our working assumption is that no table view exists today, so handlers sort one claim at a time (A-01).
+Not answerable by research. Needs product leadership and the original decision record (PQ-01). Our working assumption is that no table view exists today, so handlers sort one claim at a time (A-01). **[INVENTED]** answer: 5 large customers asked for a list view; usability validated, impact on time to sort not; 3 beta customers including the top-10 renewal. See [internal-data.md §5](internal-data.md).
 
 ## 6. What's in the prototype: model type, training data, why it stopped, can customers see it? 🔒
 
-Not answerable by research. Needs the data team (DQ-07, DQ-08, PQ-02). Research tells us **what to check it against**: can every prediction be explained with reasons? Was it trained on outcomes or on handler decisions? Does it handle the fraud gate? See [examiner-requirements.md](examiner-requirements.md).
+Not answerable by research. Needs the data team (DQ-07, DQ-08, PQ-02). Research tells us **what to check it against**: can every prediction be explained with reasons? Was it trained on outcomes or on handler decisions? Does it handle the fraud gate? See [examiner-requirements.md](examiner-requirements.md). **[INVENTED]** answer: classic ML trained on handler decisions, weak on Suspicious, no per-claim reasons, stopped for lack of an owner. See [internal-data.md §6](internal-data.md).
 
 ## 7. Deterministic vs probabilistic: is any incorrect sort acceptable? Is this a good LLM use case? ✅
 
@@ -100,7 +100,7 @@ The brief's competitor is fictional. The real market splits into four types of p
 
 Sources: [Rework 2026 guide](https://resources.rework.com/tools/ai-tools/best-ai-tools-for-insurance-claims-2026), [AI Insurance Tools](https://insuranceaitools.com/guides/ccc-vs-tractable-vs-claim-genius/), [Sprout.ai](https://sprout.ai/), [AIPicksy](https://aipicksy.com/compare/ai-insurance-claim-analysis-tools).
 
-**Possible gap for Keelwater:** it's already where handlers spend their day. Competitors either replace the claims system or add a module beside it. Keelwater can sort **inside the workflow**, with fraud scores from the vendor the insurer already uses and an explanation per claim. What the specific competitor in the brief does is still open (SQ-03).
+**Possible gap for Keelwater:** it's already where handlers spend their day. Competitors either replace the claims system or add a module beside it. Keelwater can sort **inside the workflow**, with fraud scores from the vendor the insurer already uses and an explanation per claim. What the specific competitor in the brief does is still open (SQ-03). **[INVENTED]** from the 6 deals: 4 of 6 buyers have seen its demo; what wins is explaining each sort to compliance ([customer-signal.md](customer-signal.md)).
 
 ---
 
@@ -108,13 +108,14 @@ Sources: [Rework 2026 guide](https://resources.rework.com/tools/ai-tools/best-ai
 
 | # | Question | Status |
 |---|---|---|
-| 1 | Main problem, why hours, lifecycle | 🟡 Lifecycle and causes answered; per-customer needs data |
-| 2 | Per-customer breakdown | 🔒 |
-| 3 | Re-sort direction | 🔒 (framing answered) |
-| 4 | Support tickets | 🔒 |
-| 5 | Why bulk sorting was prioritised | 🔒 |
-| 6 | The prototype | 🔒 (what to check answered) |
+| — | The 6 deals: what buyers value | **[INVENTED]**: speed, confidence fraud is caught within that cycle, an expert in the loop ([customer-signal.md](customer-signal.md)) |
+| 1 | Main problem, why hours, lifecycle | 🟡 Lifecycle and causes from research; per-customer **[INVENTED]** |
+| 2 | Per-customer breakdown | 🔒 → **[INVENTED]** |
+| 3 | Re-sort direction | 🔒 → **[INVENTED]**; framing from research |
+| 4 | Support tickets | 🔒 → **[INVENTED]** |
+| 5 | Why bulk sorting was prioritised | 🔒 → **[INVENTED]** |
+| 6 | The prototype | 🔒 → **[INVENTED]**; what to check from research |
 | 7 | Deterministic vs probabilistic, LLM fit | ✅ |
 | 8 | Same for all or configurable | ✅ |
 | 9 | Carrier fraud models and signals | ✅ |
-| 10 | Competitor | 🟡 Market answered; the brief's competitor is fictional |
+| 10 | Competitor | 🟡 Market from research; deal signal **[INVENTED]** |

@@ -5,8 +5,8 @@ Findings go in one file per stream. Since Keelwater is fictional, "internal" res
 | Stream | File | Type | Status |
 |---|---|---|---|
 | Discovery questions checked against the research: what's answered, what needs Keelwater data | [`discovery-answers.md`](discovery-answers.md) | Synthesis | **draft** |
-| Internal data: prototype, bulk sorting rationale, usage, tickets, pipeline, at-risk accounts | `internal-data.md` | Simulated | not started |
-| Customer and deal signal (Gong / Teams, AE and CSM input) | [`customer-signal.md`](customer-signal.md) | Simulated, reconfirmed with market research | **started**: speed vs money and risk, cause of the >4h tail |
+| Internal data: per-customer breakdown, why claims take hours, re-sorts, tickets, bulk sorting rationale, prototype | [`internal-data.md`](internal-data.md) | Simulated **[INVENTED]**, with how we'd find it | **done (v1)** |
+| Customer and deal signal (Gong / Teams, AE and CSM input) | [`customer-signal.md`](customer-signal.md) | Simulated, reconfirmed with market research | **done (v1)**: incl. what the 6 deals value |
 | Competitor automatic sorting: features, models, positioning, failure points | `competitor.md` | Real market + invented competitor | not started |
 | Time to sort: median vs tail, illustrative distribution, first data ask | [`time-to-sort-distribution.md`](time-to-sort-distribution.md) | Analysis of brief data | **done (v1)** |
 | Motor claims triage and fraud: how claims are triaged, **the three pile definitions (§2)**, where claims get stuck, fraud scale and signals | [`motor-claims-triage-and-fraud.md`](motor-claims-triage-and-fraud.md) | Real | **done (v3, consolidated)** |
