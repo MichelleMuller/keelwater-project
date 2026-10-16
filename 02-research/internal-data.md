@@ -36,6 +36,8 @@ Weighted, this gives ~15% over 4h, matching the brief.
 | Fraud check or referral | 6% |
 | Other | 3% |
 
+Shown on the time-to-sort curve, with claims per year: [time-to-sort-distribution.md](time-to-sort-distribution.md#why-the-slow-15-take-longer).
+
 > Revised 2026-10-16: an earlier version listed "Above the handler's authority limit" at 7% (with info 44%, third party 26%, injury 14%). Authority limits apply when a claim is **paid**, not when it's sorted, so they can't explain slow sorting (A-20). The 7% was spread across the other causes in proportion.
 
 **What "time to sort" measures (DQ-01, A-18):** elapsed clock time from when a claim **arrives** to when it's sorted, as the brief says. It includes queue time. Queue time barely shows up as a cause here because customers' handling teams work across time zones and pick claims up quickly (A-22); the little that remains sits in "Other". So a claim over 4h is mostly one a handler opened but couldn't sort: waiting on information, working out fault, or assessing an injury.
