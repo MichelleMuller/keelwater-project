@@ -7,7 +7,7 @@ Decisions we still need to make for the deliverable, discovery questions grouped
 | ID | Question | Options | Status |
 |---|---|---|---|
 | Q-01 | What happens to bulk sorting? | A) pause and pivot to automation · B) ship as validation layer and training signal · C) ship a trimmed version, free part of the squad for discovery/evals | **decided: B.** No tabular view exists today, so bulk is needed; it also validates the needs, requirements and safety bar for automation |
-| Q-02 | Which pile do we automate first? | Simple (rules, low risk, speed value) · Information missing (detect gaps, prompt claimant: low risk, likely biggest speed win) · Suspicious (fraud, high value, high risk) · Assist-only for all three | open. Research leans towards info-missing detection + suggest-only, with a fraud gate on Simple |
+| Q-02 | What do we automate first? | Simple (rules, low risk, speed value) · Missing-information detection on any claim (detect gaps, prompt claimant: low risk, likely big speed win) · Closer look reason codes (suggest why and next step) · Suspicious (fraud, high value, high risk) · Assist-only for all | open. Research leans towards missing-info detection + suggest-only, with a fraud gate on Simple |
 | Q-03 | Automate or assist? | Human-in-the-loop suggestions first, auto-action only above an agreed threshold per customer | open |
 | Q-04 | What do we tell Sales and CS, and when? | Week 1 holding message · what can be committed to the top-10 renewal (5 months) · what not to promise in the 6 deals | **placeholder in deck** for now |
 | Q-05 | Deliverable format | Deck (planned) + one piece of working material (synthetic data eval? AI thematic analysis? this repo?) | leaning deck |

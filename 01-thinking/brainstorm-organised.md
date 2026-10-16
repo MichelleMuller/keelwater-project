@@ -12,13 +12,17 @@ The raw notes ([`brainstorm-raw.md`](brainstorm-raw.md)) reorganised against the
 
 **Ideal end state**
 - Simple → auto-sorted and routed to payment
-- Needs a closer look → flagged with suggested next steps (e.g. request missing info from the claimant)
+- Needs a closer look → flagged with a reason and suggested next step (e.g. assign senior handler, establish fault)
 - Suspicious → routed to investigation
+- Any claim missing information → claimant chased automatically, whatever the pile
 
-**Bucket definitions (working)**
-- *Simple:* all info present, no background check needed → process and pay. e.g. cracked windscreen, £600, no other parties
-- *Closer look:* mainly **information missing** (chase the claimant); also complex but not suspicious, e.g. multiple parties or large payout (car through a house, £5,000, multiple claimants)
-- *Suspicious:* anomaly signals. e.g. 7 claims from one person in 3 months
+**Bucket definitions (working, revised 2026-10-16 after [research §6](../02-research/motor-claims-triage-and-fraud.md))**
+- *Simple:* low value, own damage only, no injury, clear cover, no prior-claim or fraud flag → process and pay. e.g. cracked windscreen, £600, no other parties
+- *Closer look:* complex but not suspicious; needs a handler's judgement. Third party / fault to determine, injury, disputed liability or cover, total loss, above authority, multiple parties or large payout. e.g. car through a house, £5,000, multiple claimants. Carries a **reason code**
+- *Suspicious:* fraud indicators. e.g. 7 claims from one person in 3 months, claim soon after policy start, damage that doesn't match the story
+- *Missing information:* a **status on any claim**, not a pile
+
+> ✏️ An earlier version of this file said pile 2 was "mainly information missing". That emphasis was added when organising; the raw brainstorm defines it as "complex but not suspicious", which matches industry triage.
 
 **Reading of the data**
 - ~80%+ of claims should be relatively easy to sort; 15% are the hard ones
@@ -27,7 +31,7 @@ The raw notes ([`brainstorm-raw.md`](brainstorm-raw.md)) reorganised against the
 - 3.4% re-sort rate = a benchmark for acceptable error (human baseline)
 - Hypothesis: **fraud** is the primary problem to solve, not deep research
 
-> ⚠️ The brief doesn't say fraud is what's blocking deals. It says the deals "mention" automatic sorting. Desk research ([motor-claims-triage-and-fraud.md](../02-research/motor-claims-triage-and-fraud.md)) suggests a reframe: triage is mainly about **speed**; fraud screening is the **licence to automate** the simple pile. By volume fraud is a small pile and missing information a much bigger one; by value fraud is high per case. See A-03.
+> ⚠️ The brief doesn't say fraud is what's blocking deals. It says the deals "mention" automatic sorting. Desk research ([motor-claims-triage-and-fraud.md](../02-research/motor-claims-triage-and-fraud.md)) suggests a reframe: triage is mainly about **speed**; fraud screening is the **licence to automate** the simple pile. By volume fraud is a small pile, and complex claims and claims waiting on information are much bigger; by value fraud is high per case. See A-03.
 
 **Confidence:** to be stated explicitly in the deck. Demand for *something* is high-confidence; *what* customers mean by automatic sorting is low-confidence.
 

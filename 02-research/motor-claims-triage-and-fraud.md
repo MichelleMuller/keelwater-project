@@ -1,6 +1,6 @@
 # Motor claims triage and fraud
 
-**Question:** We're assuming Keelwater serves **motor (car damage/repair) claims**, and that sorting into three piles (1. simple → pay, 2. information missing, 3. investigate) helps insurers with fraud. Is that true?
+**Question:** We're assuming Keelwater serves **motor (car damage/repair) claims**, and that sorting into three piles (1. simple → pay, 2. needs a closer look, 3. investigate) helps insurers with fraud. Is that true?
 
 **Short answer:** Partly. In industry practice, triage is mainly a **speed and routing** tool (getting each claim to the right handler first time). Fraud screening is one of its inputs, and its most important job is as a **gate on the fast-track pile**. Sorting doesn't detect fraud by itself. What it does is make sure suspicious claims don't slip into fast payment, and that the large majority of clean claims aren't held up behind them.
 
@@ -21,15 +21,17 @@ It then routes to one of roughly four outcomes: straight-through payment, fast-t
 
 What it optimises for, in order of how often it comes up: **cycle time**, routing accuracy and consistency across handlers, fraud referral, leakage (overpaying).
 
-**Mapping to Keelwater's three piles**
+**Keelwater's three piles (working definitions, revised 2026-10-16)**
 
-| Keelwater pile (brief) | Our working definition | Industry equivalent |
-|---|---|---|
-| Simple | Clean, low value, all info present → pay | Straight-through / fast track |
-| Needs a closer look | **Information missing** (plus complex: multi-party, high value) | Desk adjuster / senior specialist |
-| Suspicious | Fraud signals → investigate | SIU referral |
+| Keelwater pile (brief) | Criteria | Next action | Industry equivalent |
+|---|---|---|---|
+| **Simple** ("pay it quickly") | Low value, own damage only, no injury, clear cover, no prior-claim or fraud flag. e.g. cracked windscreen, £600 | Pay | Fast track / straight-through |
+| **Needs a closer look** ("check the details first") | Needs a handler's judgement: third party / fault to determine, injury, disputed liability or cover, total loss, above authority limit, multiple parties. e.g. car through a house, £5,000, multiple claimants | Depends on the **reason code**: assign senior handler, supervisor sign-off, appoint engineer, establish fault | Standard + complex streams (desk adjuster / senior specialist) |
+| **Suspicious** ("send it for investigation") | Fraud indicators: claim soon after policy start, inconsistent facts, damage that doesn't match the story, repeated claims (e.g. 7 claims in 3 months), theft | Refer to investigation | SIU referral |
 
-> ⚠️ Our definition of pile 2 ("information missing") is narrower than the brief's ("check the details first"). **Superseded by [§6](#6-is-pile-2-information-missing-research-2026-10-16):** pile 2 is about complexity and judgement; missing information is a status that can sit on any claim.
+**Missing information is a status, not a pile.** Any claim can be "waiting on claimant" (photo, police report, repair estimate). It's flagged on the claim with what's missing, and chasing it can be automated regardless of pile. A Simple claim missing a photo is still Simple once the photo arrives.
+
+> Earlier versions defined pile 2 as "information missing". Revised after [§6](#6-is-pile-2-information-missing-research-2026-10-16): industry triage puts complexity and judgement in the middle stream.
 
 ## 2. How big is fraud, relative to everything else?
 
@@ -43,13 +45,13 @@ What it optimises for, in order of how often it comes up: **cycle time**, routin
 | **Soft (opportunistic) fraud**, inflating a real claim, is more common than **hard fraud** (staged or invented losses) | [Wikipedia](https://en.wikipedia.org/wiki/Insurance_fraud) |
 | ~80% of insurers use predictive modelling for fraud (up from 55% in 2018) | III, via [Hesper AI](https://gethesperai.com/blog/claims-triage-automation-guide/) |
 
-**Where claims actually get stuck.** One worked example of 4,200 auto claims attributes non-straight-through claims to: data quality / missing info **20%**, adjuster review 30%, supervisor approval 8%, **SIU fraud flag 4%** ([Lorikeet](https://www.lorikeetcx.ai/articles/straight-through-processing-rate-practitioners-guide), vendor, illustrative). It calls missing or incorrect intake data "the largest addressable category."
+**Where claims actually get stuck.** One worked example of 4,200 auto claims attributes non-straight-through claims to: data quality / missing info **20%**, adjuster review 30%, supervisor approval 8%, **SIU fraud flag 4%** ([Lorikeet](https://www.lorikeetcx.ai/articles/straight-through-processing-rate-practitioners-guide), vendor, illustrative). It calls missing or incorrect intake data "the largest addressable category" (addressable meaning fixable at intake; by size, adjuster review is bigger).
 
-**So what:** by volume, fraud is a **small pile**; missing information is a **much bigger** one. By value, fraud is **high per case**. That suggests:
+**So what:** by volume, fraud is a **small pile**; claims needing a handler's judgement (adjuster review, 30%) and claims waiting on information (20%) are **much bigger**. By value, fraud is **high per case**. That suggests:
 
-- **Speed** (what handlers and claimants feel) comes mostly from piles 1 and 2.
+- **Speed** (what handlers and claimants feel) comes mostly from piles 1 and 2, plus clearing missing information on any claim.
 - **Money and risk** (what insurers' finance and fraud teams feel) sit in pile 3.
-- The 15% of Keelwater claims taking >4h are more likely **information-missing** claims than fraud. To validate (A-06).
+- The 15% of Keelwater claims taking >4h are more likely **complex or waiting-on-information** claims than fraud. To validate (A-13).
 
 ## 3. Common motor fraud signals
 
@@ -80,7 +82,7 @@ Many of these need data Keelwater may not hold: cross-insurer claim history, tel
 ## 5. What this changes in our thinking
 
 1. **Reframe the fraud hypothesis.** Not "customers want automatic sorting to catch fraud". More likely: *"customers want clean claims paid faster, and need confidence that speeding up doesn't let fraud through."* Fraud screening is the **licence to automate** the simple pile.
-2. **Pile 2 (information missing) may be the biggest speed win.** Auto-detecting what's missing and prompting the claimant is low-risk and highly explainable. A strong candidate for the first automation.
+2. **Detecting missing information may be the biggest speed win.** Auto-detecting what's missing on any claim and prompting the claimant is low-risk and highly explainable. A strong candidate for the first automation. (Revised: missing information is a status across piles, not pile 2; see §6.)
 3. **Integrate, don't build, the fraud score.** Most insurers already run fraud models or vendors. Keelwater's value is in pulling those signals into the sorting decision and making it explainable.
 4. **Bulk sorting fits this story.** A table view with filters lets handlers clear the clean pile fast today, and the filters they use become the first rule set for automating it.
 
