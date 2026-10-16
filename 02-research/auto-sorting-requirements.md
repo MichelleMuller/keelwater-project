@@ -102,7 +102,8 @@ The system never auto-denies or auto-reduces a claim. See [examiner-requirements
 - **Errors weighted by direction:** Suspicious sorted as Simple is the costly miss; Simple sorted as Suspicious costs time and goodwill and needs a fairness check
 - **Per customer**, since the claim mix varies widely (A-07)
 - **Speed:** share of claims sorted without a human, time to sort, and the size of the >4h tail
-- **Time to first look:** from claim arrival to the first action on it, by a handler or the system. Kept separate from time to sort (which starts when a handler first opens the claim, A-18) so both stay clean. Auto-sorting runs around the clock, so claims arriving overnight or at weekends can be sorted and have missing information requested before a handler starts work. This is the wait the claimant feels
+- **Time to first look:** from claim arrival to the first action on it, by a handler or the system. Kept separate from time to sort (which starts when a handler first opens the claim, A-18) so both stay clean. Auto-sorting runs around the clock, so claims arriving overnight or at weekends can be sorted and have missing information requested before a handler starts work. This is the wait before anyone acts on the claim
+- **End-to-end time, from first report to payment (outcome metric):** time to sort measures handler friction, not the claimant's full wait. The FCA watches motor claim settlement times end to end, so the deck tracks this separately as the outcome sorting should move
 - **Override rate** in suggest mode, and why handlers overrode
 
 ## 5. Questions to work through together

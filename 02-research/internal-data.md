@@ -37,7 +37,9 @@ Weighted, this gives ~15% over 4h, matching the brief.
 | Fraud check or referral | 6% |
 | Other | 3% |
 
-**What "time to sort" measures (DQ-01, A-18):** time from when a handler **first opens the claim** to when it's sorted. Queue time before anyone looks at it isn't counted, so a claim over 4h means a handler opened it and couldn't sort it for 4h: they were waiting on information, working out fault, or escalating.
+**What "time to sort" measures (DQ-01, A-18):** time from when a handler **first opens the claim** to when it's sorted. Queue time before anyone looks at it isn't counted, so a claim over 4h means a handler opened it and couldn't sort it for 4h: they were waiting on information, working out fault, or escalating. It's elapsed time from first view, not time spent sorting.
+
+**Why handlers wait for information before sorting (A-19):** Keelwater has no "waiting on claimant" status today, so a handler can't sort the claim and mark it as blocked. They leave it unsorted until the information arrives. Missing-information flagging fixes this.
 
 This supports A-13: complex and waiting-on-information claims drive the tail, not fraud.
 
