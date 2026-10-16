@@ -17,9 +17,9 @@ Running log for the "How you used AI" part of the recording. Capture what AI did
 
 AI shouldn't make product decisions silently in a document I might skim. For decisions that shape the build, it summarised the research in the chat, then asked me to choose in a structured form before writing anything down as decided.
 
-![Question form the AI used to confirm the auto-sorting decisions](assets/ai-decision-questions.svg)
+![Question form the AI used to confirm the auto-sorting decisions](assets/ai-decision-questions.png)
 
-*Recreation of the in-chat form with my selected answers; the original form closed once submitted.*
+*Screenshot from Cursor: the AI's questions with my submitted answers.*
 
 - **What it does well:** forces an explicit choice on each decision, keeps a record of who decided, and means the doc only says "decided" when a human decided it.
 - **Watch-out:** every option I picked was the one marked "Recommended". I agreed with the reasoning, but recommended labels can nudge. It's the same automation bias regulators warn about for claims handlers confirming AI suggestions ([examiner-requirements.md](../02-research/examiner-requirements.md)). Worth saying in the recording.
