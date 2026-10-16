@@ -10,13 +10,19 @@
 
 **How we found it:** data team query of the claims table for the last 12 months, grouped by customer; customers clustered by claim mix (DQ-02, DQ-03).
 
-| Segment | Customers | Share of claims | Claims per insurer per year | Median time to sort | Share over 4h | Main problem |
-|---|---|---|---|---|---|---|
-| **Simple-heavy** (direct personal motor insurers) | ~110 | 45% (~945k) | ~8.6k | 6 min | 7% | Handler effort on a large clean pile |
-| **Mixed** | ~55 | 35% (~735k) | ~13.4k | 14 min | 18% | Claims waiting on information and third-party fault |
-| **Complex-heavy** (fleet, commercial, broker-led) | ~15 | 20% (~420k) | ~28k | 35 min | 30% | Getting complex claims to the right expert, with confidence fraud is caught |
+| Segment | Customers | Share of claims | Claims per insurer per year | Median time to sort | Share over 4h | Share of all >4h claims | Main problem |
+|---|---|---|---|---|---|---|---|
+| **Simple-heavy** (large direct personal motor insurers) | ~60 | 55% (~1.16M) | ~19k | 6 min | 7% | 25% | Handler effort on a very large clean pile |
+| **Mixed** (regional and mid-size insurers) | ~80 | 33% (~690k) | ~8.7k | 15 min | 20% | 43% | Claims waiting on information and third-party fault |
+| **Complex-heavy** (fleet, commercial, specialist, broker-led) | ~40 | 12% (~250k) | ~6.3k | 40 min | 40% | 31% | Getting complex claims to the right expert, with confidence fraud is caught |
 
-Weighted, this gives ~15% over 4h, matching the brief. **The 15 complex-heavy customers are a small share of accounts but a large share of the slow tail**, and include most of the largest accounts.
+Weighted, this gives ~15% over 4h, matching the brief.
+
+- **The largest accounts are simple-heavy**, as expected: simple claims are the most common, and large personal motor insurers handle the most claims. Even at a 7% slow rate, their volume makes them a quarter of the slow tail.
+- **Mixed customers hold the biggest share of the slow tail (43%).**
+- **Complex-heavy customers are slow most often** (40% over 4h) but handle fewer claims each.
+
+> Revised 2026-10-16: an earlier version had complex-heavy insurers as the largest accounts (~28k claims each) and simple-heavy as the smallest (~8.6k). Michelle flagged that this contradicts how the market works.
 
 ## 2. Why some claims take hours
 

@@ -29,5 +29,7 @@ AI shouldn't make product decisions silently in a document I might skim. For dec
 
 Note them as they come up, pick the strongest at the end.
 
+- AI invented per-customer data where complex-heavy insurers were the biggest accounts (~28k claims each) and simple-heavy the smallest (~8.6k). The totals matched the brief, but the logic was backwards: simple claims are the most common and large personal motor insurers handle the most claims. Michelle caught it; segments rebalanced in [internal-data.md §1](../02-research/internal-data.md). Lesson: invented data can be arithmetically consistent and still implausible.
+
 - Brainstorm (AI-structured) treated "fraud is the blocker" as fact. The brief never says that; research suggests speed is the primary ask.
 - AI carried "pile 2 = information missing" through the fact sheet, research and assumptions (I-02), and even called missing info "the largest addressable category". Michelle questioned it; a quick search on how motor claims are triaged showed the middle pile is about complexity and judgement (third party, injury, disputed liability, total loss, above authority). Missing info is a status on any claim, not a pile. In the source AI had cited, "adjuster review" (30%) was bigger than missing info (20%). See [research §2](../02-research/motor-claims-triage-and-fraud.md).
