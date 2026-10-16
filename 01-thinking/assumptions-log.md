@@ -28,4 +28,4 @@ Track every invented data point, quote or org detail here so it can be flagged i
 | ID | What | Where used |
 |---|---|---|
 | I-01 | Keelwater serves **motor claims** (car damage and repair) | Everywhere |
-| I-02 | Pile 2 is defined mainly as "information missing" (plus complex) | Brainstorm, research, deck |
+| I-02 | ~~Pile 2 is defined mainly as "information missing" (plus complex)~~ **Revised 2026-10-16:** pile 2 = needs a handler's judgement (complex: third party, injury, disputed liability/coverage, total loss, above authority), with reason codes. Missing information is a status flag on any claim, not a pile. See [research §6](../02-research/motor-claims-triage-and-fraud.md) | Brainstorm, research, deck |

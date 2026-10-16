@@ -29,7 +29,7 @@ What it optimises for, in order of how often it comes up: **cycle time**, routin
 | Needs a closer look | **Information missing** (plus complex: multi-party, high value) | Desk adjuster / senior specialist |
 | Suspicious | Fraud signals → investigate | SIU referral |
 
-> ⚠️ Our definition of pile 2 ("information missing") is narrower than the brief's ("check the details first"). Industry splits this into *missing info* and *complex*. Worth keeping both inside pile 2 with a reason code, since the next action differs: chase the claimant vs assign a senior handler.
+> ⚠️ Our definition of pile 2 ("information missing") is narrower than the brief's ("check the details first"). **Superseded by [§6](#6-is-pile-2-information-missing-research-2026-10-16):** pile 2 is about complexity and judgement; missing information is a status that can sit on any claim.
 
 ## 2. How big is fraud, relative to everything else?
 
@@ -83,6 +83,54 @@ Many of these need data Keelwater may not hold: cross-insurer claim history, tel
 2. **Pile 2 (information missing) may be the biggest speed win.** Auto-detecting what's missing and prompting the claimant is low-risk and highly explainable. A strong candidate for the first automation.
 3. **Integrate, don't build, the fraud score.** Most insurers already run fraud models or vendors. Keelwater's value is in pulling those signals into the sorting decision and making it explainable.
 4. **Bulk sorting fits this story.** A table view with filters lets handlers clear the clean pile fast today, and the filters they use become the first rule set for automating it.
+
+## 6. Is pile 2 "information missing"? (research 2026-10-16)
+
+**Question:** the brief defines pile 2 as *"Needs a closer look: check the details first."* We've been treating it as "information missing". Is that how motor claims are triaged?
+
+**Short answer: mostly no.** In industry triage the middle stream is about **complexity and judgement**, not missing data. Missing information is a **state a claim can be in** (in any pile), usually caught at intake before or alongside triage.
+
+### How motor claims are usually triaged
+
+Most sources describe three handling streams plus a fraud referral:
+
+| Stream | Typical criteria | Keelwater pile |
+|---|---|---|
+| **Fast track / straight-through** | Low value, own damage only, no injury, clear cover, no prior-claim or fraud flag. Examples: windscreen, minor own damage | Simple |
+| **Standard** | Routine third-party or repair claims needing normal desk handling | Needs a closer look |
+| **Complex** | Injury, disputed liability or coverage, multiple parties, legal involvement, high reserve, total loss | Needs a closer look |
+| **SIU referral** | Fraud indicators: inconsistent facts, suspicious timing, damage mismatch, duplicate claims | Suspicious |
+
+Sources: [SwiftCase](https://swiftcase.co.uk/use-cases/insurance/) (vendor; "fast-track, standard and complex streams", each with its own SLA and authority level), [Regure](https://www.getregure.com/solutions/carriers/) (vendor; route by loss type, amount, expertise, workload; fraud to SIU), [Ocean Point Claims](https://oceanpoint.claims/core-guides/how-insurers-evaluate-claims-internally/) (desk adjuster within authority limits, escalation above it, SIU for red flags).
+
+**How big is fast track?** One UK insurer (2.2M motor policies) defined its automatable segment as: under a loss-value threshold, no third-party injury, no coverage ambiguity, no prior-claim flag, no fraud flag at FNOL. That was **~58% of motor volume**; 80% of it then settled straight-through ([Mindmap Digital](https://www.mindmapdigital.ai/stories/uk-insurer-motor-claims-automation), vendor case study, directional).
+
+### What actually puts a claim in the middle pile
+
+What makes motor claims slow or need a handler, in rough order of how often sources cite it:
+
+- **Third party involved / fault to determine.** Third-party claims run 40–60% longer than first-party ones ([Finantrix](https://www.finantrix.com/articles/comparing-first-party-vs-third-party-claims-handling-workflows), directional)
+- **Injury.** Can't be valued until treatment and prognosis are clearer; takes longest
+- **Disputed liability or coverage.** Statements, witnesses, dashcam, police report
+- **Total loss.** Valuation, salvage, finance/lien paperwork
+- **Above the handler's authority limit.** Supervisor sign-off adds a review step
+- **Missing documents.** Photos, police report, repair estimate, medical records
+- **Other parties in the chain (UK).** Accident and claims management companies and credit hire add delay and cost ([FCA motor claims multi-firm review, 2025](https://www.fca.org.uk/publication/multi-firm-reviews/motor-insurance-claims-analysis-multi-firm-review-2025.pdf), regulator)
+
+Massachusetts commercial auto performance standards say every new notice must be screened for fraud warning signs, and **theft and arson always require detailed investigation** ([CAR standards](https://www.commauto.com/manuals/performstand/cm/pdf/2016/cmPrintable.pdf), regulator).
+
+### Where missing information fits
+
+- Vendors and insurers handle it **at intake**: digital FNOL forms validate fields in real time and trigger targeted follow-up requests before or as the claim is scored ([SwiftCase](https://swiftcase.co.uk/use-cases/insurance/), [Data Operatives](https://dataoperatives.com/insurer-fnol.html), both vendors).
+- One routing design puts "Return for additional information" as its own path, checked before any other route ([example routing spec on GitHub](https://github.com/JK0321/auto-claims-next-action-routing-operator-v1), hobby project, illustrative only).
+- A simple claim missing a photo is still simple once the photo arrives. A complex claim can be complete and still need a senior handler.
+
+### So what for Keelwater
+
+1. **Pile 2 should be "needs a handler's judgement"**, matching the brief ("check the details first") and industry's standard + complex streams. Not "information missing".
+2. **Missing information is a status, not a pile.** Better modelled as a flag ("waiting on claimant: police report") that can sit on any claim. Detecting it and auto-requesting it is still a strong, low-risk first automation, and probably a big driver of the >4h tail (A-13).
+3. **Pile 2 needs reason codes**, because the next action differs: chase claimant, assign senior handler, request supervisor approval, appoint engineer for total loss.
+4. **The Simple criteria are well established** (low value, own damage, no injury, clear cover, no prior or fraud flag). A rule-based Simple pile (A-12) is consistent with industry practice.
 
 ## Open threads
 
