@@ -4,6 +4,7 @@ Findings go in one file per stream. Since Keelwater is fictional, "internal" res
 
 | Stream | File | Type | Status |
 |---|---|---|---|
+| Discovery questions checked against the research: what's answered, what needs Keelwater data | [`discovery-answers.md`](discovery-answers.md) | Synthesis | **draft** |
 | Internal data: prototype, bulk sorting rationale, usage, tickets, pipeline, at-risk accounts | `internal-data.md` | Simulated | not started |
 | Customer and deal signal (Gong / Teams, AE and CSM input) | [`customer-signal.md`](customer-signal.md) | Simulated, reconfirmed with market research | **started**: speed vs money and risk, cause of the >4h tail |
 | Competitor automatic sorting: features, models, positioning, failure points | `competitor.md` | Real market + invented competitor | not started |
