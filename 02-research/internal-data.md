@@ -38,7 +38,9 @@ Weighted, this gives ~15% over 4h, matching the brief.
 
 > Revised 2026-10-16: an earlier version listed "Above the handler's authority limit" at 7% (with info 44%, third party 26%, injury 14%). Authority limits apply when a claim is **paid**, not when it's sorted, so they can't explain slow sorting (A-20). The 7% was spread across the other causes in proportion.
 
-**What "time to sort" measures (DQ-01, A-18):** time from when a handler **first opens the claim** to when it's sorted. Queue time before anyone looks at it isn't counted, so a claim over 4h means a handler opened it and couldn't sort it for 4h: they were waiting on information, working out fault, or assessing an injury. It's elapsed time from first view, not time spent sorting.
+**What "time to sort" measures (DQ-01, A-18):** elapsed clock time from when a claim **arrives** to when it's sorted, as the brief says. It includes queue time. Queue time barely shows up as a cause here because customers' handling teams work across time zones and pick claims up quickly (A-22); the little that remains sits in "Other". So a claim over 4h is mostly one a handler opened but couldn't sort: waiting on information, working out fault, or assessing an injury.
+
+> Revised 2026-10-16: an interim version measured time to sort from when a handler first opened the claim. Reverted, because the brief says "from a claim arriving". The original "arrived out of hours, sat in the queue" category (14%) stays out: with teams across time zones (A-22), overnight queueing isn't a major cause. ⚠️ The brief's 11-minute median from arrival isn't realistic for queue time plus reading and deciding; flagged in the [fact sheet](../00-brief/fact-sheet.md).
 
 **Why handlers wait for information before sorting (A-19):** Keelwater has no "waiting on claimant" status today, so a handler can't sort the claim and mark it as blocked. They leave it unsorted until the information arrives. Missing-information flagging fixes this.
 

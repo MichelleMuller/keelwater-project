@@ -23,7 +23,7 @@ Going through the questions from the brainstorm ([brainstorm-organised.md §2](.
 
 Sources: [motor-claims-triage-and-fraud.md §1–2](motor-claims-triage-and-fraud.md), [auto-sorting-requirements.md](auto-sorting-requirements.md). The brief only measures **step 3**: "time to sort".
 
-**Why some claims take hours (answered by research, to confirm with data):** third party / fault to determine, injury, disputed liability or cover, total loss, missing documents. (Authority limits apply at payment, not sorting, so they aren't a cause, A-20.) Fraud flags are a small share (4% of claims that don't go straight through in one example). Time to sort is measured from a handler first opening the claim (A-18), so queue time isn't part of the tail. See A-13.
+**Why some claims take hours (answered by research, to confirm with data):** third party / fault to determine, injury, disputed liability or cover, total loss, missing documents. (Authority limits apply at payment, not sorting, so they aren't a cause, A-20.) Fraud flags are a small share (4% of claims that don't go straight through in one example). Time to sort runs from claim arrival (A-18), so queue time is included; it stays small only if customers have teams across time zones (A-22). See A-13.
 
 **Main problem per customer (🔒):** research says customers differ by claim mix (simple-heavy, complex-heavy, fraud-heavy), so the main problem will too. Which customers are which needs Keelwater data (DQ-03). **[INVENTED]** answer: three segments (simple-heavy, mixed, complex-heavy), each with a different main problem; and a cause split of the slow tail. See [internal-data.md §1–2](internal-data.md).
 

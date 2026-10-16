@@ -105,10 +105,20 @@ The system never auto-denies or auto-reduces a claim. See [examiner-requirements
 - **Benchmark:** the 3.4% human re-sort rate (A-05)
 - **Errors weighted by direction:** Suspicious sorted as Simple is the costly miss; Simple sorted as Suspicious costs time and goodwill and needs a fairness check
 - **Per customer**, since the claim mix varies widely (A-07)
-- **Speed:** share of claims sorted without a human, time to sort, and the size of the >4h tail
-- **Time to first look:** from claim arrival to the first action on it, by a handler or the system. Kept separate from time to sort (which starts when a handler first opens the claim, A-18) so both stay clean. Auto-sorting runs around the clock, so claims arriving overnight or at weekends can be sorted and have missing information requested before a handler starts work. This is the wait before anyone acts on the claim
-- **End-to-end time, from first report to payment (outcome metric):** time to sort measures handler friction, not the claimant's full wait. The FCA watches motor claim settlement times end to end, so the deck tracks this separately as the outcome sorting should move
+- **Speed:** share of claims sorted without a human, plus the three time metrics below
 - **Override rate** in suggest mode, and why handlers overrode
+
+**Three time metrics, and how they differ:**
+
+| Metric | Starts | Ends | What it tells us |
+|---|---|---|---|
+| **Time to first look** | Claim arrives | First action on it, by a handler or the system | The queue: how long a claim waits before anyone acts. Auto-sorting runs around the clock, so it can sort claims and request missing information before a handler starts work |
+| **Time to sort** (the brief's metric) | Claim arrives | Claim is sorted into a pile | The full sorting delay: time to first look **plus** the time a handler takes to read and decide (or waits for information). Elapsed clock time, not working time (A-18) |
+| **End-to-end time** (outcome metric) | First report | Payment | The claimant's full wait. Sorting is one step of it. The FCA watches motor claim settlement times end to end, so we track whether faster sorting actually moves it |
+
+Time to first look sits **inside** time to sort, so splitting the two shows whether a slow claim was stuck in the queue or stuck with a handler.
+
+> Revised 2026-10-16: time to sort runs from arrival again, as the brief says (A-18). Time to first look is now the queue part of it, not a separate measure alongside it.
 
 ## 5. Questions to work through together
 
