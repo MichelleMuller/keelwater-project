@@ -106,12 +106,12 @@ The system never auto-denies or auto-reduces a claim. See [examiner-requirements
 
 ## 5. Questions to work through together
 
-| ID | Question | Options | Leaning |
+| ID | Question | Options | Leaning / decision |
 |---|---|---|---|
-| AS-01 | Where does the fraud score come from? | Customer's own vendor (integrate) · Keelwater builds one · Rules only | Integrate, with rules as fallback |
-| AS-02 | Can a claim be Simple without a fraud check? | Never · Only under a low value threshold · Customer decides | Never |
+| AS-01 | Where does the fraud score come from? | Customer's own vendor (integrate) · Keelwater builds one · Rules only | **Decided 2026-10-16:** integrate the customer's vendor, with Keelwater rules as fallback |
+| AS-02 | Can a claim be Simple without a fraud check? | Never · Only under a low value threshold · Customer decides | **Decided 2026-10-16:** never |
 | AS-03 | What do we automate first? | Missing-info detection · Simple suggestions · Closer look reason codes · Suspicious flags | Missing-info detection, then Simple suggestions |
-| AS-04 | Does Keelwater ever trigger payment for Simple claims, or only sort them? | Sort only · Auto-pay with opt-in | Sort only for v1 |
+| AS-04 | Does Keelwater ever trigger payment for Simple claims, or only sort them? | Sort only · Auto-pay with opt-in | **Decided 2026-10-16:** sort only for v1; payment stays with the insurer |
 | AS-05 | One rule set for everyone, or per customer? | Global defaults + per-customer thresholds · Fully per customer | Global defaults + per-customer thresholds |
 | AS-06 | Where does the LLM sit? | Extraction only · Extraction + suggested reason codes · Decision | Extraction + suggested reason codes, never the decision |
 | AS-07 | What do we evaluate on before customer data is available? | Synthetic claims · One design-partner customer's history · Both | Both |

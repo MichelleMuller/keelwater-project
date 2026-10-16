@@ -11,6 +11,18 @@ Running log for the "How you used AI" part of the recording. Capture what AI did
 | 2026-10-15 | Discovery questions by stakeholder | Cursor (Claude) | Brainstorm questions + data questions consolidated in open-questions.md, grouped by who to ask (data, engineering, product leadership, sales, CS/AM, support, customers, legal) | | |
 | 2026-10-16 | Testing "pile 2 = information missing" | Cursor (Claude, web search) | Research §6: how motor claims are triaged (fast track / standard / complex / fraud investigation) | Michelle challenged the pile 2 definition | Rejected AI's earlier definition; I-02 revised |
 | 2026-10-16 | Consolidated triage research; auto-sorting and examiner research | Cursor (Claude, web search) | Merged duplicated sections; new files on auto-sorting design (decision order, data, fraud score sources) and examiner requirements (NAIC bulletin, Colorado, Florida bill, ICOBS 8, Consumer Duty, UK GDPR 22A–22D) | | Earlier note said auto-routing to Suspicious is "safer" than auto-paying Simple. True for fraud risk, not for regulation: Suspicious routing profiles claimants and needs bias testing. Now suggest-only by default |
+| 2026-10-16 | Decisions on the auto-sorting design | Cursor (Claude, question form) | Instead of writing decisions into the doc itself, AI asked Michelle to choose on the three decisions that shape the build, each with options and a recommendation | Michelle chose: integrate the customer's fraud vendor (AS-01), never Simple without a fraud check (AS-02), sort only in v1 (AS-04) | AI recorded them as decided in [auto-sorting-requirements.md](../02-research/auto-sorting-requirements.md) only after the answers came back |
+
+## Checking I've read and understood AI output
+
+AI shouldn't make product decisions silently in a document I might skim. For decisions that shape the build, it summarised the research in the chat, then asked me to choose in a structured form before writing anything down as decided.
+
+![Question form the AI used to confirm the auto-sorting decisions](assets/ai-decision-questions.svg)
+
+*Recreation of the in-chat form with my selected answers; the original form closed once submitted.*
+
+- **What it does well:** forces an explicit choice on each decision, keeps a record of who decided, and means the doc only says "decided" when a human decided it.
+- **Watch-out:** every option I picked was the one marked "Recommended". I agreed with the reasoning, but recommended labels can nudge. It's the same automation bias regulators warn about for claims handlers confirming AI suggestions ([examiner-requirements.md](../02-research/examiner-requirements.md)). Worth saying in the recording.
 
 ## Candidates for "one thing it got wrong"
 
