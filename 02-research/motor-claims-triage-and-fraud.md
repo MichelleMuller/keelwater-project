@@ -19,7 +19,12 @@ Industry triage at first notice of loss (FNOL) usually scores each claim on four
 
 It then routes to one of roughly four outcomes: straight-through payment, fast-track handler, senior specialist, or SIU (special investigations unit) referral. **Any fraud flag pulls a claim out of straight-through processing.**
 
-What it optimises for, in order of how often it comes up: **cycle time**, routing accuracy and consistency across handlers, fraud referral, leakage (overpaying).
+What triage optimises for, in order of how often it comes up in sources:
+
+- **Cycle time:** how fast a claim gets resolved
+- **Routing accuracy:** the claim reaches the right handler first time, and handlers sort consistently
+- **Fraud referral:** suspicious claims go to investigation
+- **Leakage:** avoiding overpaying on claims
 
 **Keelwater's three piles (working definitions, revised 2026-10-16)**
 
