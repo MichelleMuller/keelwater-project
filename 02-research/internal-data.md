@@ -10,7 +10,7 @@
 
 **How we found it:** data team query of the claims table for the last 12 months, grouped by customer; customers clustered by claim mix (DQ-02, DQ-03).
 
-| Segment | Customers | Share of claims | Claims/customer/year | Median time to sort | Share over 4h | Main problem |
+| Segment | Customers | Share of claims | Claims per insurer per year | Median time to sort | Share over 4h | Main problem |
 |---|---|---|---|---|---|---|
 | **Simple-heavy** (direct personal motor insurers) | ~110 | 45% (~945k) | ~8.6k | 6 min | 7% | Handler effort on a large clean pile |
 | **Mixed** | ~55 | 35% (~735k) | ~13.4k | 14 min | 18% | Claims waiting on information and third-party fault |
