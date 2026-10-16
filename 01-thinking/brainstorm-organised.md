@@ -71,6 +71,8 @@ Triage is mainly about **speed**: getting every claim to the right handler first
 
 **Decided narrative:** the platform has **no tabular view today**, so handlers sort one claim at a time. Bulk sorting (table + filters + multi-select) is therefore needed in its own right. **We ship it**, and use it to validate the needs, requirements and safety bar for automated sorting: filter usage becomes the first rule set, and the launch is the moment to run customer sessions.
 
+**Reviewing the prototype confirms the order (2026-10-16).** Not *why* bulk was prioritised (customers asked; the prototype was shelved a year earlier), but why it should ship before auto-sorting: suggestions need a table to appear in (A-21), the prototype is a sample-data concept that isn't ready, and bulk sorting generates the rules and labelled data it lacked. See [internal-data.md §5](../02-research/internal-data.md).
+
 **Earlier read on bulk sorting (kept for context)**
 - Likely implies no table view exists today; handlers sort one by one. Bulk = table + filters + multi-select + an API returning all claims, not just a checkbox.
 - Filters act as a **proto-ruleset** ("all claims with every field filled, returning customer" → select all → Simple). Those actions become training data for automation.

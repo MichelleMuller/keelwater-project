@@ -82,6 +82,14 @@ This supports A-13: complex and waiting-on-information claims drive the tail, no
 - **Lined up:** 3 beta customers, including the **top-10 account renewing in 5 months**.
 - Confirms A-01: there's no table view today.
 
+**What reviewing the prototype adds (2026-10-16).** The prototype didn't cause this decision: it was shelved a year before bulk sorting was prioritised. But reviewing it now **confirms bulk sorting should ship before auto-sorting**:
+
+1. **Suggestions need somewhere to appear.** Without a table, a suggested pile appears one claim at a time and confirming it saves seconds. In a table, a handler filters to "suggested Simple", checks the reasons and confirms 50 at once. The suggest step of the rollout depends on bulk sorting (A-21).
+2. **The prototype isn't ready anyway.** It was trained on sample data with rule-made labels (§6). Bulk sorting ships in 6 weeks.
+3. **Bulk sorting produces what the prototype lacked.** Filters handlers actually use become the first rules; their confirmations and overrides become real, labelled Keelwater data.
+
+So customers asked for bulk sorting, and it's also the foundation automated sorting needs.
+
 ## 6. The shelved prototype
 
 **How we found it:** interview with the data scientist who built it, review of the notebooks and model repo (DQ-07, DQ-08, PQ-02).
