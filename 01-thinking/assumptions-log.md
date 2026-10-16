@@ -20,6 +20,7 @@ The brief allows us to invent detail as long as it's flagged. Status: **open** (
 | A-14 | Most Keelwater customers already run a fraud model or vendor; Keelwater should integrate, not build | Research: ~80% of insurers use predictive fraud modelling (III) | Customer interviews; CSM survey | open |
 | A-15 | For the problem we're solving, the slow end (the 15% of claims taking >4h) matters more than the typical claim (median 11 min) | Inferred from median vs tail, see [time-to-sort-distribution.md](../02-research/time-to-sort-distribution.md) | Real histogram (DQ-02); ask Sales/CS what pain the deals and accounts describe (SQ-01, CQ-01) | open |
 | A-16 | The slow end holds most of the total handler time and customer waiting time | Illustrative curve fitted to median and >4h share | Split waiting vs working time (DQ-01); total time per bucket (DQ-10). May hold for waiting time but not handler time | open |
+| A-17 | Keelwater operates in the **US and UK**: customers are insurers in both markets, so both regulatory regimes apply | Brief uses £ (UK); US added to make the case realistic for a ~180-insurer B2B platform | n/a for the exercise; in reality, customer list by country | **invented** (I-04) |
 
 ## Invented for the exercise
 
@@ -28,5 +29,6 @@ Track every invented data point, quote or org detail here so it can be flagged i
 | ID | What | Where used |
 |---|---|---|
 | I-01 | Keelwater serves **motor claims** (car damage and repair) | Everywhere |
-| I-02 | ~~Pile 2 is defined mainly as "information missing" (plus complex)~~ **Revised 2026-10-16:** pile 2 = needs a handler's judgement (complex: third party, injury, disputed liability/coverage, total loss, above authority), with reason codes. Missing information is a status flag on any claim, not a pile. See [research §6](../02-research/motor-claims-triage-and-fraud.md) | Brainstorm, research, deck |
-| I-03 | Internal signal from Gong calls, Teams recordings and CSM/AM sessions: speed comes from piles 1 and 2 plus missing info; money and risk sit in pile 3; the >4h tail is complex or waiting-on-information claims | [customer-signal.md](../02-research/customer-signal.md), research §2, deck |
+| I-02 | ~~Pile 2 is defined mainly as "information missing" (plus complex)~~ **Revised 2026-10-16:** pile 2 = needs a handler's judgement (complex: third party, injury, disputed liability/coverage, total loss, above authority), with reason codes. Missing information is a status flag on any claim, not a pile. See [research §2](../02-research/motor-claims-triage-and-fraud.md) | Brainstorm, research, deck |
+| I-03 | Internal signal from Gong calls, Teams recordings and CSM/AM sessions: speed comes from piles 1 and 2 plus missing info; money and risk sit in pile 3; the >4h tail is complex or waiting-on-information claims | [customer-signal.md](../02-research/customer-signal.md), research §3, deck |
+| I-04 | Keelwater operates in the **US and UK** (A-17) | [examiner-requirements.md](../02-research/examiner-requirements.md), [auto-sorting-requirements.md](../02-research/auto-sorting-requirements.md), deck |

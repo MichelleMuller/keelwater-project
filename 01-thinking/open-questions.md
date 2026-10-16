@@ -104,7 +104,8 @@ What to find out before committing the squad. Sources: the brainstorm ([brainsto
 
 - [ ] "Typesafe/Jev" calibrated decision model: correct name and what it does
 - [x] Motor claims triage and fraud: see [motor-claims-triage-and-fraud.md](../02-research/motor-claims-triage-and-fraud.md)
-- [ ] GDPR (UK/EU) and US rules on sharing claims data with a vendor for model training; explainability rules for automated decisions (e.g. UK GDPR Art. 22, FCA Consumer Duty)
+- [ ] GDPR (UK/EU) and US rules on sharing claims data with a vendor for model training
+- [x] Explainability rules for automated decisions (UK GDPR Art. 22A–22D, FCA Consumer Duty, NAIC bulletin): see [examiner-requirements.md](../02-research/examiner-requirements.md)
 - [ ] Is there a Gong MCP
 - [ ] Hugging Face: open models or datasets for insurance claims / fraud
 - [ ] Real competitor examples of automatic claims triage, for realistic positioning
