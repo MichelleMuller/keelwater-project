@@ -30,14 +30,15 @@ Weighted, this gives ~15% over 4h, matching the brief.
 
 | Cause | Share of >4h claims |
 |---|---|
-| Waiting on information from the claimant | 44% |
-| Third party / fault to determine | 26% |
-| Injury involved | 14% |
-| Above the handler's authority limit | 7% |
+| Waiting on information from the claimant | 48% |
+| Third party / fault to determine | 28% |
+| Injury involved | 15% |
 | Fraud check or referral | 6% |
 | Other | 3% |
 
-**What "time to sort" measures (DQ-01, A-18):** time from when a handler **first opens the claim** to when it's sorted. Queue time before anyone looks at it isn't counted, so a claim over 4h means a handler opened it and couldn't sort it for 4h: they were waiting on information, working out fault, or escalating. It's elapsed time from first view, not time spent sorting.
+> Revised 2026-10-16: an earlier version listed "Above the handler's authority limit" at 7% (with info 44%, third party 26%, injury 14%). Authority limits apply when a claim is **paid**, not when it's sorted, so they can't explain slow sorting (A-20). The 7% was spread across the other causes in proportion.
+
+**What "time to sort" measures (DQ-01, A-18):** time from when a handler **first opens the claim** to when it's sorted. Queue time before anyone looks at it isn't counted, so a claim over 4h means a handler opened it and couldn't sort it for 4h: they were waiting on information, working out fault, or assessing an injury. It's elapsed time from first view, not time spent sorting.
 
 **Why handlers wait for information before sorting (A-19):** Keelwater has no "waiting on claimant" status today, so a handler can't sort the claim and mark it as blocked. They leave it unsorted until the information arrives. Missing-information flagging fixes this.
 

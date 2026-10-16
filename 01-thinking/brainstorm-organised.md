@@ -18,7 +18,7 @@ The raw notes ([`brainstorm-raw.md`](brainstorm-raw.md)) reorganised against the
 
 **Bucket definitions (working, revised 2026-10-16 after [research §2](../02-research/motor-claims-triage-and-fraud.md))**
 - *Simple:* low value, own damage only, no injury, clear cover, no prior-claim or fraud flag → process and pay. e.g. cracked windscreen, £600, no other parties
-- *Closer look:* complex but not suspicious; needs a handler's judgement. Third party / fault to determine, injury, disputed liability or cover, total loss, above authority, multiple parties or large payout. e.g. car through a house, £5,000, multiple claimants. Carries a **reason code**
+- *Closer look:* complex but not suspicious; needs a handler's judgement. Third party / fault to determine, injury, disputed liability or cover, total loss, ~~above authority~~, multiple parties or large payout. *(Authority limit removed 2026-10-16: it's a payment step, not a sorting reason, A-20.)* e.g. car through a house, £5,000, multiple claimants. Carries a **reason code**
 - *Suspicious:* fraud indicators. e.g. 7 claims from one person in 3 months, claim soon after policy start, damage that doesn't match the story
 - *Missing information:* a **status on any claim**, not a pile
 

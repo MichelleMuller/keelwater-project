@@ -16,9 +16,13 @@ Each claim runs through four checks in order. The first one that fires decides t
 |---|---|---|
 | 0 | **Missing information:** are required fields and documents present for this claim type? | Status "waiting on claimant", what's missing, auto-request sent. The claim still gets a provisional pile |
 | 1 | **Fraud gate:** fraud score above the customer's threshold, or a hard rule fires (theft, claim within X days of policy start, repeat claims) | **Suspicious**, with the reasons |
-| 2 | **Complexity:** third party, injury, disputed liability or cover, total loss, above authority limit, multiple parties | **Needs a closer look**, with a reason code |
+| 2 | **Complexity:** third party, injury, disputed liability or cover, total loss, ~~above authority limit~~, multiple parties | **Needs a closer look**, with a reason code |
 | 3 | **Simple criteria:** all met, value under the customer's threshold, fraud score below threshold, confidence high | **Simple** |
 | — | Nothing above is conclusive | **Needs a closer look** (the safe default) |
+
+**After sorting, before payment: the high-value check.** Authority limits don't affect sorting (A-20). If a claim sorted as Simple is very high in value (above the customer's set amount, e.g. the handler's authority limit), it's held for a senior review before it's paid. This catches a Simple claim worth much more than a typical one without slowing down the sort. Keelwater flags it; the sign-off stays in the insurer's process (AS-04).
+
+> Revised 2026-10-16: "above authority limit" was removed from the complexity check. It applies when a claim is paid, not when it's sorted (A-20).
 
 **Why this order:**
 
@@ -36,7 +40,7 @@ What each check needs, where it comes from, and whether Keelwater is likely to h
 | Photos, police report, repair estimate, medical evidence | Missing info, complexity | Uploaded documents | Yes, unstructured **[assumed]** |
 | Parties involved, third-party details, injury yes/no | Complexity | FNOL form + notes | Partly; often in free text |
 | Policy start date, cover, excess, named drivers | Fraud gate, Simple | Insurer's policy system | Via integration, per customer |
-| Handler authority limits | Complexity | Customer config | Needs adding |
+| High-value review amount (e.g. handler authority limit) | Pre-payment check on Simple claims | Customer config | Needs adding |
 | Prior claims by the same person, **within this insurer** | Fraud gate | Keelwater claims history | Yes **[assumed]** |
 | Prior claims **across insurers** | Fraud gate | US: Verisk ClaimSearch. UK: CUE (run by MIB) | No. Insurer's subscription |
 | Fraud score + reason codes | Fraud gate | Insurer's fraud vendor | No. Integrate |

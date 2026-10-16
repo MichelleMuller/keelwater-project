@@ -33,7 +33,7 @@ Claims are then routed into three handling streams plus a fraud referral, each w
 | Keelwater pile (brief) | Criteria | Next action | Industry stream |
 |---|---|---|---|
 | **Simple** ("pay it quickly") | Low value, own damage only, no injury, clear cover, no prior-claim or fraud flag. e.g. cracked windscreen, £600 | Pay | Fast track / straight-through |
-| **Needs a closer look** ("check the details first") | Needs a handler's judgement: third party / fault to determine, injury, disputed liability or cover, total loss, above authority limit, multiple parties. e.g. car through a house, £5,000, multiple claimants | Depends on the **reason code**: assign senior handler, supervisor sign-off, appoint engineer, establish fault | Standard + complex |
+| **Needs a closer look** ("check the details first") | Needs a handler's judgement: third party / fault to determine, injury, disputed liability or cover, total loss, multiple parties. e.g. car through a house, £5,000, multiple claimants | Depends on the **reason code**: assign senior handler, supervisor sign-off, appoint engineer, establish fault | Standard + complex |
 | **Suspicious** ("send it for investigation") | Fraud indicators (see §4), plus theft, which always needs detailed investigation ([Massachusetts CAR standards](https://www.commauto.com/manuals/performstand/cm/pdf/2016/cmPrintable.pdf), regulator) | Refer to investigation | SIU referral |
 
 **Missing information is a status, not a pile.** Any claim can be "waiting on claimant" (photo, police report, repair estimate). Insurers usually catch it at intake: digital FNOL forms validate fields and trigger follow-up requests before or as the claim is scored ([SwiftCase](https://swiftcase.co.uk/use-cases/insurance/), [Data Operatives](https://dataoperatives.com/insurer-fnol.html), vendors). A Simple claim missing a photo is still Simple once the photo arrives; a complex claim can be complete and still need a senior handler.
@@ -44,7 +44,7 @@ Claims are then routed into three handling streams plus a fraud referral, each w
 - **Injury.** Can't be valued until treatment and prognosis are clearer
 - **Disputed liability or cover.** Statements, witnesses, dashcam, police report
 - **Total loss.** Valuation, salvage, finance paperwork
-- **Above the handler's authority limit.** Supervisor sign-off
+- **Above the handler's authority limit.** Supervisor sign-off. *For Keelwater we treat this as a payment step, not a sorting reason: it doesn't put a claim in this pile. Simple claims with a very high value are held for review before payment (A-20).*
 - **Other parties in the chain (UK).** Accident and claims management companies and credit hire add delay and cost ([FCA motor claims multi-firm review, 2025](https://www.fca.org.uk/publication/multi-firm-reviews/motor-insurance-claims-analysis-multi-firm-review-2025.pdf), regulator)
 
 ## 3. Where claims get stuck, and how big fraud is
