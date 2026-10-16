@@ -110,7 +110,7 @@ The system never auto-denies or auto-reduces a claim. See [examiner-requirements
 |---|---|---|---|
 | AS-01 | Where does the fraud score come from? | Customer's own vendor (integrate) · Keelwater builds one · Rules only | **Decided 2026-10-16:** integrate the customer's vendor, with Keelwater rules as fallback |
 | AS-02 | Can a claim be Simple without a fraud check? | Never · Only under a low value threshold · Customer decides | **Decided 2026-10-16:** never |
-| AS-03 | What do we automate first? | Missing-info detection · Simple suggestions · Closer look reason codes · Suspicious flags | Missing-info detection, then Simple suggestions |
+| AS-03 | What do we automate first? | Missing-info detection · Simple suggestions · Closer look reason codes · Suspicious flags | **Missing-info flagging decided in scope (2026-10-16).** Leaning: first, then Simple suggestions. Pitch it as part of sorting, since buyers ask for sorting, not for missing-info detection |
 | AS-04 | Does Keelwater ever trigger payment for Simple claims, or only sort them? | Sort only · Auto-pay with opt-in | **Decided 2026-10-16:** sort only for v1; payment stays with the insurer |
 | AS-05 | One rule set for everyone, or per customer? | Global defaults + per-customer thresholds · Fully per customer | Global defaults + per-customer thresholds |
 | AS-06 | Where does the LLM sit? | Extraction only · Extraction + suggested reason codes · Decision | Extraction + suggested reason codes, never the decision |
