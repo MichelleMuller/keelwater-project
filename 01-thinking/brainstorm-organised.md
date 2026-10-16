@@ -29,9 +29,11 @@ The raw notes ([`brainstorm-raw.md`](brainstorm-raw.md)) reorganised against the
 - 4h+ to sort means it isn't simple
 - Customer mix matters: some have ~99% simple claims, others are mostly complex
 - 3.4% re-sort rate = a benchmark for acceptable error (human baseline)
-- Hypothesis: **fraud** is the primary problem to solve, not deep research
+**The problem (updated 2026-10-16 after [research](../02-research/motor-claims-triage-and-fraud.md))**
 
-> ⚠️ The brief doesn't say fraud is what's blocking deals. It says the deals "mention" automatic sorting. Desk research ([motor-claims-triage-and-fraud.md](../02-research/motor-claims-triage-and-fraud.md)) suggests a reframe: triage is mainly about **speed**; fraud screening is the **licence to automate** the simple pile. By volume fraud is a small pile, and complex claims and claims waiting on information are much bigger; by value fraud is high per case. See A-03.
+Triage is mainly about **speed**: getting every claim to the right handler first time. Fraud screening is the **licence to automate** the Simple pile, so speeding up doesn't pay out fraud. By volume, fraud is a small pile, and complex claims and claims waiting on information are much bigger. By value, fraud is high per case. See A-03.
+
+> Earlier hypothesis, now replaced: ~~"fraud is the primary problem to solve"~~. The brief never said fraud was blocking the deals, only that they "mention" automatic sorting.
 
 **Confidence:** to be stated explicitly in the deck. Demand for *something* is high-confidence; *what* customers mean by automatic sorting is low-confidence.
 
