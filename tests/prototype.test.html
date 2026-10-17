@@ -709,6 +709,244 @@ test("bulk: table and capture panel sit side by side, with no sideways scrolling
   assert(bar.getBoundingClientRect().height < 60, "action bar fits on one line");
 });
 
+/* ---------- Automation (Phase 2): rules learned from behaviour ---------- */
+
+const WINDSCREEN = "Windscreen, under £1,000, no third party";
+const COLLISION_TP = "Collision, third party";
+
+function ruleKeyFor(app, text, pile) {
+  const key = app.ev(`learnedRules(state.insurer).find(r => ruleText(r) === ${JSON.stringify(text)} && r.pile === ${JSON.stringify(pile)})?.key`);
+  if (!key) throw new Error(`no learned rule "${text}" → ${pile}`);
+  return key;
+}
+function ruleButton(app, action, key, value) {
+  const btn = app.$$(`[data-action="${action}"]`).find((b) => b.dataset.rule === key && (value === undefined || b.dataset.value === value));
+  if (!btn) throw new Error(`no ${action} button for ${key}`);
+  return btn;
+}
+async function withExample() {
+  const app = await open("handler/bulk");
+  app.click('[data-action="bulk-load-example"]');
+  return app;
+}
+function accept(app, text, pile) {
+  const key = ruleKeyFor(app, text, pile);
+  app.ev(`acceptRule(${JSON.stringify(key)}); render();`);
+  return key;
+}
+const activeRule = (app, key) => app.ev(`state.automation.rules.find(r => r.key === ${JSON.stringify(key)})`);
+const suggestion = (app, id) => app.ev(`(() => { const s = suggestionFor(state.claims.find(c => c.id === "${id}")); return s && { pile: s.pile, heldBack: s.heldBack || null, rule: ruleText(s.rule) }; })()`);
+
+test("automation: panel sits between the metric cards and the table", async () => {
+  const app = await open("handler/bulk");
+  const stats = app.$(".stats").getBoundingClientRect();
+  const panel = app.$(".automation").getBoundingClientRect();
+  const table = app.$(".bulk").getBoundingClientRect();
+  assert(stats.bottom <= panel.top && panel.bottom <= table.top, "stats, then automation, then table");
+  assert(app.$(".automation").textContent.includes("No patterns yet"), "empty state before any sorting");
+});
+
+test("automation: the example week gives suggested rules, each repeated 3+ times, biggest first, with support from the log", async () => {
+  const app = await withExample();
+  const rules = app.ev("learnedRules('harbour')");
+  assert(rules.length >= 5, `${rules.length} rules`);
+  assert(rules.every((r) => r.times >= 3));
+  eq(rules.map((r) => r.claims), [...rules.map((r) => r.claims)].sort((a, b) => b - a));
+  const ws = app.ev(`learnedRules('harbour').find(r => r.pile === "Simple" && ruleText(r) === ${JSON.stringify(WINDSCREEN)})`);
+  const fromLog = captureLog(app).filter((e) => e.kind === "sort" && e.description === WINDSCREEN);
+  eq([ws.times, ws.claims, ws.excluded], [fromLog.length, fromLog.reduce((s, e) => s + e.count, 0), fromLog.reduce((s, e) => s + e.excluded, 0)]);
+  eq(app.$$(".rule-row.suggested").length, 3, "top 3 shown");
+  app.click('[data-action="automation-more"]');
+  eq(app.$$(".rule-row.suggested").length, rules.length, "all shown");
+});
+
+test("automation: a rule is learned from live sorting once the same group is sorted 3 times", async () => {
+  const app = await open("handler/bulk");
+  filterBy(app, "type", "windscreen");
+  for (let i = 0; i < 3; i++) {
+    app.click("tbody input");
+    app.click('.action-bar [data-action="bulk-sort"][data-value="Simple"]');
+  }
+  const r = app.ev("(() => { const r = learnedRules('harbour')[0]; return { ...r, text: ruleText(r) }; })()");
+  eq([r.text, r.pile, r.times, r.claims], ["Windscreen", "Simple", 3, 3]);
+  assert(app.$(".automation").textContent.includes("Windscreen"));
+});
+
+test("automation: accepting a rule adds suggestions with reasons to the table", async () => {
+  const app = await withExample();
+  const key = ruleKeyFor(app, WINDSCREEN, "Simple");
+  ruleButton(app, "rule-accept", key).click();
+  eq(activeRule(app, key).mode, "suggest");
+  assert(app.$$("thead th").some((th) => th.textContent === "Suggested"), "Suggested column");
+  for (const c of harbourTodo(app)) {
+    const s = suggestion(app, c.id);
+    const matches = app.ev(`matchesRule(state.claims.find(c => c.id === "${c.id}"), state.automation.rules[0])`);
+    const col = app.$$("thead th").findIndex((th) => th.textContent === "Suggested");
+    const cell = app.$(`tr[data-id="${c.id}"]`).children[col].textContent;
+    if (!matches) { eq(s, null, c.id); continue; }
+    if (s.pile) assert(cell.includes("Simple") && cell.includes(WINDSCREEN), `${c.id} shows pile and reason`);
+    else assert(cell.includes("held back"), `${c.id} shows held back`);
+  }
+});
+
+test("automation: Simple is held back while info is missing or the fraud score is high (decision order)", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
+  app.ev(`state.claims.find(c => c.id === "${id}").fraud.score = 0.8`);
+  eq(suggestion(app, id), { pile: null, heldBack: "high fraud score", rule: WINDSCREEN });
+  app.ev(`Object.assign(state.claims.find(c => c.id === "${id}"), { missingInfo: ["photos of the damage"] }).fraud.score = 0.1`);
+  eq(suggestion(app, id).heldBack, "missing info");
+});
+
+test("automation: the most cautious matching rule wins", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  accept(app, "Fraud score high (0.6+)", "Suspicious");
+  const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
+  app.ev(`state.claims.find(c => c.id === "${id}").fraud.score = 0.7`);
+  eq(suggestion(app, id).pile, "Suspicious");
+});
+
+test("automation: dismissed rules go away and don't come back", async () => {
+  const app = await withExample();
+  const key = ruleKeyFor(app, WINDSCREEN, "Simple");
+  ruleButton(app, "rule-dismiss", key).click();
+  assert(!app.$$(".rule-row.suggested").some((r) => r.dataset.rule === key));
+  filterBy(app, "type", "windscreen");
+  filterBy(app, "amount", "under1k");
+  filterBy(app, "thirdParty", "no");
+  app.click("tbody input");
+  app.click('.action-bar [data-action="bulk-sort"][data-value="Simple"]');
+  assert(!app.ev("suggestedRules('harbour')").some((r) => r.key === key), "still dismissed after more sorting");
+});
+
+test("automation: confirming a suggestion sorts the claim and strengthens the rule", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
+  app.click(`[data-action="confirm-suggestion"][data-value="${id}"]`);
+  const c = claimById(app, id);
+  eq(c.pile, "Simple");
+  eq(c.history[c.history.length - 1].action, "Confirmed suggestion: Simple");
+  eq(activeRule(app, key).confirmed, 1);
+  eq(captureLog(app).pop().kind, "confirm");
+});
+
+test("automation: 'has a suggestion' filter, select all, confirm all", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  accept(app, COLLISION_TP, "Needs a closer look");
+  filterBy(app, "suggested", "yes");
+  const ids = tableIds(app);
+  assert(ids.length >= 2 && ids.every((id) => suggestion(app, id)?.pile), "only claims with a suggestion");
+  app.click("#bulk-select-all");
+  const expected = Object.fromEntries(ids.map((id) => [id, suggestion(app, id).pile]));
+  app.click('[data-action="bulk-confirm"]');
+  for (const id of ids) eq(claimById(app, id).pile, expected[id], id);
+  eq(tableIds(app), []);
+});
+
+test("automation: sorting against a suggestion counts as an override", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
+  app.click(`tbody [data-value="${id}"]`);
+  app.click('.action-bar [data-action="bulk-sort"][data-value="Needs a closer look"]');
+  eq(activeRule(app, key).overridden, 1);
+  const c = claimById(app, id);
+  assert(c.history[c.history.length - 1].detail.includes("overrode suggestion Simple"));
+  eq(captureLog(app).pop().overrides, 1);
+  assert(app.$(".automation").textContent.includes("1 overridden"));
+});
+
+test("automation: auto-sort sorts matching claims that pass the checks, and can be undone", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  const ready = harbourTodo(app).filter((c) => suggestion(app, c.id)?.pile === "Simple").map((c) => c.id);
+  const heldBack = harbourTodo(app).filter((c) => suggestion(app, c.id)?.heldBack).map((c) => c.id);
+  ruleButton(app, "rule-mode", key, "auto").click();
+  for (const id of ready) {
+    const c = claimById(app, id);
+    eq(c.pile, "Simple", id);
+    eq([c.history[c.history.length - 1].actor, c.history[c.history.length - 1].action], ["automation", "Auto-sorted into Simple"]);
+  }
+  for (const id of heldBack) eq(claimById(app, id).pile, null, `${id} held back stays unsorted`);
+  const entry = captureLog(app).pop();
+  eq([entry.kind, entry.count], ["auto", ready.length]);
+  ruleButton(app, "rule-undo", key).click();
+  for (const id of ready) eq(claimById(app, id).pile, null, `${id} restored`);
+  eq(activeRule(app, key).mode, "suggest", "back to suggest so it doesn't re-sort");
+});
+
+test("automation: Suspicious rules can only suggest", async () => {
+  const app = await withExample();
+  const key = accept(app, "Fraud score high (0.6+)", "Suspicious");
+  assert(ruleButton(app, "rule-mode", key, "auto").disabled);
+  app.ev(`setRuleMode(${JSON.stringify(key)}, "auto")`);
+  eq(activeRule(app, key).mode, "suggest");
+});
+
+test("automation: a new claim from the form is auto-sorted on arrival", async () => {
+  const app = await withExample();
+  const key = accept(app, COLLISION_TP, "Needs a closer look");
+  ruleButton(app, "rule-mode", key, "auto").click();
+  app.click('[data-action="view"][data-value="consumer"]');
+  app.click('[data-action="fill-example"]');
+  app.click('[data-action="submit-claim"]');
+  const c = claimById(app, "CLM-2001");
+  eq(c.pile, "Needs a closer look");
+  eq(c.history[c.history.length - 1].actor, "automation");
+  app.click('[data-action="goto-handler"]');
+  eq([app.ev("state.inbox.tab"), app.ev("state.inbox.openId")], ["all", "CLM-2001"]);
+  assert(app.$(".claim-detail").textContent.includes("Automation"), "history says automation did it");
+});
+
+test("automation: turning a rule off removes its suggestions and the suggestion filter", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  filterBy(app, "suggested", "yes");
+  ruleButton(app, "rule-off", key).click();
+  eq(app.ev("state.automation.rules.length"), 0);
+  assert(!app.$('[data-filter="suggested"]'), "filter gone");
+  eq(app.ev("state.bulk.filters.suggested"), "");
+  assert(!app.$$("thead th").some((th) => th.textContent === "Suggested"), "column gone");
+  assert(app.ev("suggestedRules('harbour')").some((r) => r.key === key), "back in suggestions");
+});
+
+test("automation: rules belong to one insurer", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  const select = app.$('[data-action="insurer"]');
+  select.value = "northgate";
+  select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+  eq(app.$$(".automation .rule-row").length, 0);
+  assert(app.ev("state.claims.filter(c => c.insurer === 'northgate').every(c => !suggestionFor(c))"));
+});
+
+test("automation: every rule change is recorded (accept, mode, undo, turn off)", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  ruleButton(app, "rule-mode", key, "auto").click();
+  ruleButton(app, "rule-undo", key).click();
+  ruleButton(app, "rule-off", key).click();
+  const actions = app.ev("state.automation.changes").map((c) => c.action);
+  eq(actions.length, 4);
+  eq([actions[0], actions[1], actions[3]], ["Accepted rule", "Switched rule to auto-sort", "Turned off rule"]);
+  assert(/^Undid auto-sort of \d+ claims$/.test(actions[2]));
+});
+
+test("automation: panel can be hidden, and the table still fits with the Suggested column", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  accept(app, COLLISION_TP, "Needs a closer look");
+  const wrap = app.$(".table-wrap");
+  assert(wrap.scrollWidth <= wrap.clientWidth, `table overflows by ${wrap.scrollWidth - wrap.clientWidth}px`);
+  app.click('[data-action="automation-toggle"]');
+  assert(!app.$(".automation-body"), "hidden");
+  assert(app.$(".automation-summary").textContent.includes("2 active"), "summary still visible");
+});
+
 /* ---------- Portability ---------- */
 
 test("single file: no external scripts, stylesheets, images or fonts", async () => {

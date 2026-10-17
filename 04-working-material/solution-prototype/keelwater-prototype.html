@@ -221,6 +221,33 @@ table.grid input[type="checkbox"] { width: 15px; height: 15px; accent-color: var
 .th-sort[aria-pressed="true"] { color: var(--gray-12); }
 .th-sort[aria-pressed="true"]::after { content: " ↓"; }
 
+/* ---------- Automation panel (Phase 2) ---------- */
+.automation { padding: 0; margin-bottom: 16px; overflow: hidden; }
+.automation-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 14px 16px; }
+.automation-head h2 { font-size: 16px; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.automation-summary { display: flex; gap: 14px; align-items: center; white-space: nowrap; color: var(--gray-11); }
+.automation-summary strong { color: var(--gray-12); }
+.automation-body { padding: 0 16px 16px; border-top: 1px solid var(--gray-4); }
+.auto-h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-10); margin: 14px 0 8px; }
+.rule-rows { display: flex; flex-direction: column; border: 1px solid var(--gray-4); border-radius: var(--radius-3); }
+.rule-row { display: grid; grid-template-columns: minmax(0, 1fr) 130px auto 150px; gap: 16px; align-items: center; padding: 10px 12px; }
+.rule-row + .rule-row { border-top: 1px solid var(--gray-4); }
+.rule-row.suggested { grid-template-columns: minmax(0, 1fr) 130px auto; background: var(--gray-1); }
+.rule-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.rule-card-actions { display: flex; gap: 6px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 13px; }
+.seg-light { display: inline-flex; padding: 2px; border-radius: var(--radius-2); background: var(--gray-3); }
+.seg-light button { border: 0; background: transparent; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--gray-11); }
+.seg-light button[aria-pressed="true"] { background: white; color: var(--gray-12); box-shadow: 0 1px 2px rgba(0, 10, 52, 0.12); }
+.seg-light button[disabled] { opacity: 0.4; cursor: not-allowed; }
+.suggestion { display: flex; align-items: center; gap: 4px; }
+.icon-btn {
+  width: 22px; height: 22px; border-radius: 50%; border: 0; cursor: pointer; font-size: 12px; line-height: 1;
+  background: var(--green-3); color: var(--green-11);
+}
+.icon-btn:hover { background: var(--green-6); }
+table.grid .reason { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .capture { position: sticky; top: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: calc(100vh - 290px); }
 .capture-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--gray-4); }
 .capture-head h2 { font-size: 15px; display: flex; align-items: center; gap: 8px; }
@@ -538,6 +565,7 @@ const state = {
   highlightClaimId: null,
   inbox: { tab: "todo", openId: null, sortedByYou: 0 },
   bulk: { filters: emptyFilters(), selected: [], sortBy: "received", log: [], exampleLoaded: [] },
+  automation: { rules: [], dismissed: [], changes: [], collapsed: false, showAllSuggested: false },
 };
 
 function emptyForm() {
@@ -1203,7 +1231,7 @@ function renderClaimDetail(c) {
         <ol class="history">
           ${c.history.map((h) => `
             <li class="${h.actor === "you" ? "you" : ""}">
-              <strong>${esc(h.action)}</strong> <span class="muted small">${h.actor === "you" ? "You" : "System"} · ${h.detail ? esc(h.detail) : ""}</span>
+              <strong>${esc(h.action)}</strong> <span class="muted small">${h.actor === "you" ? "You" : h.actor === "automation" ? "Automation" : "System"} · ${h.detail ? esc(h.detail) : ""}</span>
             </li>`).join("")}
         </ol>
       </div>
@@ -1238,7 +1266,7 @@ function requestMissingInfo() {
    bulk action is captured as a labelled example for Phase 2 rules. ----- */
 
 function emptyFilters() {
-  return { status: "unsorted", type: "", amount: "", thirdParty: "", injury: "", prior: "", missing: "", fraud: "" };
+  return { status: "unsorted", type: "", amount: "", thirdParty: "", injury: "", prior: "", missing: "", fraud: "", suggested: "" };
 }
 
 const AMOUNT_BANDS = { under1k: [0, 1000], "1kto3k": [1000, 3000], over3k: [3000, Infinity] };
@@ -1255,6 +1283,9 @@ function filterDefs(insurerId) {
     { key: "prior", label: "Prior claims", options: [["", "Prior claims: any"], ["0", "No prior claims"], ["1", "1 prior claim"], ["2+", "2+ prior claims"]] },
     { key: "missing", label: "Missing info", options: [["", "Missing info: any"], ["yes", "Missing info"], ["no", "Nothing missing"]] },
     { key: "fraud", label: "Fraud score", options: [["", "Fraud score: any"], ["low", "Fraud score low (under 0.35)"], ["medium", "Fraud score medium (0.35–0.6)"], ["high", "Fraud score high (0.6+)"]] },
+    ...(activeRules(insurerId).length
+      ? [{ key: "suggested", label: "Suggestion", options: [["", "Suggestion: any"], ["yes", "Has a suggestion"], ["none", "No suggestion"]] }]
+      : []),
   ];
 }
 
@@ -1273,6 +1304,10 @@ function matchesFilters(c, f) {
   if (f.prior === "2+" && prior < 2) return false;
   if (!yesNo(f.missing, c.missingInfo.length)) return false;
   if (!inBand(FRAUD_BANDS, f.fraud, c.fraud.score)) return false;
+  if (f.suggested) {
+    const s = suggestionFor(c);
+    if ((f.suggested === "yes") !== Boolean(s && s.pile)) return false;
+  }
   return true;
 }
 
@@ -1313,19 +1348,24 @@ function bulkSort(pile) {
   const chosen = shown.filter((c) => b.selected.includes(c.id));
   if (!chosen.length) return;
   const description = describeFilters(b.filters, state.insurer);
+  let overrides = 0;
   for (const c of chosen) {
+    // Sorting against a rule's suggestion is an override; it weakens the rule.
+    const s = suggestionFor(c);
+    const overrode = s && s.pile && s.pile !== pile;
+    if (s && s.pile) { if (overrode) { s.rule.overridden++; overrides++; } else s.rule.confirmed++; }
     const before = c.pile;
     c.pile = pile;
     if (c.status !== "waiting on claimant") c.status = "sorted";
     c.history.push({
       at: new Date().toISOString(), actor: "you",
       action: before ? `Moved from ${before} to ${pile}` : `Sorted into ${pile}`,
-      detail: `bulk sort of ${chosen.length} claims · filter: ${description}`,
+      detail: `bulk sort of ${chosen.length} claims · filter: ${description}${overrode ? ` · overrode suggestion ${s.pile}` : ""}`,
     });
   }
   logCapture({
     kind: "sort", pile, filters: { ...b.filters }, description,
-    count: chosen.length, excluded: shown.length - chosen.length, ids: chosen.map((c) => c.id),
+    count: chosen.length, excluded: shown.length - chosen.length, overrides, ids: chosen.map((c) => c.id),
   });
   b.selected = [];
 }
@@ -1343,6 +1383,223 @@ function bulkMarkWaiting() {
     count: eligible.length, skipped: chosen.length - eligible.length, ids: eligible.map((c) => c.id),
   });
   b.selected = [];
+}
+
+/* ----- Automation (Phase 2): rules learned from the capture log ----- */
+
+const MIN_TIMES = 3; // a pattern becomes a suggested rule once handlers have repeated it this often
+const PILE_ORDER = ["Suspicious", "Needs a closer look", "Simple"];
+
+// The part of a filter set that defines a rule: no status, no suggestion filter, keys in a fixed order.
+function ruleFilters(f) {
+  const out = {};
+  for (const k of Object.keys(f).sort()) if (k !== "status" && k !== "suggested" && f[k]) out[k] = f[k];
+  return out;
+}
+const ruleKey = (insurer, filters, pile) => `${insurer}|${JSON.stringify(ruleFilters(filters))}|${pile}`;
+const ruleText = (r) => describeFilters({ ...emptyFilters(), ...r.filters }, r.insurer);
+const activeRules = (insurer) => state.automation.rules.filter((r) => r.insurer === insurer);
+
+function learnedRules(insurer) {
+  const groups = new Map();
+  for (const e of state.bulk.log) {
+    if (e.insurer !== insurer || e.kind !== "sort") continue;
+    const filters = ruleFilters(e.filters);
+    if (!Object.keys(filters).length) continue;
+    const key = ruleKey(insurer, e.filters, e.pile);
+    const g = groups.get(key) || { key, insurer, filters, pile: e.pile, times: 0, claims: 0, excluded: 0 };
+    g.times++;
+    g.claims += e.count;
+    g.excluded += e.excluded || 0;
+    groups.set(key, g);
+  }
+  return [...groups.values()]
+    .filter((g) => g.times >= MIN_TIMES)
+    .map((g) => ({ ...g, confidence: g.claims / (g.claims + g.excluded) }))
+    .sort((x, y) => y.claims - x.claims);
+}
+
+function suggestedRules(insurer) {
+  const a = state.automation;
+  const taken = new Set([...a.dismissed, ...a.rules.map((r) => r.key)]);
+  return learnedRules(insurer).filter((r) => !taken.has(r.key));
+}
+
+const matchesRule = (c, r) => matchesFilters(c, { ...emptyFilters(), ...r.filters, status: "all" });
+
+// Decision order: Simple only if every check passes (missing info and fraud come first).
+function simpleBlock(c) {
+  if (c.missingInfo.length) return "missing info";
+  if (c.fraud.score >= 0.6) return "high fraud score";
+  return null;
+}
+
+// The pile the active rules suggest for an unsorted claim. The most cautious matching rule wins.
+function suggestionFor(c) {
+  if (c.pile) return null;
+  const rules = activeRules(c.insurer)
+    .filter((r) => matchesRule(c, r))
+    .sort((x, y) => PILE_ORDER.indexOf(x.pile) - PILE_ORDER.indexOf(y.pile) || y.confidence - x.confidence);
+  let heldBack = null;
+  for (const r of rules) {
+    const block = r.pile === "Simple" ? simpleBlock(c) : null;
+    if (block) { heldBack = heldBack || { rule: r, reason: block }; continue; }
+    return { pile: r.pile, rule: r };
+  }
+  return heldBack ? { pile: null, rule: heldBack.rule, heldBack: heldBack.reason } : null;
+}
+
+function acceptRule(key) {
+  const r = suggestedRules(state.insurer).find((x) => x.key === key);
+  if (!r) return;
+  state.automation.rules.push({ ...r, mode: "suggest", confirmed: 0, overridden: 0, autoIds: [], acceptedAt: new Date(NOW_MS).toISOString() });
+  state.automation.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: "Accepted rule", rule: ruleText(r), pile: r.pile });
+}
+
+function dismissRule(key) {
+  state.automation.dismissed.push(key);
+}
+
+function turnOffRule(key) {
+  const a = state.automation;
+  const r = a.rules.find((x) => x.key === key);
+  if (!r) return;
+  a.rules = a.rules.filter((x) => x.key !== key);
+  a.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: "Turned off rule", rule: ruleText(r), pile: r.pile });
+  if (!activeRules(state.insurer).length) state.bulk.filters.suggested = "";
+}
+
+function setRuleMode(key, mode) {
+  const r = state.automation.rules.find((x) => x.key === key);
+  if (!r || r.mode === mode) return;
+  if (mode === "auto" && r.pile === "Suspicious") return; // Suspicious is suggest-only
+  r.mode = mode;
+  state.automation.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: mode === "auto" ? "Switched rule to auto-sort" : "Switched rule to suggest", rule: ruleText(r), pile: r.pile });
+  if (mode === "auto") runAutomation();
+}
+
+function sortBySuggestion(c, s, actor, action) {
+  c.pile = s.pile;
+  if (c.status !== "waiting on claimant") c.status = "sorted";
+  c.history.push({ at: new Date().toISOString(), actor, action, detail: `rule: ${ruleText(s.rule)}` });
+}
+
+// Auto-sort every unsorted claim whose suggestion comes from an auto-sort rule.
+function runAutomation() {
+  const counts = new Map();
+  for (const c of state.claims) {
+    const s = suggestionFor(c);
+    if (!s || !s.pile || s.rule.mode !== "auto") continue;
+    sortBySuggestion(c, s, "automation", `Auto-sorted into ${s.pile}`);
+    s.rule.autoIds.push(c.id);
+    counts.set(s.rule, [...(counts.get(s.rule) || []), c.id]);
+  }
+  for (const [r, ids] of counts) {
+    logCapture({ kind: "auto", insurer: r.insurer, pile: r.pile, filters: { ...emptyFilters(), ...r.filters }, description: ruleText(r), count: ids.length, ids });
+  }
+  return [...counts.values()].reduce((s, ids) => s + ids.length, 0);
+}
+
+function undoAutoSort(key) {
+  const r = state.automation.rules.find((x) => x.key === key);
+  if (!r) return;
+  const undone = [];
+  for (const id of r.autoIds) {
+    const c = state.claims.find((x) => x.id === id);
+    if (!c || c.pile !== r.pile) continue;
+    c.pile = null;
+    if (c.status === "sorted") c.status = "new";
+    c.history.push({ at: new Date().toISOString(), actor: "you", action: "Auto-sort undone", detail: `rule: ${ruleText(r)}` });
+    undone.push(id);
+  }
+  r.autoIds = [];
+  r.mode = "suggest";
+  state.automation.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: `Undid auto-sort of ${undone.length} claims`, rule: ruleText(r), pile: r.pile });
+}
+
+function confirmSuggestions(ids) {
+  const done = [];
+  for (const id of ids) {
+    const c = state.claims.find((x) => x.id === id);
+    const s = c && suggestionFor(c);
+    if (!s || !s.pile) continue;
+    s.rule.confirmed++;
+    sortBySuggestion(c, s, "you", `Confirmed suggestion: ${s.pile}`);
+    done.push(c);
+  }
+  if (done.length) {
+    logCapture({ kind: "confirm", filters: { ...state.bulk.filters }, description: describeFilters(state.bulk.filters, state.insurer), count: done.length, ids: done.map((c) => c.id) });
+  }
+  state.bulk.selected = state.bulk.selected.filter((id) => !done.some((c) => c.id === id));
+}
+
+function renderAutomation(mine) {
+  const a = state.automation;
+  const active = activeRules(state.insurer);
+  const suggested = suggestedRules(state.insurer);
+  const unsorted = mine.filter((c) => !c.pile);
+  const suggestionCount = (r) => unsorted.filter((c) => { const s = suggestionFor(c); return s && s.pile && s.rule === r; }).length;
+  const autoSorted = active.reduce((s, r) => s + r.autoIds.length, 0);
+  const support = (r) => `${r.times} times · ${r.claims} claims${r.excluded ? ` · ${r.excluded} left out by hand` : ""}`;
+  const activeRows = active.map((r) => {
+    const kept = r.confirmed + r.overridden ? Math.round((r.confirmed / (r.confirmed + r.overridden)) * 100) : null;
+    return `
+      <div class="rule-row" data-rule="${esc(r.key)}">
+        <div>
+          <div><strong>${esc(ruleText(r))}</strong> → <span class="badge ${PILE_STYLE[r.pile]}">${r.pile}</span></div>
+          <div class="small muted">${support(r)} · ${Math.round(r.confidence * 100)}% kept when learned${kept !== null ? ` · since accepted: ${r.confirmed} confirmed, ${r.overridden} overridden` : ""}</div>
+        </div>
+        <div class="small"><strong>${suggestionCount(r)}</strong> <span class="muted">suggested now</span>${r.autoIds.length ? `<div class="muted">${r.autoIds.length} auto-sorted</div>` : ""}</div>
+        <div class="seg-light" role="group" aria-label="Mode">
+          <button data-action="rule-mode" data-rule="${esc(r.key)}" data-value="suggest" aria-pressed="${r.mode === "suggest"}">Suggest</button>
+          <button data-action="rule-mode" data-rule="${esc(r.key)}" data-value="auto" aria-pressed="${r.mode === "auto"}" ${r.pile === "Suspicious" ? 'disabled title="Suspicious is always suggest-only"' : ""}>Auto-sort</button>
+        </div>
+        <div class="rule-actions">
+          ${r.autoIds.length ? `<button class="link-btn small" data-action="rule-undo" data-rule="${esc(r.key)}">Undo auto-sort</button>` : ""}
+          <button class="link-btn small" data-action="rule-off" data-rule="${esc(r.key)}">Turn off</button>
+        </div>
+      </div>`;
+  }).join("");
+
+  const visible = a.showAllSuggested ? suggested : suggested.slice(0, 3);
+  const suggestedCards = visible.map((r) => `
+    <div class="rule-row suggested" data-rule="${esc(r.key)}">
+      <div>
+        <div><strong>${esc(ruleText(r))}</strong> → <span class="badge ${PILE_STYLE[r.pile]}">${r.pile}</span></div>
+        <div class="small muted">${support(r)} · ${Math.round(r.confidence * 100)}% kept${r.pile === "Simple" ? " · never Simple while info is missing or the fraud score is high" : ""}</div>
+      </div>
+      <div class="small"><strong>${unsorted.filter((c) => matchesRule(c, r)).length}</strong> <span class="muted">match now</span></div>
+      <div class="rule-card-actions">
+        <button class="btn btn-sm" data-action="rule-accept" data-rule="${esc(r.key)}">Accept</button>
+        <button class="btn btn-sm btn-outline" data-action="rule-dismiss" data-rule="${esc(r.key)}">Dismiss</button>
+      </div>
+    </div>`).join("");
+  const more = suggested.length - visible.length;
+
+  return `
+    <section class="card automation" aria-label="Automation">
+      <div class="automation-head">
+        <div>
+          <h2><span class="badge">Phase 2</span> Automation</h2>
+          <div class="small muted">Rules learned from how your team sorts. Accept a rule to get suggestions in the table; switch it to auto-sort when you trust it.</div>
+        </div>
+        <div class="automation-summary small">
+          <span><strong>${suggested.length}</strong> suggested</span>
+          <span><strong>${active.length}</strong> active</span>
+          <span><strong>${unsorted.filter((c) => { const s = suggestionFor(c); return s && s.pile; }).length}</strong> claims with a suggestion</span>
+          <span><strong>${autoSorted}</strong> auto-sorted</span>
+          <button class="link-btn small" data-action="automation-toggle">${a.collapsed ? "Show" : "Hide"}</button>
+        </div>
+      </div>
+      ${a.collapsed ? "" : `
+        <div class="automation-body">
+          ${active.length ? `<h3 class="auto-h3">Active rules</h3><div class="rule-rows">${activeRows}</div>` : ""}
+          ${suggested.length ? `<h3 class="auto-h3">Suggested rules</h3><div class="rule-rows">${suggestedCards}</div>
+            ${more ? `<button class="link-btn small" style="margin-top:8px;" data-action="automation-more">Show ${more} more</button>`
+              : a.showAllSuggested && suggested.length > 3 ? '<button class="link-btn small" style="margin-top:8px;" data-action="automation-more">Show fewer</button>' : ""}`
+            : !active.length ? `<div class="small muted">No patterns yet. A rule is suggested once your team has sorted the same kind of group ${MIN_TIMES} times. Sort a few groups, or load the example week.</div>` : ""}
+        </div>`}
+    </section>`;
 }
 
 // A week of handler activity, so Phase 2 has enough examples to learn from. [INVENTED]
@@ -1418,6 +1675,19 @@ function renderBulk(mine) {
   const anyFilter = Object.entries(b.filters).some(([k, v]) => (k === "status" ? v !== "unsorted" : v));
   const samples = sampleFilters(mine);
 
+  const hasRules = activeRules(state.insurer).length > 0;
+  const toConfirm = selected.filter((c) => { const s = suggestionFor(c); return s && s.pile; });
+  const suggestionCell = (c) => {
+    const s = suggestionFor(c);
+    if (!s) return '<span class="muted">—</span>';
+    if (!s.pile) return `<span class="small muted" title="Rule: ${esc(ruleText(s.rule))}">Simple held back: ${s.heldBack}</span>`;
+    return `
+      <div class="suggestion">
+        <span class="badge ${PILE_STYLE[s.pile]}">${s.pile}</span>
+        <button class="icon-btn" data-action="confirm-suggestion" data-value="${c.id}" aria-label="Confirm ${s.pile} for ${c.id}" title="Confirm">✓</button>
+      </div>
+      <div class="small muted reason" title="Rule: ${esc(ruleText(s.rule))}">${esc(ruleText(s.rule))} · ${Math.round(s.rule.confidence * 100)}%</div>`;
+  };
   const th = (key, label, cls = "") => `<th class="${cls}"><button class="th-sort" data-action="bulk-sort-by" data-value="${key}" aria-pressed="${b.sortBy === key}">${label}</button></th>`;
   const tableRows = rows.map((c) => {
     const sel = b.selected.includes(c.id);
@@ -1435,6 +1705,7 @@ function renderBulk(mine) {
         <td>${c.status === "waiting on claimant" ? '<span class="badge waiting">Waiting on claimant</span>'
           : c.missingInfo.length ? `<span class="badge waiting" title="${esc(c.missingInfo.join(", "))}">${c.missingInfo.length} missing</span>` : '<span class="muted">—</span>'}</td>
         <td class="num"><span class="badge ${fraudLevel}">${c.fraud.score.toFixed(2)}</span></td>
+        ${hasRules ? `<td>${suggestionCell(c)}</td>` : ""}
         <td>${c.pile ? `<span class="badge ${PILE_STYLE[c.pile]}">${c.pile}</span>` : '<span class="muted">—</span>'}</td>
       </tr>`;
   }).join("");
@@ -1442,11 +1713,19 @@ function renderBulk(mine) {
   const entry = (e) => {
     const when = `<div class="when">${ago(e.at)}${e.example ? ' · <span class="badge gray">example [INVENTED]</span>' : ""}</div>`;
     if (e.kind === "filter") return `<div class="capture-entry filter">Filtered: ${esc(e.description)} → ${e.count} claims</div>`;
-    const outcome = e.kind === "sort" ? `<span class="badge ${PILE_STYLE[e.pile]}">${e.pile}</span>` : '<span class="badge waiting">Waiting on claimant</span>';
-    const note = e.kind === "sort" && e.excluded ? ` · ${e.excluded} left out by hand` : e.kind === "waiting" && e.skipped ? ` · ${e.skipped} skipped, nothing missing` : "";
+    const outcome = e.kind === "waiting" ? '<span class="badge waiting">Waiting on claimant</span>'
+      : e.kind === "confirm" ? "suggestions confirmed"
+      : `<span class="badge ${PILE_STYLE[e.pile]}">${e.pile}</span>`;
+    const notes = [
+      e.kind === "sort" && e.excluded ? `${e.excluded} left out by hand` : "",
+      e.kind === "sort" && e.overrides ? `${e.overrides} overrode a suggestion` : "",
+      e.kind === "waiting" && e.skipped ? `${e.skipped} skipped, nothing missing` : "",
+    ].filter(Boolean);
+    const note = notes.length ? ` · ${notes.join(" · ")}` : "";
+    const lead = e.kind === "auto" ? "Auto-sorted " : "";
     return `
       <div class="capture-entry ${e.kind}">
-        <div><strong>${e.count} claims →</strong> ${outcome}</div>
+        <div><strong>${lead}${e.count} claims →</strong> ${outcome}</div>
         <div class="small muted">${esc(e.description)}${note}</div>
         ${when}
       </div>`;
@@ -1461,6 +1740,7 @@ function renderBulk(mine) {
       ${stat("Bulk actions captured", actions.length, "each one a labelled example")}
       ${stat("Claims labelled", labelled, "to learn rules from in Phase 2")}
     </div>
+    ${renderAutomation(mine)}
     <div class="bulk">
       <section class="card bulk-table" aria-label="Claims table">
         <div class="filters">
@@ -1479,6 +1759,7 @@ function renderBulk(mine) {
           </div>` : ""}
         <div class="action-bar ${n ? "has-selection" : ""}">
           <strong>${n ? `${n} selected` : "None selected"}</strong>
+          ${toConfirm.length ? `<button class="btn" data-action="bulk-confirm">Confirm ${toConfirm.length} suggestion${toConfirm.length === 1 ? "" : "s"}</button><span class="muted small">or</span>` : ""}
           <span class="muted small">Sort into:</span>
           ${PILES.map((p) => `<button class="btn btn-pile" data-action="bulk-sort" data-value="${p}" ${n ? "" : "disabled"}><span class="dot" style="background:${PILE_DOT[p]}"></span>${p}</button>`).join("")}
           <button class="btn btn-soft" data-action="bulk-waiting" ${n ? "" : "disabled"}>Mark waiting on claimant</button>
@@ -1488,7 +1769,7 @@ function renderBulk(mine) {
           <table class="grid">
             <thead><tr>
               <th><input type="checkbox" id="bulk-select-all" data-action="bulk-select-all" ${allChecked ? "checked" : ""} data-indeterminate="${n > 0 && !allChecked}" aria-label="Select all shown" /></th>
-              <th>Claim</th>${th("received", "Received")}<th>Type</th>${th("amount", "Amount", "num")}<th>People</th><th class="num">Prior</th><th>Missing</th>${th("fraud", "Fraud", "num")}<th>Pile</th>
+              <th>Claim</th>${th("received", "Received")}<th>Type</th>${th("amount", "Amount", "num")}<th>People</th><th class="num">Prior</th><th>Missing</th>${th("fraud", "Fraud", "num")}${hasRules ? "<th>Suggested</th>" : ""}<th>Pile</th>
             </tr></thead>
             <tbody>${tableRows}</tbody>
           </table>
@@ -1566,6 +1847,7 @@ document.addEventListener("click", (e) => {
   }
   if (action === "submit-claim") {
     submitForm();
+    runAutomation();
     form.lastChanged = null;
     render();
   }
@@ -1574,7 +1856,8 @@ document.addEventListener("click", (e) => {
     render();
   }
   if (action === "goto-handler") {
-    state.inbox.tab = "todo";
+    const arrived = state.claims.find((c) => c.id === state.highlightClaimId);
+    state.inbox.tab = arrived && arrived.pile ? "all" : "todo";
     openClaim(state.highlightClaimId);
     setState({ view: "handler", page: "inbox", insurer: "harbour" });
   }
@@ -1606,6 +1889,17 @@ document.addEventListener("click", (e) => {
     render();
   }
   if (action === "bulk-load-example") { loadExampleWeek(); render(); }
+
+  const rule = el.dataset.rule;
+  if (action === "rule-accept") { acceptRule(rule); render(); }
+  if (action === "rule-dismiss") { dismissRule(rule); render(); }
+  if (action === "rule-off") { turnOffRule(rule); render(); }
+  if (action === "rule-mode") { setRuleMode(rule, value); render(); }
+  if (action === "rule-undo") { undoAutoSort(rule); render(); }
+  if (action === "automation-more") { state.automation.showAllSuggested = !state.automation.showAllSuggested; render(); }
+  if (action === "automation-toggle") { state.automation.collapsed = !state.automation.collapsed; render(); }
+  if (action === "confirm-suggestion") { confirmSuggestions([value]); render(); }
+  if (action === "bulk-confirm") { confirmSuggestions(b.selected); render(); }
   if (action === "bulk-sample") {
     const s = sampleFilters(state.claims.filter((c) => c.insurer === state.insurer))[Number(value)];
     if (s) { applyFilters(s.filters); render(); }
