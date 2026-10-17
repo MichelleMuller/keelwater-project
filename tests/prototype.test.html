@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Keelwater prototype tests</title>
+<style>
+  body { font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; margin: 24px; color: #1f2328; }
+  #results { background: #f6f8fa; padding: 12px 16px; border-radius: 6px; }
+  iframe { width: 1440px; height: 900px; border: 1px solid #d0d7de; margin-top: 16px; }
+</style>
+</head>
+<body>
+<h1>Keelwater prototype tests</h1>
+<p>Run with <code>tests/run.sh</code>. Opening this file directly needs a browser that lets local files talk to each other (Chrome with <code>--allow-file-access-from-files</code>).</p>
+<pre id="results">Running…</pre>
+<iframe id="app" title="Prototype under test"></iframe>
+
+<script>
+const APP = "../04-working-material/solution-prototype/keelwater-prototype.html";
+const tests = [];
+const test = (name, fn) => tests.push({ name, fn });
+
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg || "assertion failed");
+}
+function eq(actual, expected, msg) {
+  const a = JSON.stringify(actual), e = JSON.stringify(expected);
+  if (a !== e) throw new Error(`${msg || "not equal"}: got ${a}, expected ${e}`);
+}
+const near = (a, b, tol = 1) => Math.abs(a - b) <= tol;
+
+// Loads a fresh copy of the prototype and returns helpers bound to it.
+let loads = 0;
+function open(hash = "consumer") {
+  return new Promise((resolve, reject) => {
+    const frame = document.getElementById("app");
+    frame.onload = () => {
+      const w = frame.contentWindow;
+      let doc;
+      try { doc = w.document; } catch (e) { return reject(new Error("can't reach the prototype frame: run with --allow-file-access-from-files")); }
+      const $ = (sel) => doc.querySelector(sel);
+      const $$ = (sel) => [...doc.querySelectorAll(sel)];
+      const app = {
+        w, doc, $, $$,
+        ev: (code) => w.eval(code),
+        click(sel) {
+          const el = $(sel);
+          if (!el) throw new Error(`nothing matches ${sel}`);
+          el.click();
+        },
+        type(sel, value) {
+          const el = $(sel);
+          if (!el) throw new Error(`nothing matches ${sel}`);
+          el.focus();
+          el.value = value;
+          el.dispatchEvent(new w.Event("input", { bubbles: true }));
+          return el;
+        },
+        goToStep(n) {
+          if (app.ev("state.form.step") === -1) app.click('[data-action="form-step"][data-value="0"]');
+          app.click(`.stepper [data-value="${n}"]`);
+        },
+      };
+      resolve(app);
+    };
+    frame.src = `${APP}?load=${++loads}#${hash}`;
+  });
+}
+
+/* ---------- Data ---------- */
+
+test("seed data: 60 claims split 28 / 20 / 12 across the three insurers, unique ids", async () => {
+  const app = await open();
+  const claims = app.ev("state.claims");
+  eq(claims.length, 60);
+  const count = (id) => claims.filter((c) => c.insurer === id).length;
+  eq([count("harbour"), count("northgate"), count("fleetwise")], [28, 20, 12]);
+  eq(new Set(claims.map((c) => c.id)).size, 60, "ids are unique");
+});
+
+test("seed data is the same on every load", async () => {
+  const app = await open();
+  eq(app.ev("JSON.stringify(seedClaims())"), app.ev("JSON.stringify(seedClaims())"));
+});
+
+test("seed data: every claim's missing info matches the rules, and nothing is sorted yet", async () => {
+  const app = await open();
+  for (const c of app.ev("state.claims")) {
+    eq(c.missingInfo, app.w.requiredItems(c), c.id);
+    eq(c.pile, null, `${c.id} pile`);
+  }
+});
+
+test("there are three piles; missing information is a status, not a pile (A-19)", async () => {
+  const app = await open();
+  eq(app.ev("PILES"), ["Simple", "Needs a closer look", "Suspicious"]);
+});
+
+test("required items: theft needs a police report but no photos", async () => {
+  const app = await open();
+  const c = { incident: { type: "theft", policeReport: false }, parties: {}, damage: { photos: 0, estimatedAmount: 500 } };
+  eq(app.w.requiredItems(c), ["police report"]);
+});
+
+test("required items: third party without a registration, and a big claim without an estimate", async () => {
+  const app = await open();
+  const c = { incident: { type: "collision", policeReport: true }, parties: { thirdPartyInvolved: true, thirdParty: { reg: "" } }, damage: { photos: 2, estimatedAmount: 2500, repairEstimate: false } };
+  eq(app.w.requiredItems(c), ["third party's vehicle registration", "repair estimate"]);
+});
+
+test("required items: a complete windscreen claim needs nothing", async () => {
+  const app = await open();
+  const c = { incident: { type: "windscreen", policeReport: false }, parties: { thirdPartyInvolved: false, injuries: false }, damage: { photos: 2, estimatedAmount: 400 } };
+  eq(app.w.requiredItems(c), []);
+});
+
+/* ---------- Routing and shell ---------- */
+
+test("every view renders", async () => {
+  for (const hash of ["consumer", "handler/inbox", "handler/bulk", "handler/workflow", "handler/agent"]) {
+    const app = await open(hash);
+    assert(app.$("#topbar").innerHTML.length > 0, `${hash}: topbar`);
+    assert(app.$("#view").innerHTML.length > 0, `${hash}: view`);
+  }
+});
+
+test("#handler/bulk opens the handler view on bulk sorting", async () => {
+  const app = await open("handler/bulk");
+  eq([app.ev("state.view"), app.ev("state.page")], ["handler", "bulk"]);
+  eq(app.$('.nav-item[aria-current="page"]').textContent.trim(), "Bulk sorting");
+});
+
+test("an unknown address falls back to the claimant view", async () => {
+  const app = await open("nonsense");
+  eq(app.ev("state.view"), "consumer");
+});
+
+test("the view toggle switches views and updates the address", async () => {
+  const app = await open();
+  app.click('[data-action="view"][data-value="handler"]');
+  eq(app.ev("state.view"), "handler");
+  eq(app.w.location.hash, "#handler/inbox");
+});
+
+test("switching insurer changes the handler's claims", async () => {
+  const app = await open("handler/inbox");
+  const select = app.$('[data-action="insurer"]');
+  select.value = "northgate";
+  select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+  eq(app.$(".stat-value").textContent.trim(), "20");
+});
+
+test("the workflow agent is called Workflow Agent", async () => {
+  const app = await open("handler/agent");
+  assert(app.$(".sidebar").textContent.includes("Workflow Agent"));
+  assert(!/hyper.?operator/i.test(app.doc.body.textContent), "no 'hyper-operator' anywhere");
+});
+
+/* ---------- Claim form ---------- */
+
+test("form: Start your claim opens step 1 of 6", async () => {
+  const app = await open();
+  app.click('[data-action="form-step"][data-value="0"]');
+  eq(app.ev("state.form.step"), 0);
+  eq(app.$$(".stepper button").map((b) => b.textContent.trim()),
+    ["Your details", "What happened", "Vehicle and damage", "Other people", "Photos and documents", "Review"]);
+});
+
+test("form: progress bar labels all start on the same line", async () => {
+  const app = await open();
+  app.goToStep(0);
+  const tops = app.$$(".stepper button").map((b) => {
+    const range = app.doc.createRange();
+    range.selectNodeContents(b);
+    return range.getClientRects()[0].top;
+  });
+  assert(tops.every((t) => near(t, tops[0])), `label tops differ: ${tops.map(Math.round)}`);
+});
+
+test("form: side-by-side inputs line up on every step", async () => {
+  const app = await open();
+  const check = (label) => {
+    const fields = app.$$(".form-grid > .field");
+    const rows = [];
+    let col = 0;
+    for (const f of fields) {
+      if (f.classList.contains("full")) { col = 0; continue; }
+      if (col === 0) rows.push([f]); else rows[rows.length - 1].push(f);
+      col = (col + 1) % 2;
+    }
+    for (const row of rows.filter((r) => r.length === 2)) {
+      const [a, b] = row.map((f) => f.querySelector(".input, .yes-no").getBoundingClientRect().top);
+      assert(near(a, b), `${label}: "${row[0].querySelector("label").textContent}" and "${row[1].querySelector("label").textContent}" inputs differ by ${Math.round(Math.abs(a - b))}px`);
+    }
+  };
+  for (const step of [0, 1, 2]) { app.goToStep(step); check(`step ${step + 1}`); }
+  app.goToStep(3);
+  app.click('[data-field="parties.thirdPartyInvolved"][data-value="true"]');
+  app.click('[data-field="incident.policeReport"][data-value="true"]');
+  check("step 4 with third party");
+});
+
+test("form: typing updates the live record and keeps focus", async () => {
+  const app = await open();
+  app.goToStep(0);
+  const input = app.type('[data-field="claimant.name"]', "Jo Bloggs");
+  eq(app.ev("state.form.data.claimant.name"), "Jo Bloggs");
+  assert(app.doc.activeElement === input, "focus stayed on the input");
+  assert(app.$("#schema-panel").textContent.includes('"Jo Bloggs"'), "record shows the name");
+  assert(app.$("#schema-panel .schema-line.flash").textContent.includes('"name"'), "changed line flashes");
+});
+
+test("form: number fields are stored as numbers", async () => {
+  const app = await open();
+  app.goToStep(2);
+  app.type('[data-field="damage.estimatedAmount"]', "1200");
+  eq(app.ev("state.form.data.damage.estimatedAmount"), 1200);
+});
+
+test("form: what the claimant types is escaped, not run as HTML", async () => {
+  const app = await open();
+  app.goToStep(1);
+  app.type('[data-field="incident.description"]', '<img src=x onerror="window.pwned=1">');
+  assert(!app.$("#schema-panel img"), "no image element in the record");
+  assert(!app.w.pwned);
+});
+
+test("form: other driver's details only appear when another vehicle was involved", async () => {
+  const app = await open();
+  app.goToStep(3);
+  assert(!app.$('[data-field="parties.thirdParty.reg"]'), "hidden before answering");
+  app.click('[data-field="parties.thirdPartyInvolved"][data-value="true"]');
+  assert(app.$('[data-field="parties.thirdParty.reg"]'), "shown after yes");
+  app.click('[data-field="parties.thirdPartyInvolved"][data-value="false"]');
+  assert(!app.$('[data-field="parties.thirdParty.reg"]'), "hidden after no");
+});
+
+test("form: photos can be added and removed, never below zero", async () => {
+  const app = await open();
+  app.goToStep(4);
+  app.click('[data-action="add-photo"]');
+  app.click('[data-action="add-photo"]');
+  eq(app.$$(".photo-tile").length, 2);
+  app.click('[data-action="remove-photo"]');
+  app.click('[data-action="remove-photo"]');
+  app.click('[data-action="add-photo"]');
+  app.click('[data-action="remove-photo"]');
+  eq(app.ev("state.form.data.damage.photos"), 0);
+});
+
+test("form: record is 0% complete when empty and 100% with the example", async () => {
+  const app = await open();
+  eq(app.ev("formCompleteness(state.form.data)"), 0);
+  app.click('[data-action="fill-example"]');
+  eq(app.ev("formCompleteness(state.form.data)"), 1);
+});
+
+test("form: before submit, system fields are marked as coming from the insurer's systems", async () => {
+  const app = await open();
+  const rec = app.ev("formRecord(state.form.data)");
+  for (const path of ["id", "policy.startDate", "policy.cover", "claimant.priorClaims5y", "vehicle.value", "fraud"]) {
+    const v = path.split(".").reduce((o, k) => o[k], rec);
+    assert(v && v.__pending, `${path} is pending`);
+  }
+});
+
+test("form: the example claim can be sent with 3 things still missing", async () => {
+  const app = await open();
+  app.click('[data-action="fill-example"]');
+  eq(app.ev("state.form.step"), 5, "jumps to review");
+  eq(app.ev("formRecord(state.form.data).missingInfo"), ["police report", "third party's vehicle registration", "repair estimate"]);
+  assert(app.$(".callout").textContent.includes("You can send this now"));
+  assert(app.$('[data-action="submit-claim"]'), "send button available");
+});
+
+test("submit: creates CLM-2001 at the top of the claims, fully filled in", async () => {
+  const app = await open();
+  app.click('[data-action="fill-example"]');
+  app.click('[data-action="submit-claim"]');
+  const claims = app.ev("state.claims");
+  eq(claims.length, 61);
+  const c = claims[0];
+  eq([c.id, c.insurer, c.channel, c.status, c.pile], ["CLM-2001", "harbour", "web form", "new", null]);
+  assert(!JSON.stringify(c).includes("__pending"), "no pending fields left");
+  eq(c.missingInfo.length, 3, "missing info kept as a status");
+  eq(typeof c.fraud.score, "number");
+  eq(c.history[0].action, "Claim received");
+  eq(app.ev("state.highlightClaimId"), "CLM-2001");
+  assert(app.$(".consumer-body").textContent.includes("CLM-2001"), "confirmation shows the reference");
+});
+
+test("submit: a second claim gets the next reference", async () => {
+  const app = await open();
+  app.click('[data-action="fill-example"]');
+  app.click('[data-action="submit-claim"]');
+  app.click('[data-action="form-reset"]');
+  eq(app.ev("state.form.step"), -1, "back to the start page");
+  app.click('[data-action="fill-example"]');
+  app.click('[data-action="submit-claim"]');
+  eq(app.ev("state.claims.slice(0, 2).map(c => c.id)"), ["CLM-2002", "CLM-2001"]);
+});
+
+test("submit: 'see it arrive' opens Harbour Mutual's inbox with the new claim counted", async () => {
+  const app = await open();
+  app.click('[data-action="fill-example"]');
+  app.click('[data-action="submit-claim"]');
+  app.click('[data-action="goto-handler"]');
+  eq([app.ev("state.view"), app.ev("state.page"), app.ev("state.insurer")], ["handler", "inbox", "harbour"]);
+  eq(app.$(".stat-value").textContent.trim(), "29");
+});
+
+/* ---------- Portability ---------- */
+
+test("single file: no external scripts, stylesheets, images or fonts", async () => {
+  const app = await open();
+  eq(app.$$("script[src], link[href], img[src^='http'], iframe").length, 0);
+  const fontSources = [...app.doc.styleSheets].flatMap((s) => [...s.cssRules])
+    .filter((r) => r instanceof app.w.CSSFontFaceRule)
+    .map((r) => r.style.getPropertyValue("src"));
+  assert(fontSources.length >= 4, "Barlow weights are embedded");
+  assert(fontSources.every((src) => src.includes("data:")), "fonts are inline");
+});
+
+/* ---------- Runner ---------- */
+
+(async () => {
+  const out = [];
+  let passed = 0;
+  for (const t of tests) {
+    try {
+      await t.fn();
+      passed++;
+      out.push(`✓ ${t.name}`);
+    } catch (e) {
+      out.push(`✗ ${t.name}\n    ${e.message}`);
+    }
+  }
+  const summary = `${passed === tests.length ? "PASS" : "FAIL"} ${passed}/${tests.length}`;
+  out.push("", summary);
+  document.getElementById("results").textContent = out.join("\n");
+  document.title = summary;
+})();
+</script>
+</body>
+</html>

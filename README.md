@@ -27,6 +27,7 @@ Take-home assignment (Senior/Lead PM, Xelix). Keelwater is fictional: B2B claims
 | Deck outline | [`deck-outline.md`](03-deliverables/deck-outline.md) |
 | AI usage log, incl. "one thing it got wrong" candidates | [`ai-usage-log.md`](04-working-material/ai-usage-log.md) |
 | Kaggle claim data and notebook | [`04-working-material/kaggle/`](04-working-material/kaggle) |
+| **Tests** for all the code: charts, sample-data prototype, solution prototype. Run `./tests/run.sh` (needs Python and Google Chrome; `pip install -r requirements.txt` into `.venv` for the model tests) | [`tests/`](tests) |
 
 ## Where we are
 

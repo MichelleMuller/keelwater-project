@@ -196,20 +196,24 @@ def render(target, title, subtitle, with_causes):
     print(f"wrote {target}")
 
 
-for s in range(len(SECTIONS)):
-    assert abs(sum(c[1][s] for c in CAUSES) - 1) < 1e-9, f"section {s} shares don't add to 100%"
+def main(out_dir=Path(__file__).parent):
+    for s in range(len(SECTIONS)):
+        assert abs(sum(c[1][s] for c in CAUSES) - 1) < 1e-9, f"section {s} shares don't add to 100%"
 
-here = Path(__file__).parent
-render(
-    here / "time-to-sort-distribution.svg",
-    "Time to sort: a fast majority and a long tail (illustrative)",
-    "Known from the brief: median 11 min, 15% over 4 h. Curve shape is a hypothesis fitted to those two points.",
-    with_causes=False,
-)
-render(
-    here / "time-to-sort-causes.svg",
-    "Time to sort: what claims are waiting on (illustrative)",
-    "Brief: 2.1M claims/yr, median 11 min, 15% over 4 h. Curve shape is a hypothesis; causes are [INVENTED].",
-    with_causes=True,
-)
-print(f"check: share <= 11 min = {cdf(11):.3f}, share > 4 h = {1 - cdf(240):.3f}")
+    render(
+        out_dir / "time-to-sort-distribution.svg",
+        "Time to sort: a fast majority and a long tail (illustrative)",
+        "Known from the brief: median 11 min, 15% over 4 h. Curve shape is a hypothesis fitted to those two points.",
+        with_causes=False,
+    )
+    render(
+        out_dir / "time-to-sort-causes.svg",
+        "Time to sort: what claims are waiting on (illustrative)",
+        "Brief: 2.1M claims/yr, median 11 min, 15% over 4 h. Curve shape is a hypothesis; causes are [INVENTED].",
+        with_causes=True,
+    )
+    print(f"check: share <= 11 min = {cdf(11):.3f}, share > 4 h = {1 - cdf(240):.3f}")
+
+
+if __name__ == "__main__":
+    main()

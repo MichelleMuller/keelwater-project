@@ -89,7 +89,7 @@ type Pile = "Simple" | "Needs a closer look" | "Suspicious";
 
 ## 6. Build steps
 
-Each step ends with a review together before the next.
+Each step ends with a review together before the next. **Every step adds tests** to [`tests/prototype.test.html`](../../tests/prototype.test.html) for what it built, and is only done when `./tests/run.sh` passes for the whole project. Layout bugs we fix get a test too, so they can't come back.
 
 | Step | What we build | Done when |
 |---|---|---|
