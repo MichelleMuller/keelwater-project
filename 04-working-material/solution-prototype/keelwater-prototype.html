@@ -251,6 +251,52 @@ table.grid .reason { max-width: 120px; overflow: hidden; text-overflow: ellipsis
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; padding: 8px 12px;
   border-radius: var(--radius-2); background: var(--lavender-light);
 }
+.paused { color: var(--amber-11); }
+
+/* ---------- Workflow builder (Phase 2b) ---------- */
+.wf-bar { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; }
+.wf-bar h2 { font-size: 16px; margin-bottom: 2px; }
+.wf-threshold { display: flex; align-items: center; gap: 8px; }
+.wf-threshold .select { width: 84px; height: 30px; font-size: 13px; }
+.wf-bar-actions { display: flex; gap: 8px; align-items: center; }
+.wf-bar-actions .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.wf-notice { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 10px 16px; margin-bottom: 16px; border-radius: var(--radius-3); background: var(--green-3); }
+.wf-grid { display: grid; grid-template-columns: 200px minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.wf-palette, .wf-editor { position: sticky; top: 0; }
+.wf-grid h3, .wf-lower h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-10); margin-bottom: 10px; }
+.wf-pal-item { border-radius: var(--radius-2); padding: 8px 10px; box-shadow: inset 0 0 0 1px var(--gray-6); margin-bottom: 8px; background: white; cursor: grab; }
+.wf-pal-item.required { cursor: default; background: var(--gray-2); box-shadow: none; }
+.wf-pal-item .btn { margin-top: 6px; }
+.wf-canvas { padding: 16px 20px; background-color: var(--gray-1); background-image: radial-gradient(var(--gray-5) 1px, transparent 1px); background-size: 16px 16px; }
+.wf-stage { border-radius: var(--radius-3); padding: 6px; }
+.wf-stage-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-10); margin: 0 0 4px 4px; }
+.wf-dragging .wf-stage.droppable { outline: 2px dashed var(--lavender); }
+.wf-stage.drop-hover { background: var(--rose-a3); }
+.wf-node {
+  background: white; border-radius: var(--radius-2); padding: 10px 12px; margin-bottom: 6px; cursor: pointer;
+  box-shadow: 0 0 0 1px var(--gray-5), 0 1px 2px rgba(0, 10, 52, 0.06); border-left: 4px solid var(--gray-7);
+}
+.wf-node:last-child { margin-bottom: 0; }
+.wf-node.selected { box-shadow: 0 0 0 2px var(--rose); }
+.wf-node[draggable="true"] { cursor: grab; }
+.wf-node-title { font-weight: 600; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.wf-node .badges { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.wf-empty { border: 1px dashed var(--gray-7); border-radius: var(--radius-2); padding: 8px 12px; background: rgba(255, 255, 255, 0.7); }
+.wf-arrow { width: 2px; height: 14px; background: var(--gray-7); margin: 0 auto; position: relative; }
+.wf-arrow::after { content: ""; position: absolute; left: -4px; bottom: -4px; border: 5px solid transparent; border-top-color: var(--gray-7); border-bottom: 0; }
+.wf-field { display: block; margin-bottom: 8px; }
+.wf-field .select { width: 100%; height: 30px; font-size: 13px; margin-top: 2px; }
+.wf-check { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.wf-check input { margin-top: 2px; accent-color: var(--rose); }
+.wf-editor .seg-light { margin: 2px 0 10px; }
+.wf-lower { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
+.wf-lower table.grid td, .wf-lower table.grid th { padding: 6px 10px; }
+.wf-test-summary { display: flex; gap: 20px; flex-wrap: wrap; margin: 12px 0; }
+.wf-test-summary strong { font-size: 18px; display: block; }
+.wf-versions ol { list-style: none; padding: 0; margin: 0; }
+.wf-versions li { padding: 8px 0; border-bottom: 1px solid var(--gray-3); }
+.wf-versions li:last-child { border-bottom: 0; }
+
 .suggest-box { flex-wrap: nowrap; }
 .auto-notice {
   display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 10px 16px;
@@ -440,8 +486,9 @@ function makeRng(seed) {
   };
 }
 
-function seedClaims() {
-  const r = makeRng(42);
+// Today's queue by default; with history: true, claims from the last 30 days (for the workflow test run).
+function seedClaims({ seed = 42, counts = [["harbour", 28], ["northgate", 20], ["fleetwise", 12]], history = false } = {}) {
+  const r = makeRng(seed);
   const pick = (xs) => xs[Math.floor(r() * xs.length)];
   const between = (lo, hi) => Math.round(lo + r() * (hi - lo));
   const chance = (p) => r() < p;
@@ -494,7 +541,7 @@ function seedClaims() {
       : type === "collision" ? between(600, thirdParty ? 14000 : 6000)
       : between(250, 4500);
     // Most of the queue arrived recently; a tail has been waiting since yesterday (the brief: 15% take over 4 h).
-    const received = (chance(0.8) ? between(2, 200) : between(250, 60 * 30)) * 60000;
+    const received = (history ? between(60 * 24, 60 * 24 * 30) : chance(0.8) ? between(2, 200) : between(250, 60 * 30)) * 60000;
     const policyAgeDays = chance(0.08) ? between(3, 40) : between(60, 2500);
     const priorClaims = chance(0.12) ? between(2, 5) : chance(0.3) ? 1 : 0;
     const first = pick(FIRST);
@@ -510,7 +557,7 @@ function seedClaims() {
 
     const policeReport = type === "theft" || injuries ? chance(0.7) : thirdParty ? chance(0.5) : chance(0.1);
     const claim = {
-      id: `CLM-${1000 + n}`,
+      id: history ? `PAST-${String(n).padStart(4, "0")}` : `CLM-${1000 + n}`,
       insurer,
       receivedAt: iso(received),
       channel: pick(["web form", "web form", "web form", "phone", "broker"]),
@@ -564,11 +611,33 @@ function seedClaims() {
 
   const claims = [];
   let n = 1;
-  for (const [insurer, count] of [["harbour", 28], ["northgate", 20], ["fleetwise", 12]]) {
+  for (const [insurer, count] of counts) {
     for (let i = 0; i < count; i++) claims.push(makeClaim(n++, insurer));
   }
   return claims.sort((a, b) => b.receivedAt.localeCompare(a.receivedAt));
 }
+
+const policyAgeDays = (c) => Math.round((Date.parse(c.receivedAt) - Date.parse(c.policy.startDate)) / 86400000);
+
+// The last 30 days of claims, with the pile a handler chose for each. [INVENTED]
+// Handlers roughly follow the decision order, with some judgement calls that no rule captures.
+function seedPastClaims() {
+  const claims = seedClaims({ seed: 99, counts: [["harbour", 240], ["northgate", 160], ["fleetwise", 90]], history: true });
+  const r = makeRng(5);
+  for (const c of claims) {
+    const big = c.damage.estimatedAmount > 3000;
+    let pile = c.fraud.score >= 0.6 || policyAgeDays(c) < 30 ? "Suspicious"
+      : c.parties.injuries || c.parties.thirdPartyInvolved || big || c.incident.type === "theft" ? "Needs a closer look"
+      : "Simple";
+    if (r() < 0.07) pile = PILES.filter((p) => p !== pile)[Math.floor(r() * 2)];
+    c.pile = pile;
+    c.status = "sorted";
+    c.missingInfo = [];
+  }
+  return claims;
+}
+const PAST_CLAIMS = seedPastClaims();
+const pastClaims = (insurer) => PAST_CLAIMS.filter((c) => c.insurer === insurer);
 
 /* =========================================================================
    State and routing. The URL hash picks the view: #consumer, #handler/bulk, ...
@@ -586,7 +655,8 @@ const state = {
   inbox: { tab: "todo", openId: null, sortedByYou: 0 },
   bulk: { filters: emptyFilters(), selected: [], sortBy: "received", log: [], exampleLoaded: [] },
   override: null, // the sort waiting for a reason because it goes against a suggestion
-  automation: { rules: [], dismissed: [], changes: [], collapsed: false, showAllSuggested: false, notice: null },
+  automation: { rules: [], gates: {}, dismissed: [], changes: [], collapsed: false, showAllSuggested: false, notice: null },
+  workflows: {}, // per insurer: published versions, the draft being edited, the last test run
 };
 
 function emptyForm() {
@@ -1045,7 +1115,7 @@ const NAV = [
 const PAGE_INFO = {
   inbox: { title: "Inbox", step: 2, description: "How sorting works today: every claim arrives here and a handler opens and sorts each one by hand." },
   bulk: { title: "Bulk sorting", step: 3, description: "A table of every claim with filters and multi-select. Every filter and bulk action is captured to inform automation rules." },
-  workflow: { title: "Workflow builder", step: 5, description: "Rules learned from handler behaviour, arranged into a drag-and-drop workflow per insurer." },
+  workflow: { title: "Workflow builder", step: 5, description: "One workflow per insurer, in our decision order: checks first, then rules learned from handlers, Simple last. Test on the last 30 days, then publish a new version." },
   agent: { title: "Workflow Agent", step: 6, description: "An AI layer over all claim and workflow data: answers questions about any claim and proposes workflow improvements for a human to approve." },
 };
 
@@ -1062,7 +1132,7 @@ function renderHandler() {
       ${icon(item.icon)} ${item.label}
     </button>`).join("");
 
-  const body = state.page === "inbox" ? renderInbox(mine) : state.page === "bulk" ? renderBulk(mine) : `
+  const body = state.page === "inbox" ? renderInbox(mine) : state.page === "bulk" ? renderBulk(mine) : state.page === "workflow" ? renderWorkflow() : `
     <div class="stats">
       ${stat("Claims", mine.length)}
       ${stat("Not sorted yet", unsorted)}
@@ -1182,7 +1252,7 @@ function renderClaimDetail(c) {
       <div class="suggest-box">
         <span class="small muted">Suggested:</span>
         <span class="badge ${PILE_STYLE[s.pile]}">${s.pile}</span>
-        <span class="small muted why" title="Rule: ${esc(ruleText(s.rule))}">${pct(ruleConfidence(s.rule))} kept · rule: ${esc(ruleText(s.rule))}</span>
+        <span class="small muted why" title="${esc(s.gate ? s.reason : `Rule: ${ruleText(s.rule)}`)}">${s.gate ? esc(s.reason) : `${keptText(s.rule)} · rule: ${esc(ruleText(s.rule))}`}${s.assignee ? ` · then assign to ${esc(s.assignee)}` : ""}${s.review ? " · senior review before payment" : ""}</span>
         <button class="btn" data-action="confirm-open">Confirm ${s.pile}</button>
       </div>`
     : `<div class="suggest-box"><span class="small muted why">Simple held back: ${s.heldBack} · rule: ${esc(ruleText(s.rule))}</span></div>`;
@@ -1194,6 +1264,8 @@ function renderClaimDetail(c) {
         <span class="badge gray">${c.id}</span>
         ${c.pile ? `<span class="badge ${PILE_STYLE[c.pile]}">${c.pile}</span>` : ""}
         ${c.status === "waiting on claimant" ? '<span class="badge waiting">Waiting on claimant</span>' : ""}
+        ${c.status === "senior review before payment" ? '<span class="badge waiting">Senior review before payment</span>' : ""}
+        ${c.assignee ? `<span class="badge gray">Assigned: ${esc(c.assignee)}</span>` : ""}
       </div>
       <div class="muted small">Received ${ago(c.receivedAt)} via ${esc(c.channel)} · ${typeLabel(c.incident.type)} · ${m(c.damage.estimatedAmount)}</div>
       <div class="sort-actions">
@@ -1299,6 +1371,7 @@ function sortOpenClaim(pile, reason) {
     action: before ? `Moved from ${before} to ${pile}` : `Sorted into ${pile}`,
     detail: `by hand, from the inbox${overrode ? ` · overrode suggestion ${s.pile}: ${reasonText(reason)}` : ""}`,
   });
+  routeAfterSort(c);
   if (!before) { state.inbox.sortedByYou++; openNextUnsorted(); }
 }
 
@@ -1340,7 +1413,7 @@ function filterDefs(insurerId) {
     { key: "prior", label: "Prior claims", options: [["", "Prior claims: any"], ["0", "No prior claims"], ["1", "1 prior claim"], ["2+", "2+ prior claims"]] },
     { key: "missing", label: "Missing info", options: [["", "Missing info: any"], ["yes", "Missing info"], ["no", "Nothing missing"]] },
     { key: "fraud", label: "Fraud score", options: [["", "Fraud score: any"], ["low", "Fraud score low (under 0.35)"], ["medium", "Fraud score medium (0.35–0.6)"], ["high", "Fraud score high (0.6+)"]] },
-    ...(activeRules(insurerId).length
+    ...(liveVersion(insurerId)
       ? [{ key: "suggested", label: "Suggestion", options: [["", "Suggestion: any"], ["yes", "Has a suggestion"], ["none", "No suggestion"]] }]
       : []),
   ];
@@ -1424,6 +1497,7 @@ function bulkSort(pile, reason) {
       action: before ? `Moved from ${before} to ${pile}` : `Sorted into ${pile}`,
       detail: `bulk sort of ${chosen.length} claims · filter: ${description}${overrode ? ` · overrode suggestion ${s.pile}: ${reasonText(reason)}` : ""}`,
     });
+    routeAfterSort(c);
   }
   logCapture({
     kind: "sort", pile, filters: { ...b.filters }, description,
@@ -1460,8 +1534,14 @@ function ruleFilters(f) {
   return out;
 }
 const ruleKey = (insurer, filters, pile) => `${insurer}|${JSON.stringify(ruleFilters(filters))}|${pile}`;
-const ruleText = (r) => describeFilters({ ...emptyFilters(), ...r.filters }, r.insurer);
-const activeRules = (insurer) => state.automation.rules.filter((r) => r.insurer === insurer);
+const ruleText = (r) => (r.gate ? "Fraud gate" : describeFilters({ ...emptyFilters(), ...r.filters }, r.insurer));
+
+// The rules in the insurer's live workflow, in pipeline order.
+function activeRules(insurer) {
+  const v = liveVersion(insurer);
+  if (!v) return [];
+  return v.nodes.filter((n) => n.type === "rule").sort(byStage).map((n) => state.automation.rules.find((r) => r.key === n.key));
+}
 
 function learnedRules(insurer) {
   const groups = new Map();
@@ -1484,41 +1564,173 @@ function learnedRules(insurer) {
 
 function suggestedRules(insurer) {
   const a = state.automation;
-  const taken = new Set([...a.dismissed, ...a.rules.map((r) => r.key)]);
+  const taken = new Set([...a.dismissed, ...activeRules(insurer).map((r) => r.key)]);
   return learnedRules(insurer).filter((r) => !taken.has(r.key));
 }
 
 const matchesRule = (c, r) => matchesFilters(c, { ...emptyFilters(), ...r.filters, status: "all" });
 
-// Decision order: Simple only if every check passes (missing info and fraud come first).
-function simpleBlock(c) {
-  if (c.missingInfo.length) return "missing info";
-  if (c.fraud.score >= 0.6) return "high fraud score";
+/* ----- Workflow (Phase 2b): one workflow per insurer, published as versions. The live version
+   decides every suggestion; rule changes on the bulk sorting page publish versions too. ----- */
+
+// The pipeline always runs in our decision order (auto-sorting-requirements.md): checks first,
+// the most cautious rules next, Simple last. Nodes can only move within their stage.
+const STAGES = [
+  { id: "start", label: "Claim arrives" },
+  { id: "missing", label: "Missing information" },
+  { id: "fraud", label: "Fraud gate" },
+  { id: "Suspicious", label: "Rules → Suspicious" },
+  { id: "Needs a closer look", label: "Rules → Needs a closer look" },
+  { id: "Simple", label: "Rules → Simple" },
+  { id: "assign", label: "Assign" },
+  { id: "review", label: "Before payment" },
+  { id: "end", label: "Otherwise" },
+];
+const stageOf = (n) => (n.type === "rule" ? n.pile : n.type);
+const stageIndex = (n) => STAGES.findIndex((s) => s.id === stageOf(n));
+const byStage = (x, y) => stageIndex(x) - stageIndex(y);
+const ASSIGNEES = ["Senior handler", "Motor engineer", "Injury specialist", "Fraud team"];
+const THRESHOLDS = [0.8, 0.85, 0.9, 0.95];
+const DEFAULT_THRESHOLD = 0.9;
+let nodeSeq = 0;
+const nodeId = () => `n${++nodeSeq}`;
+
+function defaultNodes(insurer) {
+  return [
+    { id: nodeId(), type: "missing", autoRequest: false },
+    { id: nodeId(), type: "fraud", score: 0.6, newPolicy: true, priors: false },
+    { id: nodeId(), type: "review", amount: INSURERS[insurer].seniorReviewAmount },
+  ];
+}
+
+function newNode(type, stage) {
+  if (type === "rule") return { id: nodeId(), type, filters: { type: "collision" }, pile: PILES.includes(stage) ? stage : "Needs a closer look", mode: "suggest" };
+  if (type === "assign") return { id: nodeId(), type, filters: { injury: "yes" }, to: "Injury specialist" };
   return null;
 }
 
-// The pile the active rules suggest for an unsorted claim. The most cautious matching rule wins.
+function workflowFor(insurer) {
+  const all = state.workflows;
+  if (!all[insurer]) all[insurer] = { versions: [], draft: null, rev: 0, selected: null, testRun: null, published: null };
+  return all[insurer];
+}
+const liveVersion = (insurer) => workflowFor(insurer).versions.at(-1) || null;
+const liveThreshold = (insurer) => (liveVersion(insurer) || { threshold: DEFAULT_THRESHOLD }).threshold;
+const cloneNodes = (nodes) => JSON.parse(JSON.stringify(nodes));
+const nodeRuleKey = (insurer, n) => ruleKey(insurer, n.filters, n.pile);
+
+// The rule behind a rule node: keeps its learned support and its confirm/override record across versions.
+function ruleObject(insurer, n) {
+  const a = state.automation;
+  const key = nodeRuleKey(insurer, n);
+  let r = a.rules.find((x) => x.key === key);
+  if (!r) {
+    const learned = learnedRules(insurer).find((x) => x.key === key);
+    r = {
+      key, insurer, filters: ruleFilters(n.filters), pile: n.pile, times: 0, claims: 0, excluded: 0, ...(learned || {}),
+      mode: "suggest", confirmed: 0, overridden: 0, overrideReasons: [], autoIds: [], acceptedAt: new Date(NOW_MS).toISOString(),
+    };
+    a.rules.push(r);
+  }
+  return r;
+}
+
+// The fraud gate's own confirm/override record, like a rule's.
+function gateFor(insurer) {
+  const g = state.automation.gates;
+  if (!g[insurer]) g[insurer] = { key: `${insurer}|fraud-gate`, gate: true, insurer, filters: {}, pile: "Suspicious", mode: "suggest", times: 0, claims: 0, excluded: 0, confirmed: 0, overridden: 0, overrideReasons: [], autoIds: [] };
+  return g[insurer];
+}
+
+function fraudFlags(c, f) {
+  const flags = [];
+  if (c.fraud.score >= f.score) flags.push(`${c.fraud.vendor} score ${c.fraud.score.toFixed(2)} (${f.score}+)`);
+  if (f.newPolicy && policyAgeDays(c) < 30) flags.push(`policy ${policyAgeDays(c)} days old`);
+  if (f.priors && c.claimant.priorClaims5y >= 3) flags.push(`${c.claimant.priorClaims5y} prior claims`);
+  return flags;
+}
+
+// Decision order: Simple only if every check passes (missing info and fraud come first).
+function simpleBlock(c, fraud) {
+  if (c.missingInfo.length) return "missing info";
+  if (c.fraud.score >= (fraud ? fraud.score : 0.6)) return "high fraud score";
+  return null;
+}
+
+// Runs a claim through a workflow's nodes. Pure: works on drafts, live versions and past claims alike.
+function evaluate(c, nodes) {
+  const out = { pile: null, node: null, reason: "", heldBack: null, heldNode: null, assignee: null, review: false };
+  const fraud = nodes.find((n) => n.type === "fraud");
+  const flags = fraud ? fraudFlags(c, fraud) : [];
+  if (flags.length) {
+    Object.assign(out, { pile: "Suspicious", node: fraud, reason: `Fraud gate: ${flags.join(", ")}` });
+  } else {
+    for (const n of nodes.filter((x) => x.type === "rule" && matchesRule(c, x)).sort(byStage)) {
+      const block = n.pile === "Simple" ? simpleBlock(c, fraud) : null;
+      if (block) { if (!out.heldBack) Object.assign(out, { heldBack: block, heldNode: n }); continue; }
+      Object.assign(out, { pile: n.pile, node: n, reason: ruleText({ ...n, insurer: c.insurer }) });
+      break;
+    }
+  }
+  const assign = nodes.find((n) => n.type === "assign" && matchesRule(c, n));
+  if (assign) out.assignee = assign.to;
+  const review = nodes.find((n) => n.type === "review");
+  if (review && out.pile === "Simple" && c.damage.estimatedAmount >= review.amount) out.review = true;
+  return out;
+}
+
+// What the live workflow suggests for an unsorted claim.
 function suggestionFor(c) {
   if (c.pile) return null;
-  const rules = activeRules(c.insurer)
-    .filter((r) => matchesRule(c, r))
-    .sort((x, y) => PILE_ORDER.indexOf(x.pile) - PILE_ORDER.indexOf(y.pile) || ruleConfidence(y) - ruleConfidence(x));
-  let heldBack = null;
-  for (const r of rules) {
-    const block = r.pile === "Simple" ? simpleBlock(c) : null;
-    if (block) { heldBack = heldBack || { rule: r, reason: block }; continue; }
-    return { pile: r.pile, rule: r };
-  }
-  return heldBack ? { pile: null, rule: heldBack.rule, heldBack: heldBack.reason } : null;
+  const v = liveVersion(c.insurer);
+  if (!v) return null;
+  const e = evaluate(c, v.nodes);
+  const ruleOf = (n) => (n.type === "fraud" ? gateFor(c.insurer) : state.automation.rules.find((r) => r.key === n.key));
+  if (e.pile) return { pile: e.pile, rule: ruleOf(e.node), reason: e.reason, gate: e.node.type === "fraud", assignee: e.assignee, review: e.review };
+  if (e.heldBack) return { pile: null, rule: ruleOf(e.heldNode), heldBack: e.heldBack, assignee: e.assignee };
+  return null;
 }
 
 // Share of claims where handlers kept the rule's pile: what it was learned from, plus every
-// confirm and override since it was accepted. Overrides lower it straight away.
+// confirm and override since it was accepted. Overrides lower it straight away. Null with no evidence.
 function ruleConfidence(r) {
-  const kept = r.claims + (r.confirmed || 0);
-  return kept / (kept + r.excluded + (r.overridden || 0));
+  const kept = (r.claims || 0) + (r.confirmed || 0);
+  const all = kept + (r.excluded || 0) + (r.overridden || 0);
+  return all ? kept / all : null;
 }
 const pct = (x) => `${Math.round(x * 100)}%`;
+const keptText = (r) => (ruleConfidence(r) === null ? "no history yet" : `${pct(ruleConfidence(r))} kept`);
+
+// A rule switched to auto-sort only acts while handlers keep agreeing with it (the workflow threshold).
+function autoState(r) {
+  if (r.mode !== "auto" || r.gate || r.pile === "Suspicious") return "suggest";
+  return (ruleConfidence(r) ?? 0) >= liveThreshold(r.insurer) ? "auto" : "paused";
+}
+
+// Publishing makes a new live version. Rule modes follow the version; Suspicious is always suggest-only.
+function publish(insurer, nodes, threshold, note, source) {
+  const wf = workflowFor(insurer);
+  for (const n of nodes) {
+    if (n.type !== "rule") continue;
+    if (n.pile === "Suspicious") n.mode = "suggest";
+    n.key = nodeRuleKey(insurer, n);
+    ruleObject(insurer, n).mode = n.mode;
+  }
+  const v = { n: wf.versions.length + 1, at: new Date(NOW_MS).toISOString(), nodes: cloneNodes(nodes), threshold, note, source };
+  wf.versions.push(v);
+  state.automation.changes.push({ at: v.at, insurer, action: `Published workflow v${v.n}`, rule: note, pile: "" });
+  return v;
+}
+
+// A change made from the bulk sorting page: published straight away, and applied to an open draft too.
+function changeLive(insurer, fn, note) {
+  const wf = workflowFor(insurer);
+  const live = liveVersion(insurer);
+  const v = publish(insurer, fn(live ? cloneNodes(live.nodes) : defaultNodes(insurer)), live ? live.threshold : DEFAULT_THRESHOLD, note, "Bulk sorting");
+  if (wf.draft) { wf.draft.nodes = fn(wf.draft.nodes); wf.rev++; }
+  return v;
+}
+const isRuleNode = (insurer, key) => (n) => n.type === "rule" && nodeRuleKey(insurer, n) === key;
 
 // Asked whenever a handler sorts against a suggestion (E-02: the decision is logged next to the suggestion).
 const OVERRIDE_REASONS = [
@@ -1583,7 +1795,9 @@ function renderOverrideDialog() {
 function acceptRule(key) {
   const r = suggestedRules(state.insurer).find((x) => x.key === key);
   if (!r) return;
-  state.automation.rules.push({ ...r, mode: "suggest", confirmed: 0, overridden: 0, overrideReasons: [], autoIds: [], acceptedAt: new Date(NOW_MS).toISOString() });
+  changeLive(r.insurer, (nodes) => (nodes.some(isRuleNode(r.insurer, key)) ? nodes
+    : [...nodes, { id: nodeId(), type: "rule", filters: { ...r.filters }, pile: r.pile, mode: "suggest" }]),
+  `Accepted rule from bulk sorting: ${ruleText(r)} → ${r.pile}`);
   state.automation.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: "Accepted rule", rule: ruleText(r), pile: r.pile });
 }
 
@@ -1595,9 +1809,9 @@ function turnOffRule(key) {
   const a = state.automation;
   const r = a.rules.find((x) => x.key === key);
   if (!r) return;
-  a.rules = a.rules.filter((x) => x.key !== key);
+  changeLive(r.insurer, (nodes) => nodes.filter((n) => !isRuleNode(r.insurer, key)(n)), `Turned off rule: ${ruleText(r)} → ${r.pile}`);
+  r.mode = "suggest";
   a.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: "Turned off rule", rule: ruleText(r), pile: r.pile });
-  if (!activeRules(state.insurer).length) state.bulk.filters.suggested = "";
   if (a.notice && a.notice.key === key) a.notice = null;
 }
 
@@ -1611,13 +1825,14 @@ function setRuleMode(key, mode) {
   const r = a.rules.find((x) => x.key === key);
   if (!r || r.mode === mode) return;
   if (mode === "auto" && r.pile === "Suspicious") return; // Suspicious is suggest-only
-  r.mode = mode;
+  changeLive(r.insurer, (nodes) => nodes.map((n) => (isRuleNode(r.insurer, key)(n) ? { ...n, mode } : n)),
+    `${ruleText(r)} → ${r.pile}: switched to ${mode === "auto" ? "auto-sort" : "suggest"}`);
   a.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: mode === "auto" ? "Switched rule to auto-sort" : "Switched rule to suggest", rule: ruleText(r), pile: r.pile });
   if (mode === "auto") {
     const before = r.autoIds.length;
     runAutomation();
     const heldBack = state.claims.filter((c) => { const s = suggestionFor(c); return s && s.heldBack && s.rule === r; });
-    a.notice = { kind: "auto", key, ids: r.autoIds.slice(before), heldBack: heldBack.map((c) => suggestionFor(c).heldBack) };
+    a.notice = { kind: autoState(r) === "paused" ? "paused" : "auto", key, ids: r.autoIds.slice(before), heldBack: heldBack.map((c) => suggestionFor(c).heldBack) };
   } else {
     a.notice = { kind: "suggest", key, ids: stillAutoSorted(r) };
   }
@@ -1632,15 +1847,43 @@ function viewAutoSorted(key) {
 function sortBySuggestion(c, s, actor, action) {
   c.pile = s.pile;
   if (c.status !== "waiting on claimant") c.status = "sorted";
-  c.history.push({ at: new Date().toISOString(), actor, action, detail: `rule: ${ruleText(s.rule)}` });
+  c.history.push({ at: new Date().toISOString(), actor, action, detail: s.gate ? s.reason : `rule: ${ruleText(s.rule)}` });
+  routeAfterSort(c);
 }
 
-// Auto-sort every unsorted claim whose suggestion comes from an auto-sort rule.
+// After any sort, the live workflow's Assign and senior-review steps apply (A-20).
+function routeAfterSort(c) {
+  const v = liveVersion(c.insurer);
+  if (!v) return;
+  const at = new Date().toISOString();
+  const e = evaluate(c, v.nodes);
+  if (e.assignee && c.assignee !== e.assignee) {
+    c.assignee = e.assignee;
+    c.history.push({ at, actor: "automation", action: `Assigned to ${e.assignee}`, detail: `workflow v${v.n}` });
+  }
+  const review = v.nodes.find((n) => n.type === "review");
+  if (review && c.pile === "Simple" && c.status === "sorted" && c.damage.estimatedAmount >= review.amount) {
+    c.status = "senior review before payment";
+    c.history.push({ at, actor: "automation", action: "Held for senior review before payment", detail: `${money(c.insurer, c.damage.estimatedAmount)} is at or above ${money(c.insurer, review.amount)} · workflow v${v.n}` });
+  }
+}
+
+// Auto-sort every unsorted claim whose suggestion comes from a rule allowed to auto-sort, and ask
+// claimants for missing information if the workflow's missing-info step does that.
 function runAutomation() {
+  let requested = 0;
+  for (const c of state.claims) {
+    const v = liveVersion(c.insurer);
+    const m = v && v.nodes.find((n) => n.type === "missing");
+    if (!m || !m.autoRequest || c.pile || c.status !== "new" || !c.missingInfo.length) continue;
+    requested++;
+    c.status = "waiting on claimant";
+    c.history.push({ at: new Date().toISOString(), actor: "automation", action: "Asked claimant for missing info", detail: `${c.missingInfo.join(", ")} · workflow v${v.n}` });
+  }
   const counts = new Map();
   for (const c of state.claims) {
     const s = suggestionFor(c);
-    if (!s || !s.pile || s.rule.mode !== "auto") continue;
+    if (!s || !s.pile || autoState(s.rule) !== "auto") continue;
     sortBySuggestion(c, s, "automation", `Auto-sorted into ${s.pile}`);
     s.rule.autoIds.push(c.id);
     counts.set(s.rule, [...(counts.get(s.rule) || []), c.id]);
@@ -1648,7 +1891,7 @@ function runAutomation() {
   for (const [r, ids] of counts) {
     logCapture({ kind: "auto", insurer: r.insurer, pile: r.pile, filters: { ...emptyFilters(), ...r.filters }, description: ruleText(r), count: ids.length, ids });
   }
-  return [...counts.values()].reduce((s, ids) => s + ids.length, 0);
+  return { sorted: [...counts.values()].reduce((s, ids) => s + ids.length, 0), requested };
 }
 
 function undoAutoSort(key) {
@@ -1659,12 +1902,15 @@ function undoAutoSort(key) {
     const c = state.claims.find((x) => x.id === id);
     if (!c || c.pile !== r.pile) continue;
     c.pile = null;
-    if (c.status === "sorted") c.status = "new";
+    if (c.status === "sorted" || c.status === "senior review before payment") c.status = "new";
     c.history.push({ at: new Date().toISOString(), actor: "you", action: "Auto-sort undone", detail: `rule: ${ruleText(r)}` });
     undone.push(id);
   }
   r.autoIds = [];
-  r.mode = "suggest";
+  if (r.mode === "auto") {
+    changeLive(r.insurer, (nodes) => nodes.map((n) => (isRuleNode(r.insurer, key)(n) ? { ...n, mode: "suggest" } : n)),
+      `${ruleText(r)} → ${r.pile}: undid auto-sort of ${undone.length} claims, back to suggest`);
+  }
   state.automation.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: `Undid auto-sort of ${undone.length} claims`, rule: ruleText(r), pile: r.pile });
   state.automation.notice = { kind: "undone", key, ids: undone };
 }
@@ -1687,6 +1933,8 @@ function renderAutoNotice() {
       ? `<strong>${claims(n.ids.length)} auto-sorted into ${r.pile}</strong> by ${rule}.${held} New matching claims will be sorted as they arrive.`
       : `<strong>Auto-sort on</strong> for ${rule}. No claims match right now; new matching claims will be sorted as they arrive.${held}`;
     actions = view + undo("Undo");
+  } else if (n.kind === "paused") {
+    text = `<strong>Auto-sort on, but paused</strong> for ${rule}: ${keptText(r)} is below the workflow's ${pct(liveThreshold(r.insurer))}. Matching claims are suggested until handlers' confirms bring it back up.`;
   } else if (n.kind === "suggest") {
     text = `<strong>Auto-sort off</strong> for ${rule}. New matching claims will be suggested, not sorted.${still ? ` The ${claims(still)} already auto-sorted stay sorted.` : ""}`;
     actions = view + undo(`Undo those ${still}`);
@@ -1730,7 +1978,8 @@ function renderAutomation(mine) {
       <div class="rule-row" data-rule="${esc(r.key)}">
         <div>
           <div><strong>${esc(ruleText(r))}</strong> → <span class="badge ${PILE_STYLE[r.pile]}">${r.pile}</span></div>
-          <div class="small muted">${support(r)} · <span class="rule-kept">${pct(ruleConfidence(r))} kept</span>${used ? ` · since accepted: ${r.confirmed} confirmed, ${r.overridden} overridden` : ""}</div>
+          <div class="small muted">${support(r)} · <span class="rule-kept">${keptText(r)}</span>${used ? ` · since accepted: ${r.confirmed} confirmed, ${r.overridden} overridden` : ""}</div>
+          ${autoState(r) === "paused" ? `<div class="small paused">Auto-sort paused: ${keptText(r)}, below the workflow's ${pct(liveThreshold(r.insurer))}</div>` : ""}
           ${r.overrideReasons.length ? `<div class="small muted override-reasons">Overridden because: ${esc(topReasons(r))}</div>` : ""}
         </div>
         <div class="small"><strong>${suggestionCount(r)}</strong> <span class="muted">suggested now</span>${r.autoIds.length ? `<div class="muted">${r.autoIds.length} auto-sorted</div>` : ""}</div>
@@ -1765,7 +2014,8 @@ function renderAutomation(mine) {
       <div class="automation-head">
         <div>
           <h2><span class="badge">Phase 2</span> Automation</h2>
-          <div class="small muted">Rules learned from how your team sorts. Accept a rule to get suggestions in the table; switch it to auto-sort when you trust it.</div>
+          <div class="small muted">Rules learned from how your team sorts. Accept a rule to get suggestions in the table; switch it to auto-sort when you trust it.
+            ${liveVersion(state.insurer) ? `Every change publishes a new version of the <button class="link-btn small" data-action="page" data-value="workflow">workflow (live: v${liveVersion(state.insurer).n})</button>.` : ""}</div>
         </div>
         <div class="automation-summary small">
           <span><strong>${suggested.length}</strong> suggested</span>
@@ -1785,6 +2035,358 @@ function renderAutomation(mine) {
             : !active.length ? `<div class="small muted">No patterns yet. A rule is suggested once your team has sorted the same kind of group ${MIN_TIMES} times. Sort a few groups, or load the example week.</div>` : ""}
         </div>`}
     </section>`;
+}
+
+/* ----- Workflow builder screen ----- */
+
+// Edits go to a draft (a copy of the live version) until it's tested and published.
+function draftFor(insurer) {
+  const wf = workflowFor(insurer);
+  if (!wf.draft) {
+    const live = liveVersion(insurer);
+    wf.draft = { nodes: live ? cloneNodes(live.nodes) : defaultNodes(insurer), threshold: live ? live.threshold : DEFAULT_THRESHOLD };
+  }
+  return wf.draft;
+}
+
+function editDraft(insurer, fn) {
+  const wf = workflowFor(insurer);
+  if (fn(draftFor(insurer)) === false) return;
+  wf.rev++;
+  wf.published = null;
+}
+
+const comparable = (v) => JSON.stringify({ t: v.threshold, n: v.nodes.map(({ key, ...rest }) => rest) });
+function isDirty(insurer) {
+  const wf = workflowFor(insurer);
+  const live = liveVersion(insurer);
+  return Boolean(wf.draft) && (!live || comparable(live) !== comparable(wf.draft));
+}
+
+function setDraftField(insurer, id, field, el) {
+  editDraft(insurer, (d) => {
+    const n = d.nodes.find((x) => x.id === id);
+    if (!n) return false;
+    if (field.startsWith("filters.")) {
+      const k = field.slice(8);
+      if (el.value) n.filters[k] = el.value; else delete n.filters[k];
+    } else if (el.type === "checkbox") n[field] = el.checked;
+    else if (field === "score" || field === "amount") n[field] = Number(el.value);
+    else n[field] = el.value;
+    if (n.type === "rule" && n.pile === "Suspicious") n.mode = "suggest";
+  });
+}
+
+function addNode(insurer, type, stage, beforeId) {
+  const wf = workflowFor(insurer);
+  editDraft(insurer, (d) => {
+    const n = newNode(type, stage);
+    if (!n) return false;
+    const i = beforeId ? d.nodes.findIndex((x) => x.id === beforeId) : -1;
+    if (i >= 0) d.nodes.splice(i, 0, n); else d.nodes.push(n);
+    wf.selected = n.id;
+  });
+}
+
+// Drag and drop: a rule dropped on a pile's stage takes that pile; Assign steps go in the Assign stage.
+function dropOnStage(insurer, payload, stage, beforeId) {
+  if (payload.palette) {
+    if ((payload.palette === "rule" && PILES.includes(stage)) || (payload.palette === "assign" && stage === "assign")) addNode(insurer, payload.palette, stage, beforeId);
+    return;
+  }
+  const wf = workflowFor(insurer);
+  editDraft(insurer, (d) => {
+    const n = d.nodes.find((x) => x.id === payload.node);
+    if (!n || n.id === beforeId) return false;
+    if (n.type === "rule" && PILES.includes(stage)) { n.pile = stage; if (stage === "Suspicious") n.mode = "suggest"; }
+    else if (!(n.type === "assign" && stage === "assign")) return false;
+    d.nodes = d.nodes.filter((x) => x !== n);
+    const i = beforeId ? d.nodes.findIndex((x) => x.id === beforeId) : -1;
+    if (i >= 0) d.nodes.splice(i, 0, n); else d.nodes.push(n);
+    wf.selected = n.id;
+  });
+}
+
+function removeNode(insurer, id) {
+  const wf = workflowFor(insurer);
+  editDraft(insurer, (d) => {
+    const n = d.nodes.find((x) => x.id === id);
+    if (!n || (n.type !== "rule" && n.type !== "assign")) return false; // the checks are required
+    d.nodes = d.nodes.filter((x) => x !== n);
+    wf.selected = null;
+  });
+}
+
+const assignText = (n, insurer) => `${Object.keys(n.filters).length ? describeFilters({ ...emptyFilters(), ...n.filters }, insurer) : "Every claim"} → ${n.to}`;
+function nodeLabel(n, insurer) {
+  if (n.type === "rule") return `${ruleText({ ...n, insurer })} → ${n.pile}`;
+  if (n.type === "assign") return `Assign: ${assignText(n, insurer)}`;
+  return { missing: "Missing info check", fraud: "Fraud gate", review: "Senior review before payment" }[n.type];
+}
+
+// How a draft (or the live version) would have sorted the last 30 days, against what handlers did.
+function runTest(insurer, nodes, threshold) {
+  const past = pastClaims(insurer);
+  const res = { total: past.length, piles: {}, handlers: {}, none: 0, decided: 0, agree: 0, auto: 0, nodes: [] };
+  for (const p of PILES) { res.piles[p] = 0; res.handlers[p] = 0; }
+  const per = new Map();
+  for (const c of past) {
+    res.handlers[c.pile]++;
+    const e = evaluate(c, nodes);
+    if (!e.pile) { res.none++; continue; }
+    res.piles[e.pile]++;
+    res.decided++;
+    const ok = e.pile === c.pile;
+    if (ok) res.agree++;
+    const p = per.get(e.node.id) || { label: nodeLabel(e.node, insurer), n: 0, agree: 0 };
+    p.n++;
+    if (ok) p.agree++;
+    per.set(e.node.id, p);
+    if (e.node.type === "rule" && e.node.mode === "auto" && e.pile !== "Suspicious") {
+      const r = state.automation.rules.find((x) => x.key === nodeRuleKey(insurer, e.node));
+      if (r && (ruleConfidence(r) ?? 0) >= threshold) res.auto++;
+    }
+  }
+  res.nodes = [...per.values()].sort((a, b) => b.n - b.agree - (a.n - a.agree) || b.n - a.n);
+  return res;
+}
+
+function testDraft(insurer) {
+  const wf = workflowFor(insurer);
+  const live = liveVersion(insurer);
+  const view = wf.draft || live;
+  wf.testRun = {
+    rev: wf.rev,
+    draft: runTest(insurer, view.nodes, view.threshold),
+    live: live && wf.draft ? runTest(insurer, live.nodes, live.threshold) : null,
+  };
+}
+
+// Plain-language list of what a draft changes, used as the version note.
+function describeChanges(insurer, live, draft) {
+  const m = (v) => money(insurer, v);
+  if (!live) {
+    const rules = draft.nodes.filter((n) => n.type === "rule").length;
+    return `First version: missing info check, fraud gate, ${rules} rule${rules === 1 ? "" : "s"}, senior review before payment`;
+  }
+  const sig = (n) => (n.type === "rule" ? `rule|${nodeRuleKey(insurer, n)}` : n.type === "assign" ? `assign|${JSON.stringify(ruleFilters(n.filters))}|${n.to}` : n.type);
+  const before = new Map(live.nodes.map((n) => [sig(n), n]));
+  const after = new Map(draft.nodes.map((n) => [sig(n), n]));
+  const out = [];
+  for (const [k, n] of after) if (!before.has(k)) out.push(`Added ${nodeLabel(n, insurer)}`);
+  for (const [k, n] of before) if (!after.has(k)) out.push(`Removed ${nodeLabel(n, insurer)}`);
+  for (const [k, n] of after) {
+    const o = before.get(k);
+    if (!o) continue;
+    if (n.type === "rule" && o.mode !== n.mode) out.push(`${nodeLabel(n, insurer)}: switched to ${n.mode === "auto" ? "auto-sort" : "suggest"}`);
+    if (n.type === "missing" && o.autoRequest !== n.autoRequest) out.push(n.autoRequest ? "Missing info: ask the claimant automatically" : "Missing info: stop asking the claimant automatically");
+    if (n.type === "fraud") {
+      if (o.score !== n.score) out.push(`Fraud gate score ${o.score}+ → ${n.score}+`);
+      if (o.newPolicy !== n.newPolicy) out.push(`Fraud gate: ${n.newPolicy ? "added" : "removed"} the new-policy check`);
+      if (o.priors !== n.priors) out.push(`Fraud gate: ${n.priors ? "added" : "removed"} the 3+ prior claims check`);
+    }
+    if (n.type === "review" && o.amount !== n.amount) out.push(`Senior review from ${m(o.amount)} → ${m(n.amount)}`);
+  }
+  if (live.threshold !== draft.threshold) out.push(`Auto-sort threshold ${pct(live.threshold)} → ${pct(draft.threshold)}`);
+  return out.join("; ") || "Changed the order of steps";
+}
+
+function publishDraft(insurer) {
+  const wf = workflowFor(insurer);
+  if (!isDirty(insurer) || !wf.testRun || wf.testRun.rev !== wf.rev) return; // tested before publishing (E-06)
+  const v = publish(insurer, wf.draft.nodes, wf.draft.threshold, describeChanges(insurer, liveVersion(insurer), wf.draft), "Workflow builder");
+  wf.draft = null;
+  wf.testRun = null;
+  wf.published = { n: v.n, ...runAutomation() };
+}
+
+function restoreVersion(insurer, n) {
+  const wf = workflowFor(insurer);
+  const old = wf.versions.find((v) => v.n === n);
+  if (!old || old === liveVersion(insurer)) return;
+  const v = publish(insurer, cloneNodes(old.nodes), old.threshold, `Restored v${n}`, "Workflow builder");
+  wf.draft = null;
+  wf.testRun = null;
+  wf.published = { n: v.n, ...runAutomation() };
+}
+
+const PALETTE = [
+  { type: "rule", title: "Rule", text: "A condition and a pile. Drop it on the pile's stage." },
+  { type: "assign", title: "Assign", text: "Send matching claims to a person or team." },
+  { type: "missing", title: "Missing info check", required: true },
+  { type: "fraud", title: "Fraud gate", required: true },
+  { type: "review", title: "Senior review before payment", required: true },
+];
+
+function renderWorkflowNode(n, insurer, threshold, selectedId) {
+  const sel = n.id === selectedId ? "selected" : "";
+  const card = (title, text, badges = "", extra = "") => `
+    <div class="wf-node ${n.type} ${sel}" data-action="wf-select" data-value="${n.id}" ${extra}>
+      <div class="wf-node-title">${title}</div>
+      <div class="small muted">${text}</div>
+      ${badges ? `<div class="badges">${badges}</div>` : ""}
+    </div>`;
+  const f = n.type === "fraud" ? n : null;
+  switch (n.type) {
+    case "start": return card("Claim arrives", "From the claim form, phone or broker");
+    case "end": return card("Otherwise", "No rule matched: a handler sorts it");
+    case "missing": return card("Missing info check", `${n.autoRequest ? "Asks the claimant for what's missing automatically." : "Flags what's missing."} Never Simple until it's in.`, n.autoRequest ? '<span class="badge waiting">Auto-request on</span>' : "");
+    case "fraud": return card("Fraud gate", `Suspicious if the ${esc(INSURERS[insurer].fraudVendor)} score is ${f.score}+${f.newPolicy ? ", or the policy is under 30 days old" : ""}${f.priors ? ", or 3+ prior claims" : ""}.`, '<span class="badge gray">Always suggest-only</span>', `style="border-left-color:${PILE_DOT.Suspicious}"`);
+    case "review": return card("Senior review before payment", `Simple claims of ${money(insurer, n.amount)}+ wait for a senior handler before they're paid.`);
+    case "assign": return card(`Assign → ${esc(n.to)}`, esc(assignText(n, insurer).split(" → ")[0]), "", `draggable="true" data-node="${n.id}"`);
+    case "rule": {
+      const r = state.automation.rules.find((x) => x.key === nodeRuleKey(insurer, n));
+      const conf = r ? ruleConfidence(r) : null;
+      const mode = n.mode !== "auto" ? "Suggest" : (conf ?? 0) >= threshold ? "Auto-sort" : "Auto-sort paused";
+      const badges = `<span class="badge ${mode === "Auto-sort" ? "simple" : mode === "Suggest" ? "gray" : "closer"}">${mode}</span>
+        <span class="badge gray">${conf === null ? "New: no history yet" : `${pct(conf)} kept`}</span>`;
+      return card(`${esc(ruleText({ ...n, insurer }))} → <span class="badge ${PILE_STYLE[n.pile]}">${n.pile}</span>`, r && r.times ? `Learned from ${r.times} bulk sorts (${r.claims} claims)` : "Added in the builder", badges,
+        `draggable="true" data-node="${n.id}" style="border-left-color:${PILE_DOT[n.pile]}"`);
+    }
+  }
+  return "";
+}
+
+function renderNodeEditor(n, insurer, threshold) {
+  if (!n) return '<div class="small muted">Select a step to edit it. Drag a Rule or Assign step from the left onto the pipeline.</div>';
+  const m = (v) => money(insurer, v);
+  const select = (field, label, options, value) => `
+    <label class="wf-field"><span class="small">${label}</span>
+      <select class="select" data-wf-node="${n.id}" data-wf-field="${field}">
+        ${options.map(([v, l]) => `<option value="${esc(v)}" ${String(value) === String(v) ? "selected" : ""}>${esc(l)}</option>`).join("")}
+      </select></label>`;
+  const check = (field, label) => `<label class="wf-check small"><input type="checkbox" data-wf-node="${n.id}" data-wf-field="${field}" ${n[field] ? "checked" : ""} /> ${label}</label>`;
+  const conditions = () => filterDefs(insurer).filter((d) => d.key !== "status" && d.key !== "suggested")
+    .map((d) => select(`filters.${d.key}`, d.label, d.options, n.filters[d.key] || "")).join("");
+  const remove = `<button class="btn btn-sm btn-outline" data-action="wf-remove" data-value="${n.id}">Remove step</button>`;
+  const required = (why) => `<p class="small muted">Required step: it can't be removed (${why}).</p>`;
+  switch (n.type) {
+    case "start": return "<h3>Claim arrives</h3><p class=\"small muted\">Every claim from the claim form, phone or broker enters here, with the fraud score from the insurer's vendor attached.</p>";
+    case "end": return "<h3>Otherwise</h3><p class=\"small muted\">If no step decides a pile, the claim stays in the queue for a handler to sort, as today. Nothing is ever denied automatically (E-04).</p>";
+    case "missing": return `<h3>Missing info check</h3>
+      ${check("autoRequest", "Ask the claimant automatically for what's missing (email and text [INVENTED])")}
+      <p class="small muted">Missing information is a status, not a pile (A-19): the claim waits on the claimant and is never Simple until it's in.</p>${required("A-19")}`;
+    case "fraud": return `<h3>Fraud gate</h3>
+      ${select("score", `${INSURERS[insurer].fraudVendor} score at or above`, [0.5, 0.6, 0.7, 0.8].map((v) => [v, String(v)]), n.score)}
+      ${check("newPolicy", "Policy under 30 days old")}
+      ${check("priors", "3 or more prior claims in 5 years")}
+      <p class="small muted">Matches go to Suspicious as a suggestion only; a person always decides.</p>${required("AS-02: never Simple without a fraud check")}`;
+    case "review": return `<h3>Senior review before payment</h3>
+      ${select("amount", "Simple claims from", [1000, 1500, 2000, 2500, 3000, 4000, 5000].map((v) => [v, m(v)]), n.amount)}
+      <p class="small muted">The claim is still Simple; a senior handler checks it before it's paid.</p>${required("A-20")}`;
+    case "assign": return `<h3>Assign</h3>${conditions()}
+      ${select("to", "Assign to", ASSIGNEES.map((a) => [a, a]), n.to)}
+      <p class="small muted">Applies whenever a matching claim is sorted, by a person or a rule.</p>${remove}`;
+    case "rule": {
+      const r = state.automation.rules.find((x) => x.key === nodeRuleKey(insurer, n));
+      const conf = r ? ruleConfidence(r) : null;
+      return `<h3>Rule</h3>${conditions()}
+        ${Object.keys(n.filters).length ? "" : '<p class="small paused">No conditions: this rule matches every claim.</p>'}
+        ${select("pile", "Pile", PILES.map((p) => [p, p]), n.pile)}
+        <div class="small">Mode</div>
+        <div class="seg-light" role="group" aria-label="Mode">
+          <button data-action="wf-mode" data-node="${n.id}" data-value="suggest" aria-pressed="${n.mode !== "auto"}">Suggest</button>
+          <button data-action="wf-mode" data-node="${n.id}" data-value="auto" aria-pressed="${n.mode === "auto"}" ${n.pile === "Suspicious" ? 'disabled title="Suspicious is always suggest-only"' : ""}>Auto-sort</button>
+        </div>
+        <p class="small muted">${conf === null ? "New rule: no history yet, so it can't auto-sort until handlers confirm its suggestions."
+          : `${r.times ? `Learned from ${r.times} bulk sorts, ${r.claims} claims. ` : ""}${pct(conf)} kept. ${n.mode === "auto" ? (conf >= threshold ? `Auto-sorts: at or above the ${pct(threshold)} threshold.` : `Auto-sort paused: below the ${pct(threshold)} threshold.`) : ""}`}</p>
+        ${remove}`;
+    }
+  }
+  return "";
+}
+
+function renderTestRun(wf, insurer, live) {
+  const total = pastClaims(insurer).length;
+  const head = `<h3>Test run: last 30 days (${total} past claims [INVENTED])</h3>`;
+  if (!wf.testRun) return `${head}<p class="small muted">See how ${wf.draft ? "this draft" : "the live workflow"} would have sorted the last 30 days of claims, and how often it agrees with what handlers chose, before you publish.</p>
+    <button class="btn btn-outline" data-action="wf-test">Run test</button>`;
+  const t = wf.testRun;
+  const d = t.draft;
+  const l = t.live;
+  const share = (a, b) => (b ? pct(a / b) : "–");
+  const stale = t.rev !== wf.rev ? '<p class="small paused">The draft has changed since this test. Run it again before publishing.</p>' : "";
+  const rows = PILES.map((p) => `<tr><td><span class="badge ${PILE_STYLE[p]}">${p}</span></td><td class="num">${d.piles[p]}</td>${l ? `<td class="num">${l.piles[p]}</td>` : ""}<td class="num">${d.handlers[p]}</td></tr>`).join("")
+    + `<tr><td>Left for a handler</td><td class="num">${d.none}</td>${l ? `<td class="num">${l.none}</td>` : ""}<td class="num">–</td></tr>`;
+  return `${head}${stale}
+    <div class="wf-test-summary">
+      <div><strong class="test-decided">${share(d.decided, d.total)}</strong><span class="small muted">of claims decided${l ? ` (live: ${share(l.decided, l.total)})` : ""}</span></div>
+      <div><strong class="test-agree">${share(d.agree, d.decided)}</strong><span class="small muted">agree with handlers${l ? ` (live: ${share(l.agree, l.decided)})` : ""}</span></div>
+      <div><strong>${d.auto}</strong><span class="small muted">would be auto-sorted</span></div>
+    </div>
+    <table class="grid test-table"><thead><tr><th>Pile</th><th class="num">${wf.draft ? "Draft" : `Live v${live.n}`}</th>${l ? `<th class="num">Live v${live.n}</th>` : ""}<th class="num">Handlers chose</th></tr></thead><tbody>${rows}</tbody></table>
+    ${d.nodes.length ? `<div class="small" style="margin-top:12px;"><strong>Where it disagrees most</strong></div>
+      ${d.nodes.slice(0, 4).map((p) => `<div class="small muted">${esc(p.label)}: ${p.n} claims, ${share(p.agree, p.n)} agree</div>`).join("")}` : ""}`;
+}
+
+function renderWorkflow() {
+  const insurer = state.insurer;
+  const ins = INSURERS[insurer];
+  const wf = workflowFor(insurer);
+  const live = liveVersion(insurer);
+  const view = wf.draft || live || draftFor(insurer);
+  const dirty = isDirty(insurer);
+  const tested = Boolean(wf.testRun) && wf.testRun.rev === wf.rev;
+  const canPublish = dirty && tested;
+  const nextN = wf.versions.length + 1;
+  const fixed = { start: { id: "start", type: "start" }, end: { id: "end", type: "end" } };
+  const selected = fixed[wf.selected] || view.nodes.find((n) => n.id === wf.selected) || null;
+
+  const stages = STAGES.map((stage) => {
+    const items = fixed[stage.id] ? [fixed[stage.id]] : view.nodes.filter((n) => stageOf(n) === stage.id);
+    const droppable = PILES.includes(stage.id) || stage.id === "assign";
+    if (!items.length && !droppable) return "";
+    const empty = PILES.includes(stage.id) ? "No rules. Drag a rule here." : "Nobody assigned. Drag an Assign step here.";
+    return `
+      <div class="wf-stage ${droppable ? "droppable" : ""}" ${droppable ? `data-drop-stage="${esc(stage.id)}"` : ""}>
+        ${droppable ? `<div class="wf-stage-label">${stage.label}</div>` : ""}
+        ${items.map((n) => renderWorkflowNode(n, insurer, view.threshold, wf.selected)).join("") || `<div class="wf-empty small muted">${empty}</div>`}
+      </div>`;
+  }).filter(Boolean).join('<div class="wf-arrow" aria-hidden="true"></div>');
+
+  const palette = PALETTE.map((p) => p.required
+    ? `<div class="wf-pal-item required"><div><strong>${p.title}</strong></div><div class="small muted">In the workflow (required)</div></div>`
+    : `<div class="wf-pal-item" draggable="true" data-palette="${p.type}">
+        <div><strong>${p.title}</strong></div><div class="small muted">${p.text}</div>
+        <button class="btn btn-sm btn-outline" data-action="wf-add" data-value="${p.type}">+ Add</button>
+      </div>`).join("");
+
+  const versions = [...wf.versions].reverse().map((v) => `
+    <li>
+      <div><strong>v${v.n}</strong> ${v === live ? '<span class="badge simple">Live</span>' : ""} <span class="small muted">· ${esc(v.source)} · ${ago(v.at)}</span>
+        ${v === live ? "" : `<button class="link-btn small" style="float:right;" data-action="wf-restore" data-value="${v.n}">Restore</button>`}</div>
+      <div class="small muted">${esc(v.note)}</div>
+    </li>`).join("");
+
+  const p = wf.published;
+  const why = !dirty ? "No changes to publish" : !tested ? "Run a test before publishing" : "";
+  return `
+    <section class="card wf-bar">
+      <div>
+        <h2>${esc(ins.name)} workflow</h2>
+        <div class="small muted">${live ? `Live: <strong>v${live.n}</strong> · published ${ago(live.at)} from ${esc(live.source)}` : "Not live yet: publish v1 to start suggesting piles."}
+          ${dirty ? ' · <span class="badge closer">Draft: unpublished changes</span>' : ""}</div>
+      </div>
+      <label class="small wf-threshold">Auto-sort only when a rule's kept % is at least
+        <select class="select" data-wf-threshold>${THRESHOLDS.map((t) => `<option value="${t}" ${t === view.threshold ? "selected" : ""}>${pct(t)}</option>`).join("")}</select>
+      </label>
+      <div class="wf-bar-actions">
+        ${dirty && live ? '<button class="link-btn small" data-action="wf-discard">Discard changes</button>' : ""}
+        <button class="btn btn-outline" data-action="wf-test">Test run</button>
+        <button class="btn" data-action="wf-publish" ${canPublish ? "" : "disabled"} title="${why}">Publish v${nextN}</button>
+      </div>
+    </section>
+    ${p ? `<div class="wf-notice" role="status"><div class="small"><strong>Published v${p.n}.</strong> ${p.sorted} claims auto-sorted, ${p.requested} claimants asked for missing info. Suggestions in bulk sorting and the inbox now follow v${p.n}.</div>
+      <div class="auto-notice-actions"><button class="btn btn-sm btn-outline" data-action="page" data-value="bulk">Go to bulk sorting</button><button class="link-btn small" data-action="wf-notice-dismiss">Dismiss</button></div></div>` : ""}
+    <div class="wf-grid">
+      <aside class="card wf-palette"><h3>Steps</h3>${palette}</aside>
+      <section class="card wf-canvas" aria-label="Workflow pipeline">${stages}</section>
+      <aside class="card wf-editor">${renderNodeEditor(selected, insurer, view.threshold)}</aside>
+    </div>
+    <div class="wf-lower">
+      <section class="card wf-test">${renderTestRun(wf, insurer, live)}</section>
+      <section class="card wf-versions"><h3>Versions</h3>${versions ? `<ol>${versions}</ol>` : '<p class="small muted">Nothing published yet. Accepting a rule on the bulk sorting page, or publishing here, creates v1.</p>'}</section>
+    </div>`;
 }
 
 // A week of handler activity per insurer, so Phase 2 has enough examples to learn from. [INVENTED]
@@ -1892,7 +2494,7 @@ function renderBulk(mine) {
   const anyFilter = Object.entries(b.filters).some(([k, v]) => (k === "status" ? v !== "unsorted" : v));
   const samples = sampleFilters(mine);
 
-  const hasRules = activeRules(state.insurer).length > 0;
+  const hasRules = Boolean(liveVersion(state.insurer));
   const autoSortedIds = new Set(activeRules(state.insurer).flatMap(stillAutoSorted));
   const toConfirm = selected.filter((c) => { const s = suggestionFor(c); return s && s.pile; });
   const suggestionCell = (c) => {
@@ -1904,7 +2506,7 @@ function renderBulk(mine) {
         <span class="badge ${PILE_STYLE[s.pile]}">${s.pile}</span>
         <button class="icon-btn" data-action="confirm-suggestion" data-value="${c.id}" aria-label="Confirm ${s.pile} for ${c.id}" title="Confirm">✓</button>
       </div>
-      <div class="small muted reason" title="Rule: ${esc(ruleText(s.rule))}">${pct(ruleConfidence(s.rule))} · ${esc(ruleText(s.rule))}</div>`;
+      <div class="small muted reason" title="${esc(s.gate ? s.reason : `Rule: ${ruleText(s.rule)}`)}${s.assignee ? ` · then assign to ${esc(s.assignee)}` : ""}${s.review ? " · senior review before payment" : ""}">${s.gate ? esc(s.reason) : `${ruleConfidence(s.rule) === null ? "" : `${pct(ruleConfidence(s.rule))} · `}${esc(ruleText(s.rule))}`}</div>`;
   };
   const th = (key, label, cls = "") => `<th class="${cls}"><button class="th-sort" data-action="bulk-sort-by" data-value="${key}" aria-pressed="${b.sortBy === key}">${label}</button></th>`;
   const tableRows = rows.map((c) => {
@@ -1924,7 +2526,7 @@ function renderBulk(mine) {
           : c.missingInfo.length ? `<span class="badge waiting" title="${esc(c.missingInfo.join(", "))}">${c.missingInfo.length} missing</span>` : '<span class="muted">—</span>'}</td>
         <td class="num"><span class="badge ${fraudLevel}">${c.fraud.score.toFixed(2)}</span></td>
         ${hasRules ? `<td>${suggestionCell(c)}</td>` : ""}
-        <td>${c.pile ? `<span class="badge ${PILE_STYLE[c.pile]}">${c.pile}</span>${autoSortedIds.has(c.id) ? '<div class="small muted auto-tag">Auto</div>' : ""}` : '<span class="muted">—</span>'}</td>
+        <td>${c.pile ? `<span class="badge ${PILE_STYLE[c.pile]}">${c.pile}</span>${autoSortedIds.has(c.id) ? '<div class="small muted auto-tag">Auto</div>' : ""}${c.status === "senior review before payment" ? '<div><span class="badge waiting">Senior review</span></div>' : ""}` : '<span class="muted">—</span>'}</td>
       </tr>`;
   }).join("");
 
@@ -2125,12 +2727,24 @@ document.addEventListener("click", (e) => {
     render();
     document.querySelector(".bulk").scrollIntoView({ block: "start" });
   }
-  if (action === "notice-dismiss") { state.automation.notice = null; render(); }
-  if (action === "auto-view") {
-    viewAutoSorted(rule);
+
+  const wf = workflowFor(state.insurer);
+  if (action === "wf-select") { wf.selected = value; render(); }
+  if (action === "wf-add") { addNode(state.insurer, value, value === "rule" ? "Needs a closer look" : "assign"); render(); }
+  if (action === "wf-remove") { removeNode(state.insurer, value); render(); }
+  if (action === "wf-mode") {
+    editDraft(state.insurer, (d) => {
+      const n = d.nodes.find((x) => x.id === el.dataset.node);
+      if (!n || (value === "auto" && n.pile === "Suspicious")) return false;
+      n.mode = value;
+    });
     render();
-    document.querySelector(".bulk").scrollIntoView({ block: "start" });
   }
+  if (action === "wf-test") { testDraft(state.insurer); render(); }
+  if (action === "wf-publish") { publishDraft(state.insurer); render(); }
+  if (action === "wf-discard") { wf.draft = null; wf.testRun = null; wf.selected = null; render(); }
+  if (action === "wf-restore") { restoreVersion(state.insurer, Number(value)); render(); }
+  if (action === "wf-notice-dismiss") { wf.published = null; render(); }
   if (action === "automation-toggle") { state.automation.collapsed = !state.automation.collapsed; render(); }
   if (action === "confirm-suggestion") { confirmSuggestions([value]); render(); }
   if (action === "bulk-confirm") { confirmSuggestions(b.selected); render(); }
@@ -2180,6 +2794,39 @@ document.addEventListener("change", (e) => {
     setFilter(filter.dataset.filter, filter.value);
     render();
   }
+  const wfField = e.target.closest("[data-wf-field]");
+  if (wfField) { setDraftField(state.insurer, wfField.dataset.wfNode, wfField.dataset.wfField, wfField); render(); }
+  const threshold = e.target.closest("[data-wf-threshold]");
+  if (threshold) { editDraft(state.insurer, (d) => { d.threshold = Number(threshold.value); }); render(); }
+});
+
+// Workflow builder drag and drop: palette steps onto a stage, or a rule/assign step within the pipeline.
+document.addEventListener("dragstart", (e) => {
+  const from = e.target.closest && e.target.closest("[data-palette], [data-node]");
+  if (!from) return;
+  const payload = from.dataset.palette ? { palette: from.dataset.palette } : { node: from.dataset.node };
+  e.dataTransfer.setData("text/plain", JSON.stringify(payload));
+  e.dataTransfer.effectAllowed = "move";
+  document.body.classList.add("wf-dragging");
+});
+document.addEventListener("dragend", () => document.body.classList.remove("wf-dragging"));
+document.addEventListener("dragover", (e) => {
+  const stage = e.target.closest && e.target.closest("[data-drop-stage]");
+  if (!stage) return;
+  e.preventDefault();
+  document.querySelectorAll(".drop-hover").forEach((s) => s !== stage && s.classList.remove("drop-hover"));
+  stage.classList.add("drop-hover");
+});
+document.addEventListener("drop", (e) => {
+  const stage = e.target.closest && e.target.closest("[data-drop-stage]");
+  document.body.classList.remove("wf-dragging");
+  if (!stage) return;
+  e.preventDefault();
+  let payload;
+  try { payload = JSON.parse(e.dataTransfer.getData("text/plain")); } catch { return; }
+  const before = e.target.closest("[data-node]");
+  dropOnStage(state.insurer, payload, stage.dataset.dropStage, before ? before.dataset.node : null);
+  render();
 });
 
 document.addEventListener("keydown", (e) => {
