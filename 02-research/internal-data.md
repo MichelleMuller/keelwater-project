@@ -36,7 +36,18 @@ Weighted, this gives ~15% over 4h, matching the brief.
 | Fraud check or referral | 6% |
 | Other | 3% |
 
-Shown on the time-to-sort curve, with claims per year: [time-to-sort-distribution.md](time-to-sort-distribution.md#why-the-slow-15-take-longer).
+**Across all claims, not just the slow ones.** The same method on a second random sample of 400 claims from the faster two sections (claims sorted in under 4h):
+
+| What the claim was waiting on | Within 11 min (50%) | 11 min to 4 h (35%) | Over 4 h (15%) | All claims |
+|---|---|---|---|---|
+| Straightforward, nothing blocking | 80% | 35% | 0% | ~52% (~1.1M) |
+| Waiting on information from the claimant | 6% | 25% | 48% | ~19% (~398k) |
+| Third party / fault to determine | 8% | 24% | 28% | ~17% (~349k) |
+| Injury involved | 2% | 8% | 15% | ~6% (~127k) |
+| Fraud check or referral | 1% | 4% | 6% | ~3% (~59k) |
+| Other | 3% | 4% | 3% | ~3% (~70k) |
+
+~52% straightforward is close to the ~58% of motor claims one UK insurer found automatable ([research §1](motor-claims-triage-and-fraud.md)). More claims wait on information between 11 min and 4h (~184k) than over 4h (~151k), so missing-information flagging helps far beyond the slow tail. Shown on the time-to-sort curve: [time-to-sort-distribution.md](time-to-sort-distribution.md#why-the-slow-15-take-longer).
 
 > Revised 2026-10-16: an earlier version listed "Above the handler's authority limit" at 7% (with info 44%, third party 26%, injury 14%). Authority limits apply when a claim is **paid**, not when it's sorted, so they can't explain slow sorting (A-20). The 7% was spread across the other causes in proportion.
 

@@ -8,9 +8,14 @@ What the brief's time-to-sort numbers do and don't tell us, and what we'd ask fo
 
 ### Why the slow 15% take longer
 
-![Time to sort with the slow tail split by cause](assets/time-to-sort-causes.svg)
+![Time to sort split by what claims are waiting on](assets/time-to-sort-causes.svg)
 
-The same curve, with the claims over 4 h split by cause and turned into claims per year (15% of 2.1M = ~315k). Waiting on information from the claimant is the biggest band, ~151k claims a year, which is why missing-information flagging comes first. Fraud is the smallest real cause, ~19k. **The causes are [INVENTED]** ([internal-data.md §2](internal-data.md)); the curve shape is illustrative. PNG for the deck: [`assets/time-to-sort-causes.png`](assets/time-to-sort-causes.png).
+The same curve, with every section split by what claims are waiting on, and turned into claims per year. **The causes are [INVENTED]** ([internal-data.md §2](internal-data.md)); the curve shape is illustrative, and the mix is blended smoothly across the 11 min and 4 h lines (the table has the exact numbers per section). PNG for the deck: [`assets/time-to-sort-causes.png`](assets/time-to-sort-causes.png).
+
+- **The fast half is mostly straightforward claims** (80%, ~840k a year): nothing to wait on.
+- **The slow 15% has no straightforward claims.** Waiting on information is the biggest band (48%, ~151k).
+- **Waiting on information is the biggest blocker overall** (~398k claims a year), and more of it sits between 11 min and 4 h (~184k) than over 4 h. So missing-information flagging speeds up far more claims than the slow tail alone suggests.
+- **Fraud is small everywhere**: ~59k claims a year, 3% of all claims.
 
 ## What we know vs what we infer
 

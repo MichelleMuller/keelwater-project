@@ -6,8 +6,9 @@ It is a hypothesis about the shape, not data.
 
 Writes two charts:
 - time-to-sort-distribution.svg: the curve with its three sections
-- time-to-sort-causes.svg: the same curve, with the >4h tail split by cause
-  (invented internal data, internal-data.md §2) and claim counts per year
+- time-to-sort-causes.svg: the same curve, with every section split by what
+  claims are waiting on (invented internal data, internal-data.md §2), and a
+  table of shares and claims per year
 
 Run: python3 make_time_to_sort_chart.py  (no dependencies)
 """
@@ -19,12 +20,16 @@ W_SLOW, M_FAST, S_FAST, M_SLOW, S_SLOW = 0.17, 8.5, 1.0, 960.0, 1.2
 X_MIN, X_MAX = 0.3, 20160.0
 CLAIMS_PER_YEAR = 2_100_000
 
+SECTIONS = [(X_MIN, 11, 0.50, "Within 11 min"), (11, 240, 0.35, "11 min to 4 h"), (240, X_MAX, 0.15, "Over 4 h")]
+
+# Share of claims in each section, by what they're waiting on. [INVENTED], internal-data.md §2
 CAUSES = [
-    ("Waiting on info from claimant", 0.48, "#9a3412"),
-    ("Third party / fault to work out", 0.28, "#ea580c"),
-    ("Injury involved", 0.15, "#fdba74"),
-    ("Fraud check or referral", 0.06, "#b91c1c"),
-    ("Other", 0.03, "#a8a29e"),
+    ("Waiting on info from claimant", (0.06, 0.25, 0.48), "#9a3412"),
+    ("Third party / fault to work out", (0.08, 0.24, 0.28), "#ea580c"),
+    ("Injury involved", (0.02, 0.08, 0.15), "#fdba74"),
+    ("Fraud check or referral", (0.01, 0.04, 0.06), "#b91c1c"),
+    ("Other", (0.03, 0.04, 0.03), "#a8a29e"),
+    ("Straightforward, nothing blocking", (0.80, 0.35, 0.00), "#d0d7de"),
 ]
 
 WIDTH = 820
@@ -63,8 +68,23 @@ y_max = max(density(x) for x in xs) * 1.3
 ticks = [(1, "1 min"), (10, "10 min"), (60, "1 h"), (240, "4 h"), (1440, "1 day"), (10080, "1 week")]
 
 
-def render(target, height, title, subtitle, with_causes):
-    plot_w, plot_h = WIDTH - LEFT - RIGHT, height - TOP - BOTTOM
+def section_weights(x, width=0.3):
+    """Blend the section mixes smoothly across the 11 min and 4 h boundaries."""
+    past = [1 / (1 + exp(-(log(x) - log(b)) / width)) for b in (11, 240)]
+    return [1 - past[0], past[0] - past[1], past[1]]
+
+
+def stacked(x, k):
+    """Cumulative share of the first k causes at time x."""
+    w = section_weights(x)
+    return sum(ws * sum(c[1][s] for c in CAUSES[:k]) for s, ws in enumerate(w))
+
+
+def render(target, title, subtitle, with_causes):
+    plot_h = 250
+    table_h = 30 + 22 * (len(CAUSES) + 1) + 20 if with_causes else 0
+    height = TOP + plot_h + BOTTOM + table_h
+    plot_w = WIDTH - LEFT - RIGHT
 
     def sx(x):
         return LEFT + (log(x) - log(X_MIN)) / (log(X_MAX) - log(X_MIN)) * plot_w
@@ -72,11 +92,11 @@ def render(target, height, title, subtitle, with_causes):
     def sy(y):
         return TOP + plot_h - y / y_max * plot_h
 
-    def band_path(lo, hi, f_lo=0.0, f_hi=1.0):
+    def band_path(lo, hi, f_lo=lambda x: 0.0, f_hi=lambda x: 1.0):
         pts = [lo] + [x for x in xs if lo <= x <= hi] + [hi]
-        top = " ".join(f"L{sx(x):.1f},{sy(density(x) * f_hi):.1f}" for x in pts)
-        bottom = " ".join(f"L{sx(x):.1f},{sy(density(x) * f_lo):.1f}" for x in reversed(pts))
-        return f"M{sx(lo):.1f},{sy(density(lo) * f_lo):.1f} {top} {bottom} Z"
+        top = " ".join(f"L{sx(x):.1f},{sy(density(x) * f_hi(x)):.1f}" for x in pts)
+        bottom = " ".join(f"L{sx(x):.1f},{sy(density(x) * f_lo(x)):.1f}" for x in reversed(pts))
+        return f"M{sx(lo):.1f},{sy(density(lo) * f_lo(lo)):.1f} {top} {bottom} Z"
 
     line = "M" + " L".join(f"{sx(x):.1f},{sy(density(x)):.1f}" for x in xs)
 
@@ -86,17 +106,20 @@ def render(target, height, title, subtitle, with_causes):
         f'<rect width="{WIDTH}" height="{height}" fill="#ffffff"/>',
         f'<text x="{LEFT}" y="30" font-size="17" font-weight="600" fill="#1f2328">{title}</text>',
         f'<text x="{LEFT}" y="52" fill="#59636e">{subtitle}</text>',
-        f'<path d="{band_path(X_MIN, 11)}" fill="#8c959f" fill-opacity="0.35"/>',
-        f'<path d="{band_path(11, 240)}" fill="#8c959f" fill-opacity="0.18"/>',
     ]
 
     if with_causes:
-        cum = 0.0
-        for _, share, colour in CAUSES:
-            out.append(f'<path d="{band_path(240, X_MAX, cum, cum + share)}" fill="{colour}" fill-opacity="0.85"/>')
-            cum += share
+        for k in range(len(CAUSES)):
+            out.append(
+                f'<path d="{band_path(X_MIN, X_MAX, lambda x: stacked(x, k), lambda x: stacked(x, k + 1))}" '
+                f'fill="{CAUSES[k][2]}" fill-opacity="0.85"/>'
+            )
     else:
-        out.append(f'<path d="{band_path(240, X_MAX)}" fill="#e8590c" fill-opacity="0.35"/>')
+        out += [
+            f'<path d="{band_path(X_MIN, 11)}" fill="#8c959f" fill-opacity="0.35"/>',
+            f'<path d="{band_path(11, 240)}" fill="#8c959f" fill-opacity="0.18"/>',
+            f'<path d="{band_path(240, X_MAX)}" fill="#e8590c" fill-opacity="0.35"/>',
+        ]
 
     out += [
         f'<path d="{line}" fill="none" stroke="#1f2328" stroke-width="2"/>',
@@ -110,63 +133,82 @@ def render(target, height, title, subtitle, with_causes):
         )
         out.append(f'<text x="{sx(v) + 5:.1f}" y="{TOP + 8}" fill="#59636e">{label}</text>')
 
-    extra = 18 if with_causes else 0
-    sections = [(4.2, 30 + extra, 0.50, "sorted within 11 min"), (90, 58 + extra, 0.35, "11 min to 4 h")]
-    if not with_causes:
-        sections.append((1800, 58, 0.15, "over 4 h"))
-    for x, lift, share, name in sections:
-        y = sy(0) - lift
-        out.append(
-            f'<text x="{sx(x):.1f}" y="{y - 16:.1f}" text-anchor="middle" font-size="16" '
-            f'font-weight="600" fill="#1f2328">{share:.0%}</text>'
-        )
-        out.append(f'<text x="{sx(x):.1f}" y="{y:.1f}" text-anchor="middle" fill="#59636e">{name}</text>')
-        if with_causes:
+    if with_causes:
+        labels = [(1.6, TOP + 70), (110, TOP + 120), (1800, TOP + 120)]
+        for (x, y), (_, _, share, name) in zip(labels, SECTIONS):
             out.append(
-                f'<text x="{sx(x):.1f}" y="{y + 16:.1f}" text-anchor="middle" fill="#59636e">'
+                f'<text x="{sx(x):.1f}" y="{y:.1f}" text-anchor="middle" font-size="16" '
+                f'font-weight="600" fill="#1f2328">{share:.0%}</text>'
+            )
+            out.append(
+                f'<text x="{sx(x):.1f}" y="{y + 17:.1f}" text-anchor="middle" fill="#59636e">'
+                f"{name.lower()}</text>"
+            )
+            out.append(
+                f'<text x="{sx(x):.1f}" y="{y + 33:.1f}" text-anchor="middle" fill="#59636e">'
                 f"{claims(share)} claims/yr</text>"
             )
-
-    if with_causes:
-        lx, ly = sx(240) + 18, TOP + 34
-        out.append(
-            f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="16" font-weight="600" fill="#1f2328">'
-            f"15% over 4 h: {claims(0.15)} claims/yr</text>"
-        )
-        out.append(f'<text x="{lx:.1f}" y="{ly + 18:.1f}" fill="#59636e">why they take longer (share of the slow tail)</text>')
-        for i, (name, share, colour) in enumerate(reversed(CAUSES)):
-            y = ly + 44 + i * 22
-            out.append(f'<rect x="{lx:.1f}" y="{y - 11:.1f}" width="12" height="12" fill="{colour}" fill-opacity="0.85"/>')
+    else:
+        for x, lift, share, name in [
+            (4.2, 30, 0.50, "sorted within 11 min"),
+            (90, 58, 0.35, "11 min to 4 h"),
+            (1800, 58, 0.15, "over 4 h"),
+        ]:
+            y = sy(0) - lift
             out.append(
-                f'<text x="{lx + 20:.1f}" y="{y:.1f}" fill="#1f2328"><tspan font-weight="600">{share:.0%}</tspan> '
-                f'{name} <tspan fill="#59636e">{claims(0.15 * share)}</tspan></text>'
+                f'<text x="{sx(x):.1f}" y="{y - 16:.1f}" text-anchor="middle" font-size="16" '
+                f'font-weight="600" fill="#1f2328">{share:.0%}</text>'
             )
+            out.append(f'<text x="{sx(x):.1f}" y="{y:.1f}" text-anchor="middle" fill="#59636e">{name}</text>')
 
     for v, label in ticks:
         out.append(f'<line x1="{sx(v):.1f}" x2="{sx(v):.1f}" y1="{sy(0):.1f}" y2="{sy(0) + 5:.1f}" stroke="#8c959f"/>')
         out.append(f'<text x="{sx(v):.1f}" y="{sy(0) + 22:.1f}" text-anchor="middle" fill="#59636e">{label}</text>')
 
     out.append(
-        f'<text x="{LEFT + plot_w / 2:.1f}" y="{height - 15}" text-anchor="middle" fill="#59636e">'
+        f'<text x="{LEFT + plot_w / 2:.1f}" y="{sy(0) + 50:.1f}" text-anchor="middle" fill="#59636e">'
         "time from arrival to sorted (log scale)</text>"
     )
+
+    if with_causes:
+        ty = sy(0) + BOTTOM + 20
+        cols = [370, 480, 590, 760]
+        heads = [s[3] for s in SECTIONS] + ["All claims"]
+        out.append(f'<text x="{LEFT}" y="{ty:.1f}" font-weight="600" fill="#1f2328">What claims are waiting on</text>')
+        for cx, h in zip(cols, heads):
+            out.append(f'<text x="{cx}" y="{ty:.1f}" text-anchor="end" font-weight="600" fill="#1f2328">{h}</text>')
+        out.append(f'<line x1="{LEFT}" x2="{WIDTH - RIGHT}" y1="{ty + 8:.1f}" y2="{ty + 8:.1f}" stroke="#d0d7de"/>')
+        rows = list(reversed(CAUSES)) + [("Total", (1.0, 1.0, 1.0), None)]
+        for r, (name, shares, colour) in enumerate(rows):
+            y = ty + 30 + r * 22
+            if colour:
+                out.append(f'<rect x="{LEFT}" y="{y - 11:.1f}" width="12" height="12" fill="{colour}" fill-opacity="0.85"/>')
+            weight = ' font-weight="600"' if colour is None else ""
+            out.append(f'<text x="{LEFT + 20}" y="{y:.1f}" fill="#1f2328"{weight}>{name}</text>')
+            overall = sum(sh * sec[2] for sh, sec in zip(shares, SECTIONS))
+            cells = [(sh, sh * sec[2]) for sh, sec in zip(shares, SECTIONS)] + [(overall, overall)]
+            for cx, (pct, of_all) in zip(cols, cells):
+                text = f"{pct:.0%} · {claims(of_all)}" if of_all else "—"
+                out.append(f'<text x="{cx}" y="{y:.1f}" text-anchor="end" fill="#1f2328"{weight}>{text}</text>')
+
     out.append("</svg>")
     target.write_text("\n".join(out))
     print(f"wrote {target}")
 
 
+for s in range(len(SECTIONS)):
+    assert abs(sum(c[1][s] for c in CAUSES) - 1) < 1e-9, f"section {s} shares don't add to 100%"
+
 here = Path(__file__).parent
 render(
     here / "time-to-sort-distribution.svg",
-    400,
     "Time to sort: a fast majority and a long tail (illustrative)",
     "Known from the brief: median 11 min, 15% over 4 h. Curve shape is a hypothesis fitted to those two points.",
     with_causes=False,
 )
 render(
     here / "time-to-sort-causes.svg",
-    460,
-    "Time to sort: what keeps the slow 15% waiting (illustrative)",
+    "Time to sort: what claims are waiting on (illustrative)",
     "Brief: 2.1M claims/yr, median 11 min, 15% over 4 h. Curve shape is a hypothesis; causes are [INVENTED].",
     with_causes=True,
 )
