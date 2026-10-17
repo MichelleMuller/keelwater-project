@@ -15,4 +15,4 @@ Findings go in one file per stream. Since Keelwater is fictional, "internal" res
 | Kaggle car insurance claim data + prediction notebook: what to reuse for auto-sorting | [`kaggle-claim-prediction-review.md`](kaggle-claim-prediction-review.md) | Real | **done (v1)** |
 | Open models/datasets for claims and fraud (Hugging Face) | `open-models.md` | Real | not started |
 | Regulation: data sharing, PII, explainability of automated decisions | see [`examiner-requirements.md`](examiner-requirements.md) | Real | explainability covered; data sharing for training still open |
-| Synthetic claims dataset for a dry-run eval | `synthetic-data/` | Built | not started |
+| Synthetic claims dataset for a dry-run eval | `synthetic-data/` | Built | partly: the [sample-data sorting prototype](../04-working-material/prototype/results.md) generates synthetic claim fields on the Kaggle data; the [solution prototype](../04-working-material/solution-prototype/README.md) has 60 seeded claims |
