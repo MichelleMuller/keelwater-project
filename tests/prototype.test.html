@@ -1144,7 +1144,7 @@ test("automation: a new claim from the form is auto-sorted on arrival", async ()
   assert(app.$(".claim-detail").textContent.includes("Automation"), "history says automation did it");
 });
 
-test("automation: turning a rule off takes it out of the live workflow and removes its suggestions", async () => {
+test("automation: turning a rule off removes its suggestions and puts it back in suggested rules", async () => {
   const app = await withExample();
   const key = accept(app, WINDSCREEN, "Simple");
   const had = harbourTodo(app).filter((c) => suggestion(app, c.id)?.rule === WINDSCREEN).length;
@@ -1152,7 +1152,6 @@ test("automation: turning a rule off takes it out of the live workflow and remov
   ruleButton(app, "rule-off", key).click();
   eq(app.ev("activeRules('harbour').length"), 0);
   eq(harbourTodo(app).filter((c) => suggestion(app, c.id)?.rule === WINDSCREEN).length, 0, "no suggestions from it");
-  assert(!app.ev("liveVersion('harbour').nodes").some((n) => n.key === key), "not in the live version");
   assert(app.ev("suggestedRules('harbour')").some((r) => r.key === key), "back in suggestions");
 });
 
@@ -1172,9 +1171,7 @@ test("automation: every rule change is recorded (accept, mode, undo, turn off)",
   ruleButton(app, "rule-mode", key, "auto").click();
   ruleButton(app, "rule-undo", key).click();
   ruleButton(app, "rule-off", key).click();
-  const all = app.ev("state.automation.changes").map((c) => c.action);
-  eq(all.filter((a) => a.startsWith("Published workflow")), ["Published workflow v1", "Published workflow v2", "Published workflow v3", "Published workflow v4"], "each change is a version");
-  const actions = all.filter((a) => !a.startsWith("Published workflow"));
+  const actions = app.ev("state.automation.changes").map((c) => c.action);
   eq(actions.length, 4);
   eq([actions[0], actions[1], actions[3]], ["Accepted rule", "Switched rule to auto-sort", "Turned off rule"]);
   assert(/^Undid auto-sort of \d+ claims$/.test(actions[2]));
@@ -1202,321 +1199,264 @@ function setField(app, sel, value) {
 const toBuilder = (app) => app.click('.sidebar [data-value="workflow"]');
 const toBulk = (app) => app.click('.sidebar [data-value="bulk"]');
 const wfState = (app, insurer = "harbour") => app.ev(`workflowFor("${insurer}")`);
-const draftNodes = (app, insurer = "harbour") => app.ev(`workflowFor("${insurer}").draft.nodes`);
-const selectedNodeId = (app) => app.ev(`workflowFor(state.insurer).selected`);
+const liveConfig = (app, insurer = "harbour") => app.ev(`liveVersion("${insurer}").config`);
+const viewConfig = (app, insurer = "harbour") => app.ev(`workflowFor("${insurer}").draft || liveVersion("${insurer}").config`);
+const selectNode = (app, id) => app.click(`.wf-node[data-node="${id}"]`);
+const stackCount = (app, id) => Number(app.$(`.wf-node[data-node="${id}"] .stack-count`).textContent);
+const ruleLabel = (app, r, insurer = "harbour") => app.ev(`ruleText(${JSON.stringify({ ...r, insurer })})`);
+const queueSnapshot = (app) => app.ev("JSON.stringify(state.claims.map(c => [c.id, c.pile, c.status, c.assignee || null, suggestionFor(c)?.pile || null]))");
 function testAndPublish(app) {
   app.click('.wf-bar [data-action="wf-test"]');
   app.click('[data-action="wf-publish"]');
 }
-function drag(app, payloadEl, target) {
-  const dt = new app.w.DataTransfer();
-  payloadEl.dispatchEvent(new app.w.DragEvent("dragstart", { bubbles: true, dataTransfer: dt }));
-  target.dispatchEvent(new app.w.DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: dt }));
-}
 const OVER3K = "Over £3,000, no third party, no injury";
-
-test("workflow: before anything is published, the builder shows the default workflow in decision order", async () => {
-  const app = await open("handler/workflow");
-  assert(app.$(".wf-bar").textContent.includes("Not live yet"));
-  const titles = app.$$(".wf-canvas .wf-node-title").map((t) => t.textContent.trim());
-  const order = ["Claim arrives", "Missing info check", "Fraud gate", "Senior review before payment", "Otherwise"].map((t) => titles.indexOf(t));
-  assert(order.every((i, k) => i >= 0 && (k === 0 || i > order[k - 1])), `order ${JSON.stringify(titles)}`);
-  eq(app.$$(".wf-steps [data-node]").length, 3, "every step but start and end can be dragged");
-  assert(!app.$(".wf-warnings"), "no warnings in the default order");
-  assert(app.ev("state.claims.every(c => !suggestionFor(c))"), "no suggestions until something is published");
-  assert(app.$$(".wf-pal-item.required").every((p) => !p.draggable), "checks already in the workflow can't be added twice");
-});
-
-test("workflow: accepting a rule on the bulk page publishes v1 with the default checks and the rule", async () => {
-  const app = await withExample();
-  accept(app, WINDSCREEN, "Simple");
-  const v = app.ev("liveVersion('harbour')");
-  eq(v.n, 1);
-  eq(v.nodes.map((n) => n.type).sort(), ["fraud", "missing", "review", "rule"]);
-  assert(v.note.startsWith(`Accepted rule from bulk sorting: ${WINDSCREEN}`), v.note);
-  assert(app.$(".automation").textContent.includes("live: v1"));
-  toBuilder(app);
-  assert(app.$(".wf-canvas").textContent.includes(WINDSCREEN));
-  assert(app.$(".wf-versions").textContent.includes("v1") && app.$(".wf-versions .badge").textContent === "Live");
-});
-
-test("workflow: edits stay in a draft until tested and published; publishing changes suggestions in the table", async () => {
-  const app = await withExample();
-  accept(app, WINDSCREEN, "Simple");
-  const id = harbourTodo(app).find((c) => c.incident.type === "collision" && !suggestion(app, c.id)).id;
-  toBuilder(app);
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  assert(app.$(".wf-bar").textContent.includes("Draft: unpublished changes"));
-  assert(app.$('[data-action="wf-publish"]').disabled, "can't publish untested");
-  eq(suggestion(app, id), null, "draft doesn't change suggestions");
-  app.click('.wf-bar [data-action="wf-test"]');
-  assert(!app.$('[data-action="wf-publish"]').disabled, "publish after a test");
-  app.click('[data-action="wf-publish"]');
-  const v = app.ev("liveVersion('harbour')");
-  eq(v.n, 2);
-  eq(v.note, "Added Collision → Needs a closer look");
-  eq(suggestion(app, id).pile, "Needs a closer look");
-  assert(app.$(".wf-notice").textContent.includes("Published v2"));
-  toBulk(app);
-  assert(app.$(`tr[data-id="${id}"]`).textContent.includes("Needs a closer look"), "table shows the new suggestion");
-});
-
-test("workflow: Publish needs a fresh test run after every edit", async () => {
-  const app = await open("handler/workflow");
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  app.click('.wf-bar [data-action="wf-test"]');
-  assert(!app.$('[data-action="wf-publish"]').disabled);
-  setField(app, '.wf-editor [data-wf-field="pile"]', "Simple");
-  assert(app.$('[data-action="wf-publish"]').disabled, "edit makes the test stale");
-  assert(app.$(".wf-test").textContent.includes("Run it again before publishing"));
-});
-
-test("workflow: the test run covers every past claim and compares with handlers and the live version", async () => {
-  const app = await withExample();
-  accept(app, WINDSCREEN, "Simple");
-  toBuilder(app);
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  app.click('.wf-bar [data-action="wf-test"]');
-  const t = app.ev("workflowFor('harbour').testRun");
-  for (const r of [t.draft, t.live]) {
-    eq(Object.values(r.piles).reduce((a, b) => a + b, 0) + r.none, 240);
-    eq(Object.values(r.handlers).reduce((a, b) => a + b, 0), 240);
-  }
-  assert(t.draft.decided > t.live.decided, "the extra rule decides more claims");
-  eq(app.$(".test-decided").textContent, `${Math.round((t.draft.decided / 240) * 100)}%`);
-  eq(app.$(".test-agree").textContent, `${Math.round((t.draft.agree / t.draft.decided) * 100)}%`);
-  eq(app.$$(".test-table th").map((th) => th.textContent), ["Pile", "Draft", "Live v1", "Handlers chose"]);
-});
-
-test("workflow: the last 30 days are invented past claims, the same every time", async () => {
-  const app = await open("handler/workflow");
-  const past = app.ev("PAST_CLAIMS.map(c => ({ id: c.id, insurer: c.insurer, pile: c.pile, at: c.receivedAt }))");
-  eq(["harbour", "northgate", "fleetwise"].map((i) => past.filter((c) => c.insurer === i).length), [240, 160, 90]);
-  const now = app.ev("NOW_MS");
-  assert(past.every((c) => c.id.startsWith("PAST-") && PILES_OK.includes(c.pile) && now - Date.parse(c.at) >= 86400000 && now - Date.parse(c.at) <= 30 * 86400000));
-  assert(app.$(".wf-test").textContent.includes("[INVENTED]"));
-  const again = await open("handler/workflow");
-  eq(again.ev("PAST_CLAIMS.map(c => c.pile).join()"), past.map((c) => c.pile).join());
-  assert(!app.ev("state.claims").some((c) => c.id.startsWith("PAST-")), "not mixed into today's queue");
-});
 const PILES_OK = ["Simple", "Needs a closer look", "Suspicious"];
 
-const typesInOrder = (app) => draftNodes(app).map((n) => n.type);
-const shownOrder = (app) => app.$$(".wf-steps [data-node]").map((n) => n.dataset.node);
-
-test("workflow: a step dragged from the palette lands where it's dropped; + Add puts it in decision order", async () => {
+test("workflow: the canvas shows the four node types and the sample workflow, live as v1", async () => {
   const app = await open("handler/workflow");
-  drag(app, app.$('[data-palette="rule"]'), app.$(".wf-node.fraud"));
-  eq(typesInOrder(app), ["missing", "rule", "fraud", "review"], "dropped above the fraud gate");
-  drag(app, app.$('[data-palette="assign"]'), app.$('.wf-node[data-drop-at="first"]'));
-  eq(typesInOrder(app)[0], "assign", "dropped on Claim arrives goes to the top");
-  drag(app, app.$('[data-palette="rule"]'), app.$('.wf-node[data-drop-at="end"]'));
-  eq(typesInOrder(app).at(-1), "rule", "dropped on Otherwise goes to the bottom");
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  eq(typesInOrder(app), ["assign", "missing", "rule", "fraud", "review", "rule", "rule"], "+ Add goes after the last step that comes before it in decision order");
-  eq(shownOrder(app), draftNodes(app).map((n) => n.id), "the canvas shows the draft's order");
+  eq(app.$$(".wf-legend .wf-node-type").map((t) => t.textContent.trim()), ["Calculation", "Routing", "Save to inbox", "Alert"]);
+  const count = (t) => app.$$(`.wf-board .wf-node.t-${t}`).length;
+  eq([count("start"), count("calc"), count("route"), count("inbox"), count("alert")], [1, 3, 3, 4, 2]);
+  eq(app.$$(".wf-board .wf-edge").length, 12);
+  eq(app.$$(".wf-board .wf-edge.alert").length, 2, "alerts hang off their stack with a dashed line");
+  const labels = app.$$(".wf-edge-label").map((l) => l.textContent);
+  for (const l of ["Flagged", "Clear", "Yes", "No", "Simple rule", "Closer look / no match"]) assert(labels.includes(l), `label ${l}`);
+  assert(app.$(".wf-bar").textContent.includes("Live: v1"));
+  assert(app.$(".wf-versions").textContent.includes("Sample workflow [INVENTED]"));
+  assert(!app.$("[data-wf-threshold]") && !app.$('[data-action="wf-mode"]'), "no auto-sort controls in the builder");
 });
 
-test("workflow: any step can be reordered by dragging, including fraud ahead of missing info", async () => {
+test("workflow: nodes run top to bottom without overlapping, and every line joins its two nodes", async () => {
   const app = await open("handler/workflow");
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  const [a, b] = draftNodes(app).filter((n) => n.type === "rule").map((n) => n.id);
-  drag(app, app.$(`[data-node="${b}"]`), app.$(`[data-node="${a}"]`));
-  eq(draftNodes(app).filter((n) => n.type === "rule").map((n) => n.id), [b, a]);
-  drag(app, app.$(".wf-node.fraud"), app.$(".wf-node.missing"));
-  eq(typesInOrder(app), ["fraud", "missing", "rule", "rule", "review"]);
-  eq(shownOrder(app), draftNodes(app).map((n) => n.id));
-  drag(app, app.$(".wf-node.review"), app.$('.wf-node[data-drop-at="first"]'));
-  eq(typesInOrder(app)[0], "review");
-  assert(!app.$(".wf-warnings"), "no Simple rules, so nothing is lost");
-  testAndPublish(app);
-  eq(app.ev("liveVersion('harbour')").note, "First version: senior review before payment, fraud gate, missing info check, 2 rules");
-  drag(app, app.$(".wf-node.missing"), app.$(".wf-node.fraud"));
-  testAndPublish(app);
-  eq(app.ev("liveVersion('harbour')").note, "Changed the order of steps");
-});
-
-test("workflow: every step can be removed, with a warning; removed checks can be added back once", async () => {
-  const app = await open("handler/workflow");
-  const warns = () => app.$(".wf-warnings")?.textContent || "";
-  for (const [type, says] of [["missing", "No missing info check"], ["fraud", "No fraud gate"], ["review", "No senior review"]]) {
-    app.click(`.wf-node.${type}`);
-    assert(app.$(".wf-editor").textContent.includes("Recommended step"), `${type}: says recommended`);
-    app.click('.wf-editor [data-action="wf-remove"]');
-    assert(!typesInOrder(app).includes(type), `${type} removed`);
-    assert(warns().includes(says), `${type}: warns "${says}"`);
+  const board = app.$(".wf-board").getBoundingClientRect();
+  const box = (id) => { const r = app.$(`.wf-node[data-node="${id}"]`).getBoundingClientRect(); return { l: r.left - board.left, t: r.top - board.top, r: r.right - board.left, b: r.bottom - board.top }; };
+  const ids = app.$$(".wf-board .wf-node").map((n) => n.dataset.node);
+  for (const a of ids) for (const b of ids) {
+    if (a >= b) continue;
+    const x = box(a), y = box(b);
+    assert(x.r <= y.l || y.r <= x.l || x.b <= y.t || y.b <= x.t, `${a} overlaps ${b}`);
   }
-  testAndPublish(app);
-  eq(app.ev("liveVersion('harbour')").nodes.length, 0, "publishing isn't blocked");
-  app.click('[data-action="wf-add"][data-value="fraud"]');
-  assert(!app.$('[data-action="wf-add"][data-value="fraud"]'), "no + Add once it's back");
-  app.ev(`addNode("harbour", "fraud"); render();`);
-  eq(typesInOrder(app), ["fraud"], "added back once");
-  assert(!warns().includes("No fraud gate"));
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  app.click('.wf-editor [data-action="wf-remove"]');
-  eq(typesInOrder(app), ["fraud"]);
+  for (const p of app.$$(".wf-edge")) {
+    const [from, to] = p.dataset.edge.split("-");
+    const nums = p.getAttribute("d").match(/-?\d+(\.\d+)?/g).map(Number);
+    const a = box(from), b = box(to);
+    assert(near(nums[0], (a.l + a.r) / 2, 2) && near(nums[1], a.b, 2), `${p.dataset.edge} starts at the bottom of ${from}`);
+    assert(near(nums.at(-1), b.t, 4), `${p.dataset.edge} ends at the top of ${to}`);
+    assert(a.b < b.t, `${from} is above ${to}`);
+  }
 });
 
-test("workflow: steps run top to bottom, so a Simple rule above the checks skips them, with a warning", async () => {
+test("workflow: fraud comes first, then missing info, then the first matching rule; no match goes to a closer look", async () => {
   const app = await open("handler/workflow");
-  const ev = (nodes, id) => app.ev(`(() => { const e = evaluate(state.claims.find(c => c.id === "${id}"), ${JSON.stringify(nodes)}); return [e.pile, e.heldBack]; })()`);
   const id = harbourTodo(app)[0].id;
-  app.ev(`Object.assign(state.claims.find(c => c.id === "${id}"), { incident: { ...state.claims.find(c => c.id === "${id}").incident, type: "windscreen" } }).fraud.score = 0.9`);
-  const simple = { id: "s", type: "rule", filters: { type: "windscreen" }, pile: "Simple", mode: "suggest" };
-  const nodes = app.ev(`defaultNodes("harbour")`);
-  const [missing, fraud, review] = nodes;
-  eq(ev([missing, fraud, simple, review], id), ["Suspicious", null], "gate first: flagged");
-  eq(ev([simple, missing, fraud, review], id), ["Simple", null], "Simple rule first: never screened");
-  app.ev(`state.claims.find(c => c.id === "${id}").fraud.score = 0.1; state.claims.find(c => c.id === "${id}").missingInfo = ["photos"]`);
-  eq(ev([fraud, missing, simple, review], id), [null, "missing info"], "below the check: held back");
-  eq(ev([fraud, simple, missing, review], id), ["Simple", null], "above the check: not held back");
-  const closer = { id: "c", type: "rule", filters: { type: "windscreen" }, pile: "Needs a closer look", mode: "suggest" };
-  eq(ev([simple, closer], id)[0], "Simple", "first matching rule wins");
-  eq(ev([closer, simple], id)[0], "Needs a closer look");
-  app.ev(`workflowFor("harbour").draft = { nodes: ${JSON.stringify([simple, closer, missing, fraud, review])}, threshold: 0.9 }; render();`);
-  const w = app.$(".wf-warnings").textContent;
-  for (const s of ["before the fraud gate", "before the missing info check", "less cautious pile runs before a more cautious one"]) assert(w.includes(s), `warns: ${s}`);
+  const route = (patch) => app.ev(`(() => {
+    const c = JSON.parse(JSON.stringify(state.claims.find(c => c.id === "${id}")));
+    Object.assign(c, { policy: { ...c.policy, startDate: "2020-01-01" } });
+    c.claimant.priorClaims5y = 0;
+    (${patch})(c);
+    const e = routeClaim(c, liveVersion("harbour").config);
+    return [e.stack, e.reason];
+  })()`);
+  const windscreen = `c => { c.incident.type = "windscreen"; c.damage.estimatedAmount = 400; c.parties.thirdPartyInvolved = false; c.parties.injuries = false; }`;
+  eq(route(`c => { (${windscreen})(c); c.fraud.score = 0.9; c.missingInfo = ["photos of the damage"]; }`)[0], "fraud", "flagged beats missing info");
+  eq(route(`c => { (${windscreen})(c); c.fraud.score = 0.1; c.missingInfo = ["photos of the damage"]; }`), ["info", "Missing: photos of the damage"]);
+  eq(route(`c => { (${windscreen})(c); c.fraud.score = 0.1; c.missingInfo = []; }`), ["Simple", WINDSCREEN]);
+  eq(route(`c => { c.incident.type = "other"; c.damage.estimatedAmount = 1500; c.parties.thirdPartyInvolved = false; c.parties.injuries = false; c.fraud.score = 0.1; c.missingInfo = []; }`), ["Needs a closer look", "No rule matched"]);
 });
 
-test("workflow: Suspicious rules are suggest-only in the builder too", async () => {
+test("workflow: each insurer's sample has its own settings, with rules copied from its bulk sorting example week", async () => {
   const app = await open("handler/workflow");
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  setField(app, '.wf-editor [data-wf-field="pile"]', "Suspicious");
-  assert(app.$('.wf-editor [data-action="wf-mode"][data-value="auto"]').disabled);
-  app.click('.wf-editor [data-action="wf-mode"][data-value="auto"]');
-  eq(draftNodes(app).find((n) => n.type === "rule").mode, "suggest");
-});
-
-test("workflow: rules below the threshold pause auto-sort, and resume when it's lowered", async () => {
-  const app = await withExample();
-  const key = accept(app, OVER3K, "Needs a closer look");
-  const conf = app.ev(`ruleConfidence(state.automation.rules.find(r => r.key === ${JSON.stringify(key)}))`);
-  assert(conf >= 0.9 && conf < 0.95, `confidence ${conf}`);
-  toBuilder(app);
-  setField(app, "[data-wf-threshold]", "0.95");
-  testAndPublish(app);
-  toBulk(app);
-  ruleButton(app, "rule-mode", key, "auto").click();
-  eq(activeRule(app, key).autoIds.length, 0, "nothing auto-sorted below the threshold");
-  assert(app.$(".auto-notice").textContent.includes("paused"));
-  assert(app.$(".automation .paused").textContent.includes("below the workflow's 95%"));
-  const matching = harbourTodo(app).filter((c) => suggestion(app, c.id)?.rule === OVER3K).length;
-  assert(matching > 0);
-  toBuilder(app);
-  setField(app, "[data-wf-threshold]", "0.9");
-  testAndPublish(app);
-  eq(activeRule(app, key).autoIds.length, matching, "auto-sorts once the threshold allows it");
-  assert(app.$(".wf-notice").textContent.includes(`${matching} claims auto-sorted`));
-});
-
-test("workflow: a rule made in the builder can't auto-sort until it has history", async () => {
-  const app = await open("handler/workflow");
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  app.click('.wf-editor [data-action="wf-mode"][data-value="auto"]');
-  assert(app.$(".wf-canvas").textContent.includes("Auto-sort paused"));
-  assert(app.$(".wf-canvas").textContent.includes("New: no history yet"));
-  testAndPublish(app);
-  eq(wfState(app).published.sorted, 0);
-  assert(app.ev("state.claims.every(c => c.history.every(h => h.actor !== 'automation'))"));
-});
-
-test("workflow: the missing-info step can ask claimants automatically (published straight from the builder)", async () => {
-  const app = await open("handler/workflow");
-  const waiting = app.ev("state.claims.filter(c => c.insurer === 'harbour' && !c.pile && c.status === 'new' && c.missingInfo.length).map(c => c.id)");
-  assert(waiting.length > 0);
-  app.click(".wf-node.missing");
-  setField(app, '.wf-editor [data-wf-field="autoRequest"]', true);
-  testAndPublish(app);
-  eq(app.ev("liveVersion('harbour').n"), 1);
-  for (const id of waiting) {
-    const c = claimById(app, id);
-    eq(c.status, "waiting on claimant", id);
-    eq(c.history.at(-1).actor, "automation");
+  const cfg = { harbour: liveConfig(app), northgate: liveConfig(app, "northgate"), fleetwise: liveConfig(app, "fleetwise") };
+  eq(Object.values(cfg).map((c) => c.fraud.score), [0.6, 0.5, 0.7]);
+  eq(Object.values(cfg).map((c) => c.fraudAlert.to), ["Fraud team", "Special investigations unit (SIU)", "Fleet fraud desk"]);
+  for (const [insurer, c] of Object.entries(cfg)) {
+    assert(c.rules.every((r) => r.pile === "Simple" || r.pile === "Needs a closer look"), `${insurer}: only Simple and closer-look rules`);
+    assert(c.rules.every((r) => !("missing" in r.filters) && !("fraud" in r.filters)), `${insurer}: fraud and missing info have their own steps`);
+    const firstSimple = c.rules.findIndex((r) => r.pile === "Simple");
+    assert(firstSimple > 0 && c.rules.slice(firstSimple).every((r) => r.pile === "Simple"), `${insurer}: closer-look rules first`);
+    const week = app.ev(`EXAMPLE_WEEKS.${insurer}.templates.filter(t => t.pile === "Simple" || t.pile === "Needs a closer look").length`);
+    eq(c.rules.length, week, `${insurer}: one rule per example-week pattern`);
   }
-  assert(app.$(".wf-notice").textContent.includes(`${waiting.length} claimants asked for missing info`));
-  assert(app.ev("state.claims.filter(c => c.insurer !== 'harbour').every(c => c.status !== 'waiting on claimant')"), "other insurers untouched");
-});
-
-test("workflow: Assign sends matching claims to a team when they're sorted", async () => {
-  const app = await open("handler/workflow");
-  app.click('[data-action="wf-add"][data-value="assign"]');
-  testAndPublish(app);
-  const id = harbourTodo(app).find((c) => !suggestion(app, c.id)?.pile).id;
-  app.ev(`state.claims.find(c => c.id === "${id}").parties.injuries = true`);
-  const other = harbourTodo(app).find((c) => !c.parties.injuries && !suggestion(app, c.id)?.pile).id;
-  app.ev(`state.bulk.selected = ["${other}"]; bulkSort("Needs a closer look");`);
-  eq(claimById(app, other).assignee, undefined, "no injury, not assigned");
-  toBulk(app);
-  app.ev(`state.bulk.selected = ["${id}"]; bulkSort("Needs a closer look"); render();`);
-  const c = claimById(app, id);
-  eq(c.assignee, "Injury specialist");
-  assert(c.history.some((h) => h.action === "Assigned to Injury specialist"));
-  filterBy(app, "status", "all");
-  app.click(`[data-action="open-in-inbox"][data-value="${id}"]`);
-  assert(app.$(".detail-head").textContent.includes("Assigned: Injury specialist"));
-});
-
-test("workflow: Simple claims at or above the senior-review amount are held before payment", async () => {
-  const app = await open("handler/workflow");
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  setField(app, '.wf-editor [data-wf-field="filters.type"]', "windscreen");
-  setField(app, '.wf-editor [data-wf-field="pile"]', "Simple");
-  testAndPublish(app);
-  const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
-  app.ev(`state.claims.find(c => c.id === "${id}").damage.estimatedAmount = 2600`);
-  toBulk(app);
-  assert(app.$(`tr[data-id="${id}"] .reason`).title.includes("senior review before payment"));
-  app.click(`[data-action="confirm-suggestion"][data-value="${id}"]`);
-  const c = claimById(app, id);
-  eq([c.pile, c.status], ["Simple", "senior review before payment"]);
-  assert(c.history.some((h) => h.action === "Held for senior review before payment"));
-});
-
-test("workflow: restoring an old version publishes it again as a new version", async () => {
-  const app = await withExample();
-  accept(app, WINDSCREEN, "Simple");
-  accept(app, COLLISION_TP, "Needs a closer look");
-  toBuilder(app);
-  app.click('[data-action="wf-restore"][data-value="1"]');
-  const v = app.ev("liveVersion('harbour')");
-  eq([v.n, v.note], [3, "Restored v1"]);
-  eq(app.ev("activeRules('harbour').map(r => ruleText(r))"), [WINDSCREEN]);
-  eq(harbourTodo(app).filter((c) => suggestion(app, c.id)?.rule === COLLISION_TP).length, 0);
-});
-
-test("workflow: rule changes made on the bulk page while a draft is open also go into the draft", async () => {
-  const app = await withExample();
-  toBuilder(app);
-  app.click('[data-action="wf-add"][data-value="rule"]');
-  toBulk(app);
-  accept(app, WINDSCREEN, "Simple");
-  const rules = draftNodes(app).filter((n) => n.type === "rule").map((n) => app.ev(`ruleText(${JSON.stringify({ ...n, insurer: "harbour" })})`));
-  eq(rules.sort(), ["Collision", WINDSCREEN].sort());
-  toBuilder(app);
-  testAndPublish(app);
-  eq(app.ev("activeRules('harbour').length"), 2);
-});
-
-test("workflow: each insurer has its own workflow", async () => {
-  const app = await withExample();
-  accept(app, WINDSCREEN, "Simple");
+  assert(cfg.harbour.rules.some((r) => r.pile === "Simple" && ruleLabel(app, r) === WINDSCREEN));
+  assert(cfg.fleetwise.rules.some((r) => r.pile === "Needs a closer look" && ruleLabel(app, r, "fleetwise") === "Collision, third party, injury"));
   switchInsurer(app, "northgate");
   toBuilder(app);
   assert(app.$(".wf-bar").textContent.includes("Northgate Direct workflow"));
-  assert(app.$(".wf-bar").textContent.includes("Not live yet"));
-  assert(app.$(".wf-node.fraud").textContent.includes("FRISS"), "uses the insurer's fraud vendor");
+  assert(app.$('.wf-node[data-node="fraudCheck"]').textContent.includes("FRISS score 0.5+"), "uses the insurer's fraud vendor and threshold");
 });
 
-test("workflow: palette, pipeline and editor sit side by side with no sideways scrolling", async () => {
+test("workflow: the last 30 days are invented past claims, the same every time, some with missing info", async () => {
   const app = await open("handler/workflow");
-  const [p, c, e] = [".wf-palette", ".wf-canvas", ".wf-editor"].map((s) => app.$(s).getBoundingClientRect());
+  const past = app.ev("PAST_CLAIMS.map(c => ({ id: c.id, insurer: c.insurer, pile: c.pile, at: c.receivedAt, missing: c.missingInfo.length }))");
+  eq(["harbour", "northgate", "fleetwise"].map((i) => past.filter((c) => c.insurer === i).length), [240, 160, 90]);
+  const now = app.ev("NOW_MS");
+  assert(past.every((c) => c.id.startsWith("PAST-") && PILES_OK.includes(c.pile) && now - Date.parse(c.at) >= 86400000 && now - Date.parse(c.at) <= 30 * 86400000));
+  const missing = past.filter((c) => c.missing).length / past.length;
+  assert(missing > 0.08 && missing < 0.22, `about 15% missing info, got ${missing}`);
+  assert(app.$(".wf-test").textContent.includes("[INVENTED]"));
+  const again = await open("handler/workflow");
+  eq(again.ev("PAST_CLAIMS.map(c => c.pile + c.missingInfo.length).join()"), past.map((c) => c.pile + c.missing).join());
+  assert(!app.ev("state.claims").some((c) => c.id.startsWith("PAST-")), "not mixed into today's queue");
+});
+
+test("workflow: stack counts on the canvas cover every past claim and match the test run", async () => {
+  const app = await open("handler/workflow");
+  const stacks = ["fraudStack", "infoStack", "simpleStack", "closerStack"];
+  const counts = stacks.map((s) => stackCount(app, s));
+  eq(counts.reduce((a, b) => a + b, 0), 240);
+  assert(counts.every((n) => n > 0), `every stack gets claims: ${counts}`);
+  app.click('.wf-bar [data-action="wf-test"]');
+  const t = wfState(app).testRun.draft;
+  eq([t.stacks.fraud, t.stacks.info, t.stacks.Simple, t.stacks["Needs a closer look"]], counts);
+  eq(t.decided, 240 - t.stacks.info, "claims waiting on info aren't scored");
+  eq(app.$(".test-agree").textContent, `${Math.round((t.agree / t.decided) * 100)}%`);
+  eq(app.$$(".test-table tbody tr").map((r) => r.cells[0].textContent), ["Fraud stack", "Get more info stack", "Simple stack", "Needs a closer look stack"]);
+});
+
+test("workflow: editing the fraud check makes a draft; publish needs a fresh test; publishing doesn't change the queue", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  const before = queueSnapshot(app);
+  toBuilder(app);
+  const flagged = stackCount(app, "fraudStack");
+  selectNode(app, "fraudCheck");
+  setField(app, '.wf-editor [data-wf-field="fraud.score"]', "0.5");
+  assert(app.$(".wf-bar").textContent.includes("Draft: unpublished changes"));
+  assert(stackCount(app, "fraudStack") > flagged, "the canvas shows the draft");
+  assert(app.$('[data-action="wf-publish"]').disabled, "can't publish untested");
+  app.click('.wf-bar [data-action="wf-test"]');
+  assert(!app.$('[data-action="wf-publish"]').disabled, "publish after a test");
+  setField(app, '.wf-editor [data-wf-field="fraud.priors"]', true);
+  assert(app.$('[data-action="wf-publish"]').disabled, "an edit makes the test stale");
+  assert(app.$(".wf-test").textContent.includes("Run it again before publishing"));
+  testAndPublish(app);
+  const v = app.ev("liveVersion('harbour')");
+  eq([v.n, v.note], [2, "Fraud check score 0.6+ → 0.5+; Fraud check: added the 3+ prior claims signal"]);
+  assert(app.$(".wf-notice").textContent.includes("nothing in the queue changes"));
+  eq(queueSnapshot(app), before, "same piles, statuses and suggestions");
+});
+
+test("workflow: analysis rules can be reordered, edited, added and removed, and the order changes the outcome", async () => {
+  const app = await open("handler/workflow");
+  selectNode(app, "analysis");
+  const rules = viewConfig(app).rules;
+  const injury = rules.find((r) => ruleLabel(app, r) === "Injury");
+  const tally = (id) => app.$(`.wf-rule[data-rule-id="${id}"] .small`).textContent;
+  assert(tally(injury.id).includes("caught by an earlier step or rule"), "Injury is shadowed by the collision rule");
+  app.click(`[data-action="wf-rule-up"][data-value="${injury.id}"]`);
+  eq(viewConfig(app).rules[0].id, injury.id);
+  assert(!tally(injury.id).includes("caught by"), "first now, so it catches claims");
+  app.click('[data-action="wf-rule-add"]');
+  const added = viewConfig(app).rules.at(-1);
+  assert(app.$(`.wf-rule.selected[data-rule-id="${added.id}"]`), "new rule is selected for editing");
+  setField(app, `.wf-rule-edit [data-wf-field="filters.type"]`, "weather");
+  setField(app, `.wf-rule-edit [data-wf-field="pile"]`, "Simple");
+  eq(viewConfig(app).rules.at(-1).filters, { type: "weather" });
+  const vandalism = rules.find((r) => ruleLabel(app, r) === "Vandalism, under £1,000");
+  app.click(`[data-action="wf-rule-remove"][data-value="${vandalism.id}"]`);
+  assert(!viewConfig(app).rules.some((r) => r.id === vandalism.id));
+  testAndPublish(app);
+  const note = app.ev("liveVersion('harbour').note");
+  for (const part of ["Added rule Weather or flood → Simple", "Removed rule Vandalism, under £1,000 → Simple", "Changed the order of the analysis rules"]) assert(note.includes(part), `note has "${part}": ${note}`);
+});
+
+test("workflow: alerts can be edited and show on the canvas", async () => {
+  const app = await open("handler/workflow");
+  selectNode(app, "fraudAlert");
+  setField(app, '.wf-editor [data-wf-field="fraudAlert.to"]', "Special investigations unit (SIU)");
+  setField(app, '.wf-editor [data-wf-field="fraudAlert.channel"]', "In-app notification");
+  assert(app.$('.wf-node[data-node="fraudAlert"]').textContent.includes("Special investigations unit (SIU) · In-app notification"));
+  selectNode(app, "infoAlert");
+  setField(app, '.wf-editor [data-wf-field="infoAlert.channel"]', "Text message");
+  assert(app.$('.wf-node[data-node="infoAlert"]').textContent.includes("Text message"));
+  testAndPublish(app);
+  eq(app.ev("liveVersion('harbour').note"), "Fraud alert goes to Special investigations unit (SIU); Fraud alert by in-app notification; Claimant asked by text message");
+});
+
+test("workflow: routing nodes, stacks and the information check explain themselves but have no settings", async () => {
+  const app = await open("handler/workflow");
+  for (const id of ["start", "flagged", "infoCheck", "hasInfo", "whichPile", "fraudStack", "infoStack", "simpleStack", "closerStack"]) {
+    selectNode(app, id);
+    assert(app.$(".wf-editor h3").textContent.length > 0, `${id}: has a title`);
+    assert(!app.$(".wf-editor select, .wf-editor input"), `${id}: nothing to edit`);
+  }
+  selectNode(app, "infoStack");
+  assert(app.$(".wf-editor").textContent.includes("not scored against handlers"));
+});
+
+test("workflow: discarding drops the draft; restoring an old version publishes it again", async () => {
+  const app = await open("handler/workflow");
+  selectNode(app, "fraudCheck");
+  setField(app, '.wf-editor [data-wf-field="fraud.score"]', "0.8");
+  app.click('[data-action="wf-discard"]');
+  assert(!app.$(".wf-bar").textContent.includes("Draft"), "draft gone");
+  eq(viewConfig(app).fraud.score, 0.6);
+  setField(app, '.wf-editor [data-wf-field="fraud.score"]', "0.8");
+  testAndPublish(app);
+  app.click('[data-action="wf-restore"][data-value="1"]');
+  const v = app.ev("liveVersion('harbour')");
+  eq([v.n, v.note, v.config.fraud.score], [3, "Restored v1", 0.6]);
+  eq(JSON.stringify(v.config), JSON.stringify(app.ev("workflowFor('harbour').versions[0].config")));
+});
+
+test("workflow: rule changes on the bulk page don't touch the builder, and a builder draft survives them", async () => {
+  const app = await withExample();
+  toBuilder(app);
+  selectNode(app, "fraudCheck");
+  setField(app, '.wf-editor [data-wf-field="fraud.score"]', "0.7");
+  const draft = JSON.stringify(wfState(app).draft);
+  toBulk(app);
+  const key = accept(app, WINDSCREEN, "Simple");
+  ruleButton(app, "rule-mode", key, "auto").click();
+  ruleButton(app, "rule-off", key).click();
+  assert(!app.$(".automation").textContent.includes("workflow"), "bulk page doesn't mention the workflow");
+  eq(app.ev("workflowFor('harbour').versions.length"), 1, "no new versions");
+  eq(JSON.stringify(wfState(app).draft), draft, "draft unchanged");
+});
+
+test("workflow: publishing never touches claims, even with alerts set", async () => {
+  const app = await open("handler/workflow");
+  const before = app.ev("JSON.stringify(state.claims)");
+  selectNode(app, "infoAlert");
+  setField(app, '.wf-editor [data-wf-field="infoAlert.channel"]', "Email");
+  testAndPublish(app);
+  eq(app.ev("liveVersion('harbour').n"), 2);
+  eq(app.ev("JSON.stringify(state.claims)"), before, "claims unchanged");
+});
+
+test("automation: a rule kept less than 90% of the time has auto-sort paused on the bulk page", async () => {
+  const app = await withExample();
+  const key = accept(app, "Theft", "Needs a closer look");
+  const conf = app.ev(`ruleConfidence(state.automation.rules.find(r => r.key === ${JSON.stringify(key)}))`);
+  assert(conf < 0.9, `confidence ${conf}`);
+  ruleButton(app, "rule-mode", key, "auto").click();
+  eq(activeRule(app, key).autoIds.length, 0, "nothing auto-sorted below 90%");
+  assert(app.$(".auto-notice").textContent.includes("paused"));
+  assert(app.$(".automation .paused").textContent.includes("below the 90% needed"));
+  const over = accept(app, OVER3K, "Needs a closer look");
+  ruleButton(app, "rule-mode", over, "auto").click();
+  assert(activeRule(app, over).autoIds.length > 0, "a rule at 90%+ auto-sorts");
+});
+
+test("bulk sorting: Simple claims at or above the senior-review amount are held before payment", async () => {
+  const app = await open("handler/bulk");
+  const [big, small] = harbourTodo(app).slice(0, 2).map((c) => c.id);
+  app.ev(`state.claims.find(c => c.id === "${big}").damage.estimatedAmount = 2600; state.claims.find(c => c.id === "${small}").damage.estimatedAmount = 2400;`);
+  app.ev(`state.bulk.selected = ["${big}", "${small}"]; bulkSort("Simple"); render();`);
+  eq([claimById(app, big).pile, claimById(app, big).status], ["Simple", "senior review before payment"]);
+  assert(claimById(app, big).history.some((h) => h.action === "Held for senior review before payment"));
+  eq(claimById(app, small).status, "sorted");
+});
+
+test("workflow: node types, canvas and editor sit side by side with no sideways scrolling", async () => {
+  const app = await open("handler/workflow");
+  const [p, c, e] = [".wf-legend", ".wf-canvas", ".wf-editor"].map((s) => app.$(s).getBoundingClientRect());
   assert(p.right < c.left && c.right < e.left && near(p.top, c.top) && near(c.top, e.top), "three columns");
   const grid = app.$(".wf-grid");
-  assert(grid.scrollWidth <= grid.clientWidth, `overflows by ${grid.scrollWidth - grid.clientWidth}px`);
-  const bar = app.$(".wf-bar").getBoundingClientRect();
-  assert(bar.height < 90, `top bar fits (${bar.height}px)`);
+  assert(grid.scrollWidth <= grid.clientWidth, `grid overflows by ${grid.scrollWidth - grid.clientWidth}px`);
+  const canvas = app.$(".wf-canvas");
+  assert(canvas.scrollWidth <= canvas.clientWidth, `canvas overflows by ${canvas.scrollWidth - canvas.clientWidth}px`);
+  assert(app.$(".wf-bar").getBoundingClientRect().height < 90, "top bar fits");
 });
 
 /* ---------- Portability ---------- */
