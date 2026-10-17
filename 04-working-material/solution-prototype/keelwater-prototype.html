@@ -1602,24 +1602,56 @@ function renderAutomation(mine) {
     </section>`;
 }
 
-// A week of handler activity, so Phase 2 has enough examples to learn from. [INVENTED]
-const EXAMPLE_WEEK = [
-  { filters: { type: "windscreen", amount: "under1k", thirdParty: "no" }, pile: "Simple", times: 14, size: [8, 26], excludedChance: 0.2 },
-  { filters: { type: "vandalism", amount: "under1k", missing: "no" }, pile: "Simple", times: 6, size: [3, 9], excludedChance: 0.3 },
-  { filters: { type: "collision", thirdParty: "yes" }, pile: "Needs a closer look", times: 10, size: [5, 15], excludedChance: 0.2 },
-  { filters: { injury: "yes" }, pile: "Needs a closer look", times: 5, size: [2, 6], excludedChance: 0 },
-  { filters: { amount: "over3k", thirdParty: "no", injury: "no" }, pile: "Needs a closer look", times: 5, size: [4, 10], excludedChance: 0.4 },
-  { filters: { type: "theft" }, pile: "Needs a closer look", times: 4, size: [1, 4], excludedChance: 0.5 },
-  { filters: { fraud: "high" }, pile: "Suspicious", times: 4, size: [1, 5], excludedChance: 0.5 },
-  { filters: { missing: "yes" }, kind: "waiting", times: 7, size: [6, 18], excludedChance: 0 },
-];
+// A week of handler activity per insurer, so Phase 2 has enough examples to learn from. [INVENTED]
+// Each follows its segment's main problem in internal-data.md §1.
+const EXAMPLE_WEEKS = {
+  harbour: {
+    note: "Simple-heavy: most of the week is windscreen and small claims going to Simple.",
+    templates: [
+      { filters: { type: "windscreen", amount: "under1k", thirdParty: "no" }, pile: "Simple", times: 14, size: [8, 26], excludedChance: 0.2 },
+      { filters: { type: "vandalism", amount: "under1k", missing: "no" }, pile: "Simple", times: 6, size: [3, 9], excludedChance: 0.3 },
+      { filters: { type: "collision", thirdParty: "yes" }, pile: "Needs a closer look", times: 10, size: [5, 15], excludedChance: 0.2 },
+      { filters: { injury: "yes" }, pile: "Needs a closer look", times: 5, size: [2, 6], excludedChance: 0 },
+      { filters: { amount: "over3k", thirdParty: "no", injury: "no" }, pile: "Needs a closer look", times: 5, size: [4, 10], excludedChance: 0.4 },
+      { filters: { type: "theft" }, pile: "Needs a closer look", times: 4, size: [1, 4], excludedChance: 0.5 },
+      { filters: { fraud: "high" }, pile: "Suspicious", times: 4, size: [1, 5], excludedChance: 0.5 },
+      { filters: { missing: "yes" }, kind: "waiting", times: 7, size: [6, 18], excludedChance: 0 },
+    ],
+  },
+  northgate: {
+    note: "Mixed: much of the week is chasing missing information and third-party collisions.",
+    templates: [
+      { filters: { missing: "yes" }, kind: "waiting", times: 12, size: [6, 16], excludedChance: 0 },
+      { filters: { type: "collision", thirdParty: "yes", injury: "no" }, pile: "Needs a closer look", times: 9, size: [3, 10], excludedChance: 0.3 },
+      { filters: { type: "collision", thirdParty: "no", amount: "1kto3k", missing: "no" }, pile: "Simple", times: 7, size: [3, 8], excludedChance: 0.3 },
+      { filters: { type: "windscreen", amount: "under1k" }, pile: "Simple", times: 6, size: [2, 7], excludedChance: 0.2 },
+      { filters: { prior: "2+" }, pile: "Needs a closer look", times: 5, size: [1, 4], excludedChance: 0.3 },
+      { filters: { injury: "yes" }, pile: "Needs a closer look", times: 5, size: [1, 4], excludedChance: 0 },
+      { filters: { amount: "over3k", thirdParty: "no", missing: "no" }, pile: "Needs a closer look", times: 4, size: [2, 6], excludedChance: 0.4 },
+      { filters: { fraud: "high" }, pile: "Suspicious", times: 4, size: [1, 3], excludedChance: 0.5 },
+    ],
+  },
+  fleetwise: {
+    note: "Complex-heavy: most of the week is large fleet collisions and checking for fraud; very little is Simple.",
+    templates: [
+      { filters: { type: "collision", thirdParty: "yes", injury: "yes" }, pile: "Needs a closer look", times: 10, size: [2, 6], excludedChance: 0.1 },
+      { filters: { type: "collision", amount: "over3k" }, pile: "Needs a closer look", times: 9, size: [3, 8], excludedChance: 0.3 },
+      { filters: { type: "collision", thirdParty: "yes", injury: "no" }, pile: "Needs a closer look", times: 6, size: [2, 5], excludedChance: 0.3 },
+      { filters: { missing: "yes" }, kind: "waiting", times: 6, size: [3, 8], excludedChance: 0 },
+      { filters: { prior: "2+", fraud: "medium" }, pile: "Suspicious", times: 5, size: [1, 3], excludedChance: 0.4 },
+      { filters: { type: "theft" }, pile: "Suspicious", times: 5, size: [1, 2], excludedChance: 0.4 },
+      { filters: { fraud: "high" }, pile: "Suspicious", times: 4, size: [1, 3], excludedChance: 0.3 },
+      { filters: { type: "windscreen", amount: "under1k" }, pile: "Simple", times: 4, size: [1, 3], excludedChance: 0 },
+    ],
+  },
+};
 
 function loadExampleWeek() {
   const b = state.bulk;
   if (b.exampleLoaded.includes(state.insurer)) return;
   const r = makeRng(7);
   const entries = [];
-  EXAMPLE_WEEK.forEach((t) => {
+  EXAMPLE_WEEKS[state.insurer].templates.forEach((t) => {
     for (let i = 0; i < t.times; i++) {
       const filters = { ...emptyFilters(), ...t.filters };
       const count = Math.round(t.size[0] + r() * (t.size[1] - t.size[0]));
@@ -1639,7 +1671,7 @@ function loadExampleWeek() {
 function sampleFilters(mine) {
   if (!state.bulk.exampleLoaded.includes(state.insurer)) return [];
   const unsorted = mine.filter((c) => !c.pile);
-  return EXAMPLE_WEEK.map((t) => {
+  return EXAMPLE_WEEKS[state.insurer].templates.map((t) => {
     const filters = { ...emptyFilters(), ...t.filters };
     return {
       filters,
@@ -1787,8 +1819,8 @@ function renderBulk(mine) {
         </div>
         <div class="capture-foot">
           ${b.exampleLoaded.includes(state.insurer)
-            ? '<span class="small muted">Example week loaded. [INVENTED]</span>'
-            : '<button class="btn btn-outline" data-action="bulk-load-example" style="width:100%; justify-content:center;">Load an example week of sorting</button><div class="small muted" style="margin-top:6px;">Adds a week of made-up handler activity [INVENTED], so Phase 2 has enough to learn from.</div>'}
+            ? `<span class="small muted example-note">Example week loaded for ${esc(INSURERS[state.insurer].name)}. ${esc(EXAMPLE_WEEKS[state.insurer].note)} [INVENTED]</span>`
+            : `<button class="btn btn-outline" data-action="bulk-load-example" style="width:100%; justify-content:center;">Load an example week of sorting</button><div class="small muted" style="margin-top:6px;">Adds a week of made-up ${esc(INSURERS[state.insurer].name)} handler activity [INVENTED], shaped by its claim mix, so Phase 2 has enough to learn from.</div>`}
         </div>
       </aside>
     </div>`;

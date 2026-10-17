@@ -609,16 +609,75 @@ test("bulk: example week loads once, is marked [INVENTED], and uses the insurer'
   const app = await open("handler/bulk");
   app.click('[data-action="bulk-load-example"]');
   const log = captureLog(app);
-  eq(log.length, app.ev("EXAMPLE_WEEK.reduce((s, t) => s + t.times, 0)"));
+  eq(log.length, app.ev("EXAMPLE_WEEKS.harbour.templates.reduce((s, t) => s + t.times, 0)"));
   assert(log.every((e) => e.example && e.insurer === "harbour"));
   assert(log.some((e) => e.description === "Windscreen, under £1,000, no third party"));
   assert(!app.$('[data-action="bulk-load-example"]'), "button gone");
   assert(app.$(".capture-list").textContent.includes("example [INVENTED]"));
-  const select = app.$('[data-action="insurer"]');
-  select.value = "fleetwise";
-  select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+  assert(app.$(".example-note").textContent.includes("Harbour Mutual"));
+  switchInsurer(app, "fleetwise");
   app.click('[data-action="bulk-load-example"]');
-  assert(captureLog(app).some((e) => e.insurer === "fleetwise" && e.description === "Windscreen, under $1,000, no third party"));
+  assert(captureLog(app).some((e) => e.insurer === "fleetwise" && e.description === "Windscreen, under $1,000"));
+  assert(app.$(".example-note").textContent.includes("Fleetwise Commercial"));
+});
+
+function switchInsurer(app, insurer) {
+  const select = app.$('[data-action="insurer"]');
+  select.value = insurer;
+  select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+}
+const pileShares = (app, insurer) => app.ev(`(() => {
+  const n = {}; let all = 0;
+  for (const r of learnedRules(${JSON.stringify(insurer)})) { n[r.pile] = (n[r.pile] || 0) + r.claims; all += r.claims; }
+  return Object.fromEntries(Object.entries(n).map(([p, c]) => [p, c / all]));
+})()`);
+
+test("bulk: each insurer's example week follows its claim mix and teaches different rules", async () => {
+  const app = await open("handler/bulk");
+  const texts = {};
+  for (const insurer of ["harbour", "northgate", "fleetwise"]) {
+    switchInsurer(app, insurer);
+    app.click('[data-action="bulk-load-example"]');
+    texts[insurer] = app.ev(`learnedRules(${JSON.stringify(insurer)}).map(r => ruleText(r) + " → " + r.pile)`);
+    assert(texts[insurer].length >= 6, `${insurer}: ${texts[insurer].length} rules`);
+  }
+  for (const [a, b] of [["harbour", "northgate"], ["harbour", "fleetwise"], ["northgate", "fleetwise"]]) {
+    const shared = texts[a].filter((t) => texts[b].includes(t.replace("£", "$")) || texts[b].includes(t.replace("$", "£")));
+    assert(shared.length <= 3, `${a} and ${b} share ${shared.length} rules`);
+  }
+  const share = Object.fromEntries(["harbour", "northgate", "fleetwise"].map((i) => [i, pileShares(app, i)]));
+  // Simple-heavy learns mostly Simple; complex-heavy learns mostly Closer look and Suspicious.
+  assert(share.harbour.Simple > share.northgate.Simple && share.northgate.Simple > share.fleetwise.Simple, JSON.stringify(share));
+  assert(share.fleetwise.Simple < 0.15, `fleetwise Simple share ${share.fleetwise.Simple}`);
+  assert(share.fleetwise.Suspicious > share.harbour.Suspicious, "fleetwise learns more Suspicious rules");
+  // Mixed: chasing missing info is the biggest single activity.
+  const waits = (i) => captureLog(app).filter((e) => e.insurer === i && e.kind === "waiting").length;
+  const top = app.ev("EXAMPLE_WEEKS.northgate.templates.reduce((m, t) => t.times > m.times ? t : m)");
+  eq(top.kind, "waiting");
+  assert(waits("northgate") > waits("harbour"), "northgate chases more missing info than harbour");
+});
+
+test("automation: Northgate's rules show the most cautious rule winning over a Simple rule", async () => {
+  const app = await open("handler/bulk");
+  switchInsurer(app, "northgate");
+  app.click('[data-action="bulk-load-example"]');
+  accept(app, "Collision, £1,000–£3,000, no third party, nothing missing", "Simple");
+  eq(suggestion(app, "CLM-1032").pile, "Simple");
+  eq(suggestion(app, "CLM-1048").pile, "Simple", "4 prior claims, but only the Simple rule is on");
+  accept(app, "2+ prior claims", "Needs a closer look");
+  eq(suggestion(app, "CLM-1048").pile, "Needs a closer look");
+  eq(suggestion(app, "CLM-1032").pile, "Simple");
+});
+
+test("automation: Fleetwise's Suspicious rules stay suggest-only", async () => {
+  const app = await open("handler/bulk");
+  switchInsurer(app, "fleetwise");
+  app.click('[data-action="bulk-load-example"]');
+  const key = accept(app, "2+ prior claims, fraud score medium (0.35–0.6)", "Suspicious");
+  eq(["CLM-1057", "CLM-1053"].map((id) => suggestion(app, id).pile), ["Suspicious", "Suspicious"]);
+  assert(ruleButton(app, "rule-mode", key, "auto").disabled, "auto-sort disabled");
+  app.ev(`setRuleMode(${JSON.stringify(key)}, "auto")`);
+  eq(activeRule(app, key).mode, "suggest");
 });
 
 test("bulk: example week is the same every time", async () => {
