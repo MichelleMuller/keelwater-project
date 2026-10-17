@@ -1221,10 +1221,10 @@ test("workflow: before anything is published, the builder shows the default work
   const titles = app.$$(".wf-canvas .wf-node-title").map((t) => t.textContent.trim());
   const order = ["Claim arrives", "Missing info check", "Fraud gate", "Senior review before payment", "Otherwise"].map((t) => titles.indexOf(t));
   assert(order.every((i, k) => i >= 0 && (k === 0 || i > order[k - 1])), `order ${JSON.stringify(titles)}`);
-  const labels = app.$$(".wf-stage-label").map((l) => l.textContent);
-  eq(labels, ["Rules → Suspicious", "Rules → Needs a closer look", "Rules → Simple", "Assign"]);
+  eq(app.$$(".wf-steps [data-node]").length, 3, "every step but start and end can be dragged");
+  assert(!app.$(".wf-warnings"), "no warnings in the default order");
   assert(app.ev("state.claims.every(c => !suggestionFor(c))"), "no suggestions until something is published");
-  assert(app.$$(".wf-pal-item.required").every((p) => !p.draggable), "required checks aren't in the palette to drag");
+  assert(app.$$(".wf-pal-item.required").every((p) => !p.draggable), "checks already in the workflow can't be added twice");
 });
 
 test("workflow: accepting a rule on the bulk page publishes v1 with the default checks and the rule", async () => {
@@ -1301,45 +1301,83 @@ test("workflow: the last 30 days are invented past claims, the same every time",
 });
 const PILES_OK = ["Simple", "Needs a closer look", "Suspicious"];
 
-test("workflow: dragging a rule from the palette onto a stage gives it that pile; dragging it to another stage changes the pile", async () => {
+const typesInOrder = (app) => draftNodes(app).map((n) => n.type);
+const shownOrder = (app) => app.$$(".wf-steps [data-node]").map((n) => n.dataset.node);
+
+test("workflow: a step dragged from the palette lands where it's dropped; + Add puts it in decision order", async () => {
   const app = await open("handler/workflow");
-  drag(app, app.$('[data-palette="rule"]'), app.$('[data-drop-stage="Simple"]'));
-  let rule = draftNodes(app).find((n) => n.type === "rule");
-  eq(rule.pile, "Simple");
-  assert(app.$('[data-drop-stage="Simple"] .wf-node'), "shown in the Simple stage");
-  app.click('.wf-editor [data-action="wf-mode"][data-value="auto"]');
-  drag(app, app.$(`[data-node="${rule.id}"]`), app.$('[data-drop-stage="Suspicious"]'));
-  rule = draftNodes(app).find((n) => n.id === rule.id);
-  eq([rule.pile, rule.mode], ["Suspicious", "suggest"], "Suspicious is suggest-only");
-  drag(app, app.$('[data-palette="assign"]'), app.$('[data-drop-stage="Simple"]'));
-  eq(draftNodes(app).filter((n) => n.type === "assign").length, 0, "Assign can't go in a rules stage");
-  drag(app, app.$('[data-palette="assign"]'), app.$('[data-drop-stage="assign"]'));
-  eq(draftNodes(app).filter((n) => n.type === "assign").length, 1);
+  drag(app, app.$('[data-palette="rule"]'), app.$(".wf-node.fraud"));
+  eq(typesInOrder(app), ["missing", "rule", "fraud", "review"], "dropped above the fraud gate");
+  drag(app, app.$('[data-palette="assign"]'), app.$('.wf-node[data-drop-at="first"]'));
+  eq(typesInOrder(app)[0], "assign", "dropped on Claim arrives goes to the top");
+  drag(app, app.$('[data-palette="rule"]'), app.$('.wf-node[data-drop-at="end"]'));
+  eq(typesInOrder(app).at(-1), "rule", "dropped on Otherwise goes to the bottom");
+  app.click('[data-action="wf-add"][data-value="rule"]');
+  eq(typesInOrder(app), ["assign", "missing", "rule", "fraud", "review", "rule", "rule"], "+ Add goes after the last step that comes before it in decision order");
+  eq(shownOrder(app), draftNodes(app).map((n) => n.id), "the canvas shows the draft's order");
 });
 
-test("workflow: rules can be reordered within a stage by dragging", async () => {
+test("workflow: any step can be reordered by dragging, including fraud ahead of missing info", async () => {
   const app = await open("handler/workflow");
   app.click('[data-action="wf-add"][data-value="rule"]');
   app.click('[data-action="wf-add"][data-value="rule"]');
   const [a, b] = draftNodes(app).filter((n) => n.type === "rule").map((n) => n.id);
   drag(app, app.$(`[data-node="${b}"]`), app.$(`[data-node="${a}"]`));
   eq(draftNodes(app).filter((n) => n.type === "rule").map((n) => n.id), [b, a]);
-  eq(app.$$('[data-drop-stage="Needs a closer look"] [data-node]').map((n) => n.dataset.node), [b, a]);
+  drag(app, app.$(".wf-node.fraud"), app.$(".wf-node.missing"));
+  eq(typesInOrder(app), ["fraud", "missing", "rule", "rule", "review"]);
+  eq(shownOrder(app), draftNodes(app).map((n) => n.id));
+  drag(app, app.$(".wf-node.review"), app.$('.wf-node[data-drop-at="first"]'));
+  eq(typesInOrder(app)[0], "review");
+  assert(!app.$(".wf-warnings"), "no Simple rules, so nothing is lost");
+  testAndPublish(app);
+  eq(app.ev("liveVersion('harbour')").note, "First version: senior review before payment, fraud gate, missing info check, 2 rules");
+  drag(app, app.$(".wf-node.missing"), app.$(".wf-node.fraud"));
+  testAndPublish(app);
+  eq(app.ev("liveVersion('harbour')").note, "Changed the order of steps");
 });
 
-test("workflow: required checks can't be removed; rules and assign steps can", async () => {
+test("workflow: every step can be removed, with a warning; removed checks can be added back once", async () => {
   const app = await open("handler/workflow");
-  for (const type of ["missing", "fraud", "review"]) {
+  const warns = () => app.$(".wf-warnings")?.textContent || "";
+  for (const [type, says] of [["missing", "No missing info check"], ["fraud", "No fraud gate"], ["review", "No senior review"]]) {
     app.click(`.wf-node.${type}`);
-    assert(!app.$('.wf-editor [data-action="wf-remove"]'), `${type}: no remove`);
-    assert(app.$(".wf-editor").textContent.includes("Required step"), `${type}: says required`);
-    const id = selectedNodeId(app);
-    app.ev(`removeNode("harbour", "${id}"); render();`);
-    assert(draftNodes(app).some((n) => n.id === id), `${type} still there`);
+    assert(app.$(".wf-editor").textContent.includes("Recommended step"), `${type}: says recommended`);
+    app.click('.wf-editor [data-action="wf-remove"]');
+    assert(!typesInOrder(app).includes(type), `${type} removed`);
+    assert(warns().includes(says), `${type}: warns "${says}"`);
   }
+  testAndPublish(app);
+  eq(app.ev("liveVersion('harbour')").nodes.length, 0, "publishing isn't blocked");
+  app.click('[data-action="wf-add"][data-value="fraud"]');
+  assert(!app.$('[data-action="wf-add"][data-value="fraud"]'), "no + Add once it's back");
+  app.ev(`addNode("harbour", "fraud"); render();`);
+  eq(typesInOrder(app), ["fraud"], "added back once");
+  assert(!warns().includes("No fraud gate"));
   app.click('[data-action="wf-add"][data-value="rule"]');
   app.click('.wf-editor [data-action="wf-remove"]');
-  eq(draftNodes(app).filter((n) => n.type === "rule").length, 0);
+  eq(typesInOrder(app), ["fraud"]);
+});
+
+test("workflow: steps run top to bottom, so a Simple rule above the checks skips them, with a warning", async () => {
+  const app = await open("handler/workflow");
+  const ev = (nodes, id) => app.ev(`(() => { const e = evaluate(state.claims.find(c => c.id === "${id}"), ${JSON.stringify(nodes)}); return [e.pile, e.heldBack]; })()`);
+  const id = harbourTodo(app)[0].id;
+  app.ev(`Object.assign(state.claims.find(c => c.id === "${id}"), { incident: { ...state.claims.find(c => c.id === "${id}").incident, type: "windscreen" } }).fraud.score = 0.9`);
+  const simple = { id: "s", type: "rule", filters: { type: "windscreen" }, pile: "Simple", mode: "suggest" };
+  const nodes = app.ev(`defaultNodes("harbour")`);
+  const [missing, fraud, review] = nodes;
+  eq(ev([missing, fraud, simple, review], id), ["Suspicious", null], "gate first: flagged");
+  eq(ev([simple, missing, fraud, review], id), ["Simple", null], "Simple rule first: never screened");
+  app.ev(`state.claims.find(c => c.id === "${id}").fraud.score = 0.1; state.claims.find(c => c.id === "${id}").missingInfo = ["photos"]`);
+  eq(ev([fraud, missing, simple, review], id), [null, "missing info"], "below the check: held back");
+  eq(ev([fraud, simple, missing, review], id), ["Simple", null], "above the check: not held back");
+  const closer = { id: "c", type: "rule", filters: { type: "windscreen" }, pile: "Needs a closer look", mode: "suggest" };
+  eq(ev([simple, closer], id)[0], "Simple", "first matching rule wins");
+  eq(ev([closer, simple], id)[0], "Needs a closer look");
+  app.ev(`workflowFor("harbour").draft = { nodes: ${JSON.stringify([simple, closer, missing, fraud, review])}, threshold: 0.9 }; render();`);
+  const w = app.$(".wf-warnings").textContent;
+  for (const s of ["before the fraud gate", "before the missing info check", "less cautious pile runs before a more cautious one"]) assert(w.includes(s), `warns: ${s}`);
 });
 
 test("workflow: Suspicious rules are suggest-only in the builder too", async () => {
