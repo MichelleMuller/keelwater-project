@@ -252,6 +252,12 @@ table.grid .reason { max-width: 120px; overflow: hidden; text-overflow: ellipsis
   border-radius: var(--radius-2); background: var(--lavender-light);
 }
 .suggest-box { flex-wrap: nowrap; }
+.auto-notice {
+  display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 10px 16px;
+  background: var(--green-3); border-bottom: 1px solid var(--gray-4);
+}
+.auto-notice-actions { display: flex; gap: 8px; align-items: center; flex: none; }
+.auto-tag { margin-top: 2px; }
 .suggest-box .why { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .suggest-box .btn { height: 28px; font-size: 13px; flex: none; }
 .overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(0, 10, 52, 0.35); }
@@ -580,7 +586,7 @@ const state = {
   inbox: { tab: "todo", openId: null, sortedByYou: 0 },
   bulk: { filters: emptyFilters(), selected: [], sortBy: "received", log: [], exampleLoaded: [] },
   override: null, // the sort waiting for a reason because it goes against a suggestion
-  automation: { rules: [], dismissed: [], changes: [], collapsed: false, showAllSuggested: false },
+  automation: { rules: [], dismissed: [], changes: [], collapsed: false, showAllSuggested: false, notice: null },
 };
 
 function emptyForm() {
@@ -1592,15 +1598,35 @@ function turnOffRule(key) {
   a.rules = a.rules.filter((x) => x.key !== key);
   a.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: "Turned off rule", rule: ruleText(r), pile: r.pile });
   if (!activeRules(state.insurer).length) state.bulk.filters.suggested = "";
+  if (a.notice && a.notice.key === key) a.notice = null;
+}
+
+// Claims a rule auto-sorted that are still in its pile (not undone or moved by hand).
+function stillAutoSorted(r) {
+  return r.autoIds.filter((id) => { const c = state.claims.find((x) => x.id === id); return c && c.pile === r.pile; });
 }
 
 function setRuleMode(key, mode) {
-  const r = state.automation.rules.find((x) => x.key === key);
+  const a = state.automation;
+  const r = a.rules.find((x) => x.key === key);
   if (!r || r.mode === mode) return;
   if (mode === "auto" && r.pile === "Suspicious") return; // Suspicious is suggest-only
   r.mode = mode;
-  state.automation.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: mode === "auto" ? "Switched rule to auto-sort" : "Switched rule to suggest", rule: ruleText(r), pile: r.pile });
-  if (mode === "auto") runAutomation();
+  a.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: mode === "auto" ? "Switched rule to auto-sort" : "Switched rule to suggest", rule: ruleText(r), pile: r.pile });
+  if (mode === "auto") {
+    const before = r.autoIds.length;
+    runAutomation();
+    const heldBack = state.claims.filter((c) => { const s = suggestionFor(c); return s && s.heldBack && s.rule === r; });
+    a.notice = { kind: "auto", key, ids: r.autoIds.slice(before), heldBack: heldBack.map((c) => suggestionFor(c).heldBack) };
+  } else {
+    a.notice = { kind: "suggest", key, ids: stillAutoSorted(r) };
+  }
+}
+
+function viewAutoSorted(key) {
+  const r = state.automation.rules.find((x) => x.key === key);
+  if (!r) return;
+  applyFilters({ ...r.filters, status: "sorted" });
 }
 
 function sortBySuggestion(c, s, actor, action) {
@@ -1640,6 +1666,38 @@ function undoAutoSort(key) {
   r.autoIds = [];
   r.mode = "suggest";
   state.automation.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: `Undid auto-sort of ${undone.length} claims`, rule: ruleText(r), pile: r.pile });
+  state.automation.notice = { kind: "undone", key, ids: undone };
+}
+
+function renderAutoNotice() {
+  const a = state.automation;
+  const n = a.notice;
+  const r = n && a.rules.find((x) => x.key === n.key && x.insurer === state.insurer);
+  if (!r) return "";
+  const claims = (k) => `${k} claim${k === 1 ? "" : "s"}`;
+  const rule = `“${esc(ruleText(r))}”`;
+  const still = stillAutoSorted(r).length;
+  const view = still ? `<button class="btn btn-sm btn-outline" data-action="auto-view" data-rule="${esc(r.key)}">View them in the table</button>` : "";
+  const undo = (label) => (still ? `<button class="btn btn-sm btn-outline" data-action="rule-undo" data-rule="${esc(r.key)}">${label}</button>` : "");
+  let text = "";
+  let actions = "";
+  if (n.kind === "auto") {
+    const held = n.heldBack.length ? ` ${claims(n.heldBack.length)} held back for you (${[...new Set(n.heldBack)].join(", ")}).` : "";
+    text = n.ids.length
+      ? `<strong>${claims(n.ids.length)} auto-sorted into ${r.pile}</strong> by ${rule}.${held} New matching claims will be sorted as they arrive.`
+      : `<strong>Auto-sort on</strong> for ${rule}. No claims match right now; new matching claims will be sorted as they arrive.${held}`;
+    actions = view + undo("Undo");
+  } else if (n.kind === "suggest") {
+    text = `<strong>Auto-sort off</strong> for ${rule}. New matching claims will be suggested, not sorted.${still ? ` The ${claims(still)} already auto-sorted stay sorted.` : ""}`;
+    actions = view + undo(`Undo those ${still}`);
+  } else {
+    text = `<strong>${claims(n.ids.length)} put back</strong> to be sorted. ${rule} is back on Suggest, so they show as suggestions in the table.`;
+  }
+  return `
+    <div class="auto-notice" role="status">
+      <div class="small">${text}</div>
+      <div class="auto-notice-actions">${actions}<button class="link-btn small" data-action="notice-dismiss" aria-label="Dismiss">Dismiss</button></div>
+    </div>`;
 }
 
 function confirmSuggestions(ids) {
@@ -1717,6 +1775,7 @@ function renderAutomation(mine) {
           <button class="link-btn small" data-action="automation-toggle">${a.collapsed ? "Show" : "Hide"}</button>
         </div>
       </div>
+      ${renderAutoNotice()}
       ${a.collapsed ? "" : `
         <div class="automation-body">
           ${active.length ? `<h3 class="auto-h3">Active rules</h3><div class="rule-rows">${activeRows}</div>` : ""}
@@ -1834,6 +1893,7 @@ function renderBulk(mine) {
   const samples = sampleFilters(mine);
 
   const hasRules = activeRules(state.insurer).length > 0;
+  const autoSortedIds = new Set(activeRules(state.insurer).flatMap(stillAutoSorted));
   const toConfirm = selected.filter((c) => { const s = suggestionFor(c); return s && s.pile; });
   const suggestionCell = (c) => {
     const s = suggestionFor(c);
@@ -1864,7 +1924,7 @@ function renderBulk(mine) {
           : c.missingInfo.length ? `<span class="badge waiting" title="${esc(c.missingInfo.join(", "))}">${c.missingInfo.length} missing</span>` : '<span class="muted">—</span>'}</td>
         <td class="num"><span class="badge ${fraudLevel}">${c.fraud.score.toFixed(2)}</span></td>
         ${hasRules ? `<td>${suggestionCell(c)}</td>` : ""}
-        <td>${c.pile ? `<span class="badge ${PILE_STYLE[c.pile]}">${c.pile}</span>` : '<span class="muted">—</span>'}</td>
+        <td>${c.pile ? `<span class="badge ${PILE_STYLE[c.pile]}">${c.pile}</span>${autoSortedIds.has(c.id) ? '<div class="small muted auto-tag">Auto</div>' : ""}` : '<span class="muted">—</span>'}</td>
       </tr>`;
   }).join("");
 
@@ -2059,6 +2119,18 @@ document.addEventListener("click", (e) => {
   if (action === "rule-mode") { setRuleMode(rule, value); render(); }
   if (action === "rule-undo") { undoAutoSort(rule); render(); }
   if (action === "automation-more") { state.automation.showAllSuggested = !state.automation.showAllSuggested; render(); }
+  if (action === "notice-dismiss") { state.automation.notice = null; render(); }
+  if (action === "auto-view") {
+    viewAutoSorted(rule);
+    render();
+    document.querySelector(".bulk").scrollIntoView({ block: "start" });
+  }
+  if (action === "notice-dismiss") { state.automation.notice = null; render(); }
+  if (action === "auto-view") {
+    viewAutoSorted(rule);
+    render();
+    document.querySelector(".bulk").scrollIntoView({ block: "start" });
+  }
   if (action === "automation-toggle") { state.automation.collapsed = !state.automation.collapsed; render(); }
   if (action === "confirm-suggestion") { confirmSuggestions([value]); render(); }
   if (action === "bulk-confirm") { confirmSuggestions(b.selected); render(); }

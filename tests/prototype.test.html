@@ -1002,6 +1002,59 @@ test("automation: overrides lower the rule's kept % straight away, in the panel 
   assert(row.textContent.startsWith(shown), row.textContent);
 });
 
+test("automation: switching to auto-sort says what it sorted, and View them shows exactly those claims", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  const ready = harbourTodo(app).filter((c) => suggestion(app, c.id)?.pile === "Simple").map((c) => c.id);
+  ruleButton(app, "rule-mode", key, "auto").click();
+  const notice = app.$(".auto-notice");
+  assert(notice, "notice shown");
+  assert(notice.textContent.includes(`${ready.length} claims auto-sorted into Simple`), notice.textContent);
+  assert(notice.textContent.includes(WINDSCREEN));
+  app.click('.auto-notice [data-action="auto-view"]');
+  eq(app.ev("state.bulk.filters.status"), "sorted");
+  eq(tableIds(app).sort(), [...ready].sort(), "table shows the auto-sorted claims");
+  for (const id of ready) assert(app.$(`tr[data-id="${id}"] .auto-tag`), `${id} tagged Auto`);
+});
+
+test("automation: Undo in the notice puts the claims back and says so", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  ruleButton(app, "rule-mode", key, "auto").click();
+  const ids = activeRule(app, key).autoIds;
+  app.click('.auto-notice [data-action="rule-undo"]');
+  for (const id of ids) eq(claimById(app, id).pile, null, id);
+  eq(activeRule(app, key).mode, "suggest");
+  assert(app.$(".auto-notice").textContent.includes(`${ids.length} claims put back`));
+  assert(!app.$('.auto-notice [data-action="auto-view"]'), "nothing left to view");
+});
+
+test("automation: switching back to Suggest says the auto-sorted claims stay sorted, with Undo", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  ruleButton(app, "rule-mode", key, "auto").click();
+  const n = activeRule(app, key).autoIds.length;
+  ruleButton(app, "rule-mode", key, "suggest").click();
+  const notice = app.$(".auto-notice");
+  assert(notice.textContent.includes("Auto-sort off"));
+  assert(notice.textContent.includes(`The ${n} claims already auto-sorted stay sorted`), notice.textContent);
+  eq(app.$('.auto-notice [data-action="rule-undo"]').textContent.trim(), `Undo those ${n}`);
+  ruleButton(app, "rule-mode", key, "auto").click();
+  assert(app.$(".auto-notice").textContent.includes("No claims match right now"), "second switch explains nothing new matched");
+});
+
+test("automation: the notice can be dismissed and only shows for its insurer", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  ruleButton(app, "rule-mode", key, "auto").click();
+  switchInsurer(app, "northgate");
+  assert(!app.$(".auto-notice"), "hidden for another insurer");
+  switchInsurer(app, "harbour");
+  assert(app.$(".auto-notice"));
+  app.click('[data-action="notice-dismiss"]');
+  assert(!app.$(".auto-notice"));
+});
+
 test("inbox: an open claim shows its suggestion, and confirming it sorts and moves on", async () => {
   const app = await withExample();
   const key = accept(app, WINDSCREEN, "Simple");
