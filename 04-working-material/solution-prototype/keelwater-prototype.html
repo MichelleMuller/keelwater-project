@@ -187,6 +187,41 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .history li::before { content: ""; position: absolute; left: -6px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--gray-6); }
 .history li.you::before { background: var(--rose); }
 
+/* ---------- Bulk sorting (Phase 1) ---------- */
+.bulk { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.bulk-table { padding: 0; overflow: hidden; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; border-bottom: 1px solid var(--gray-4); }
+.filters .select { height: 30px; font-size: 13px; }
+.filters .select.active { box-shadow: inset 0 0 0 1.5px var(--rose); background-color: var(--rose-a3); }
+.link-btn { border: 0; background: transparent; padding: 0; cursor: pointer; color: var(--rose-text); font-weight: 500; }
+.link-btn:hover { text-decoration: underline; }
+.action-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--gray-4); background: var(--gray-2); min-height: 52px; }
+.action-bar.has-selection { background: var(--rose-a3); }
+.action-bar .btn { height: 30px; font-size: 13px; }
+.btn-pile[disabled], .btn-soft[disabled] { opacity: 0.45; cursor: not-allowed; }
+.table-wrap { max-height: calc(100vh - 400px); min-height: 280px; overflow: auto; }
+table.grid { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.grid th {
+  position: sticky; top: 0; z-index: 1; background: var(--gray-2); text-align: left; font-weight: 600;
+  color: var(--gray-11); padding: 8px 10px; border-bottom: 1px solid var(--gray-5); white-space: nowrap;
+}
+table.grid td { padding: 8px 10px; border-bottom: 1px solid var(--gray-3); vertical-align: top; }
+table.grid tr.selected td { background: var(--rose-a3); }
+table.grid .num { text-align: right; font-variant-numeric: tabular-nums; }
+table.grid input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--rose); cursor: pointer; margin: 0; }
+.th-sort { border: 0; background: transparent; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.th-sort[aria-pressed="true"] { color: var(--gray-12); }
+.th-sort[aria-pressed="true"]::after { content: " ↓"; }
+
+.capture { position: sticky; top: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: calc(100vh - 290px); }
+.capture-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--gray-4); }
+.capture-head h2 { font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.capture-list { overflow-y: auto; flex: 1; padding: 0 16px; }
+.capture-entry { padding: 10px 0; border-bottom: 1px solid var(--gray-3); }
+.capture-entry.filter { color: var(--gray-11); font-size: 12px; padding: 6px 0; }
+.capture-entry .when { font-size: 11px; color: var(--gray-10); }
+.capture-foot { padding: 12px 16px; border-top: 1px solid var(--gray-4); background: var(--gray-2); }
+
 .consumer { flex: 1; overflow-y: auto; background: #f4f7f8; }
 .insurer-brand-bar {
   background: #0f4c5c; color: white; padding: 14px 32px; display: flex; align-items: center;
@@ -494,6 +529,7 @@ const state = {
   form: emptyForm(),
   highlightClaimId: null,
   inbox: { tab: "todo", openId: null, sortedByYou: 0 },
+  bulk: { filters: emptyFilters(), selected: [], sortBy: "received", log: [], exampleLoaded: [] },
 };
 
 function emptyForm() {
@@ -969,7 +1005,7 @@ function renderHandler() {
       ${icon(item.icon)} ${item.label}
     </button>`).join("");
 
-  const body = state.page === "inbox" ? renderInbox(mine) : `
+  const body = state.page === "inbox" ? renderInbox(mine) : state.page === "bulk" ? renderBulk(mine) : `
     <div class="stats">
       ${stat("Claims", mine.length)}
       ${stat("Not sorted yet", unsorted)}
@@ -1190,17 +1226,264 @@ function requestMissingInfo() {
   c.history.push({ at: new Date().toISOString(), actor: "you", action: "Asked claimant for missing info", detail: c.missingInfo.join(", ") });
 }
 
+/* ----- Bulk sorting (Phase 1): filter, select, sort many at once. Every filter and
+   bulk action is captured as a labelled example for Phase 2 rules. ----- */
+
+function emptyFilters() {
+  return { status: "unsorted", type: "", amount: "", thirdParty: "", injury: "", prior: "", missing: "", fraud: "" };
+}
+
+const AMOUNT_BANDS = { under1k: [0, 1000], "1kto3k": [1000, 3000], over3k: [3000, Infinity] };
+const FRAUD_BANDS = { low: [0, 0.35], medium: [0.35, 0.6], high: [0.6, Infinity] };
+
+function filterDefs(insurerId) {
+  const m = (v) => money(insurerId, v);
+  return [
+    { key: "status", label: "Status", options: [["unsorted", "Not sorted"], ["sorted", "Sorted"], ["all", "All claims"]] },
+    { key: "type", label: "Claim type", options: [["", "Any type"], ...INCIDENT_TYPES.map((t) => [t.value, t.label])] },
+    { key: "amount", label: "Amount", options: [["", "Any amount"], ["under1k", `Under ${m(1000)}`], ["1kto3k", `${m(1000)}–${m(3000)}`], ["over3k", `Over ${m(3000)}`]] },
+    { key: "thirdParty", label: "Third party", options: [["", "Third party: any"], ["yes", "Third party"], ["no", "No third party"]] },
+    { key: "injury", label: "Injury", options: [["", "Injury: any"], ["yes", "Injury"], ["no", "No injury"]] },
+    { key: "prior", label: "Prior claims", options: [["", "Prior claims: any"], ["0", "No prior claims"], ["1", "1 prior claim"], ["2+", "2+ prior claims"]] },
+    { key: "missing", label: "Missing info", options: [["", "Missing info: any"], ["yes", "Missing info"], ["no", "Nothing missing"]] },
+    { key: "fraud", label: "Fraud score", options: [["", "Fraud score: any"], ["low", "Fraud score low (under 0.35)"], ["medium", "Fraud score medium (0.35–0.6)"], ["high", "Fraud score high (0.6+)"]] },
+  ];
+}
+
+function matchesFilters(c, f) {
+  const inBand = (bands, key, v) => !key || (v >= bands[key][0] && v < bands[key][1]);
+  const yesNo = (want, v) => !want || (want === "yes") === Boolean(v);
+  if (f.status === "unsorted" && c.pile) return false;
+  if (f.status === "sorted" && !c.pile) return false;
+  if (f.type && c.incident.type !== f.type) return false;
+  if (!inBand(AMOUNT_BANDS, f.amount, c.damage.estimatedAmount)) return false;
+  if (!yesNo(f.thirdParty, c.parties.thirdPartyInvolved)) return false;
+  if (!yesNo(f.injury, c.parties.injuries)) return false;
+  const prior = c.claimant.priorClaims5y;
+  if (f.prior === "0" && prior !== 0) return false;
+  if (f.prior === "1" && prior !== 1) return false;
+  if (f.prior === "2+" && prior < 2) return false;
+  if (!yesNo(f.missing, c.missingInfo.length)) return false;
+  if (!inBand(FRAUD_BANDS, f.fraud, c.fraud.score)) return false;
+  return true;
+}
+
+// Plain-language description of the filters, as used in the capture log.
+function describeFilters(f, insurerId) {
+  const defs = filterDefs(insurerId);
+  const parts = defs
+    .filter((d) => d.key !== "status" && f[d.key])
+    .map((d) => d.options.find(([v]) => v === f[d.key])[1]);
+  const text = parts.map((p, i) => (i === 0 ? p : p.charAt(0).toLowerCase() + p.slice(1))).join(", ");
+  return text || "No filters";
+}
+
+function bulkRows(mine) {
+  const b = state.bulk;
+  const rows = mine.filter((c) => matchesFilters(c, b.filters));
+  const key = { received: (c) => c.receivedAt, amount: (c) => c.damage.estimatedAmount, fraud: (c) => c.fraud.score }[b.sortBy];
+  return rows.sort((x, y) => (key(x) < key(y) ? 1 : key(x) > key(y) ? -1 : 0));
+}
+
+function logCapture(entry) {
+  state.bulk.log.push({ at: new Date(NOW_MS).toISOString(), insurer: state.insurer, ...entry });
+}
+
+function setFilter(key, value) {
+  const b = state.bulk;
+  if (b.filters[key] === value) return;
+  b.filters[key] = value;
+  b.selected = [];
+  const count = bulkRows(state.claims.filter((c) => c.insurer === state.insurer)).length;
+  logCapture({ kind: "filter", filters: { ...b.filters }, description: describeFilters(b.filters, state.insurer), count });
+}
+
+function bulkSort(pile) {
+  const b = state.bulk;
+  const mine = state.claims.filter((c) => c.insurer === state.insurer);
+  const shown = bulkRows(mine);
+  const chosen = shown.filter((c) => b.selected.includes(c.id));
+  if (!chosen.length) return;
+  const description = describeFilters(b.filters, state.insurer);
+  for (const c of chosen) {
+    const before = c.pile;
+    c.pile = pile;
+    if (c.status !== "waiting on claimant") c.status = "sorted";
+    c.history.push({
+      at: new Date().toISOString(), actor: "you",
+      action: before ? `Moved from ${before} to ${pile}` : `Sorted into ${pile}`,
+      detail: `bulk sort of ${chosen.length} claims · filter: ${description}`,
+    });
+  }
+  logCapture({
+    kind: "sort", pile, filters: { ...b.filters }, description,
+    count: chosen.length, excluded: shown.length - chosen.length, ids: chosen.map((c) => c.id),
+  });
+  b.selected = [];
+}
+
+function bulkMarkWaiting() {
+  const b = state.bulk;
+  const chosen = state.claims.filter((c) => c.insurer === state.insurer && b.selected.includes(c.id));
+  const eligible = chosen.filter((c) => c.missingInfo.length && c.status !== "waiting on claimant");
+  for (const c of eligible) {
+    c.status = "waiting on claimant";
+    c.history.push({ at: new Date().toISOString(), actor: "you", action: "Asked claimant for missing info", detail: `${c.missingInfo.join(", ")} · bulk request` });
+  }
+  logCapture({
+    kind: "waiting", filters: { ...b.filters }, description: describeFilters(b.filters, state.insurer),
+    count: eligible.length, skipped: chosen.length - eligible.length, ids: eligible.map((c) => c.id),
+  });
+  b.selected = [];
+}
+
+// A week of handler activity, so Phase 2 has enough examples to learn from. [INVENTED]
+const EXAMPLE_WEEK = [
+  { filters: { type: "windscreen", amount: "under1k", thirdParty: "no" }, pile: "Simple", times: 14, size: [8, 26], excludedChance: 0.2 },
+  { filters: { type: "vandalism", amount: "under1k", missing: "no" }, pile: "Simple", times: 6, size: [3, 9], excludedChance: 0.3 },
+  { filters: { type: "collision", thirdParty: "yes" }, pile: "Needs a closer look", times: 10, size: [5, 15], excludedChance: 0.2 },
+  { filters: { injury: "yes" }, pile: "Needs a closer look", times: 5, size: [2, 6], excludedChance: 0 },
+  { filters: { amount: "over3k", thirdParty: "no", injury: "no" }, pile: "Needs a closer look", times: 5, size: [4, 10], excludedChance: 0.4 },
+  { filters: { type: "theft" }, pile: "Needs a closer look", times: 4, size: [1, 4], excludedChance: 0.5 },
+  { filters: { fraud: "high" }, pile: "Suspicious", times: 4, size: [1, 5], excludedChance: 0.5 },
+  { filters: { missing: "yes" }, kind: "waiting", times: 7, size: [6, 18], excludedChance: 0 },
+];
+
+function loadExampleWeek() {
+  const b = state.bulk;
+  if (b.exampleLoaded.includes(state.insurer)) return;
+  const r = makeRng(7);
+  const entries = [];
+  EXAMPLE_WEEK.forEach((t) => {
+    for (let i = 0; i < t.times; i++) {
+      const filters = { ...emptyFilters(), ...t.filters };
+      const count = Math.round(t.size[0] + r() * (t.size[1] - t.size[0]));
+      const excluded = r() < t.excludedChance ? 1 + Math.floor(r() * 2) : 0;
+      const at = new Date(NOW_MS - (1 + Math.floor(r() * 6)) * 86400000 - Math.floor(r() * 8) * 3600000).toISOString();
+      entries.push(t.kind === "waiting"
+        ? { kind: "waiting", filters, description: describeFilters(filters, state.insurer), count, skipped: 0, ids: [], at, insurer: state.insurer, example: true }
+        : { kind: "sort", pile: t.pile, filters, description: describeFilters(filters, state.insurer), count, excluded, ids: [], at, insurer: state.insurer, example: true });
+    }
+  });
+  entries.sort((x, y) => x.at.localeCompare(y.at));
+  b.log = [...entries, ...b.log];
+  b.exampleLoaded.push(state.insurer);
+}
+
+function renderBulk(mine) {
+  const b = state.bulk;
+  const rows = bulkRows(mine);
+  const selected = rows.filter((c) => b.selected.includes(c.id));
+  const n = selected.length;
+  const allChecked = rows.length > 0 && n === rows.length;
+  const log = b.log.filter((e) => e.insurer === state.insurer);
+  const actions = log.filter((e) => e.kind !== "filter");
+  const labelled = actions.reduce((s, e) => s + e.count, 0);
+
+  const filters = filterDefs(state.insurer).map((d) => `
+    <select class="select ${d.key !== "status" && b.filters[d.key] ? "active" : ""}" data-filter="${d.key}" aria-label="${d.label}">
+      ${d.options.map(([v, label]) => `<option value="${v}" ${b.filters[d.key] === v ? "selected" : ""}>${label}</option>`).join("")}
+    </select>`).join("");
+  const anyFilter = Object.entries(b.filters).some(([k, v]) => (k === "status" ? v !== "unsorted" : v));
+
+  const th = (key, label, cls = "") => `<th class="${cls}"><button class="th-sort" data-action="bulk-sort-by" data-value="${key}" aria-pressed="${b.sortBy === key}">${label}</button></th>`;
+  const tableRows = rows.map((c) => {
+    const sel = b.selected.includes(c.id);
+    const fraudLevel = c.fraud.score >= 0.6 ? "suspicious" : c.fraud.score >= 0.35 ? "closer" : "gray";
+    const people = [c.parties.thirdPartyInvolved ? '<span class="badge gray">Third party</span>' : "", c.parties.injuries ? '<span class="badge closer">Injury</span>' : ""].join(" ").trim();
+    return `
+      <tr class="${sel ? "selected" : ""}" data-id="${c.id}">
+        <td><input type="checkbox" data-action="bulk-select" data-value="${c.id}" ${sel ? "checked" : ""} aria-label="Select ${c.id}" /></td>
+        <td><button class="link-btn" data-action="open-in-inbox" data-value="${c.id}">${c.id}</button><div class="small muted">${esc(c.claimant.name)}</div></td>
+        <td>${ago(c.receivedAt)}${waitingOver4h(c) ? '<div><span class="badge late">Over 4 h</span></div>' : ""}</td>
+        <td>${typeLabel(c.incident.type)}</td>
+        <td class="num">${money(c.insurer, c.damage.estimatedAmount)}</td>
+        <td>${people || '<span class="muted">—</span>'}</td>
+        <td class="num">${c.claimant.priorClaims5y}</td>
+        <td>${c.status === "waiting on claimant" ? '<span class="badge waiting">Waiting on claimant</span>'
+          : c.missingInfo.length ? `<span class="badge waiting" title="${esc(c.missingInfo.join(", "))}">${c.missingInfo.length} missing</span>` : '<span class="muted">—</span>'}</td>
+        <td class="num"><span class="badge ${fraudLevel}">${c.fraud.score.toFixed(2)}</span></td>
+        <td>${c.pile ? `<span class="badge ${PILE_STYLE[c.pile]}">${c.pile}</span>` : '<span class="muted">—</span>'}</td>
+      </tr>`;
+  }).join("");
+
+  const entry = (e) => {
+    const when = `<div class="when">${ago(e.at)}${e.example ? ' · <span class="badge gray">example [INVENTED]</span>' : ""}</div>`;
+    if (e.kind === "filter") return `<div class="capture-entry filter">Filtered: ${esc(e.description)} → ${e.count} claims</div>`;
+    const outcome = e.kind === "sort" ? `<span class="badge ${PILE_STYLE[e.pile]}">${e.pile}</span>` : '<span class="badge waiting">Waiting on claimant</span>';
+    const note = e.kind === "sort" && e.excluded ? ` · ${e.excluded} left out by hand` : e.kind === "waiting" && e.skipped ? ` · ${e.skipped} skipped, nothing missing` : "";
+    return `
+      <div class="capture-entry ${e.kind}">
+        <div><strong>${e.count} claims →</strong> ${outcome}</div>
+        <div class="small muted">${esc(e.description)}${note}</div>
+        ${when}
+      </div>`;
+  };
+  const recent = [...log].reverse();
+  const shownLog = recent.slice(0, 40);
+
+  return `
+    <div class="stats stats-4">
+      ${stat("To sort", mine.filter((c) => !c.pile).length, "not sorted yet")}
+      ${stat("Showing", rows.length, anyFilter ? "match your filters" : "all unsorted claims")}
+      ${stat("Bulk actions captured", actions.length, "each one a labelled example")}
+      ${stat("Claims labelled", labelled, "to learn rules from in Phase 2")}
+    </div>
+    <div class="bulk">
+      <section class="card bulk-table" aria-label="Claims table">
+        <div class="filters">
+          ${filters}
+          ${anyFilter ? '<button class="link-btn small" data-action="bulk-clear-filters">Clear filters</button>' : ""}
+        </div>
+        <div class="action-bar ${n ? "has-selection" : ""}">
+          <strong>${n ? `${n} selected` : "None selected"}</strong>
+          <span class="muted small">Sort into:</span>
+          ${PILES.map((p) => `<button class="btn btn-pile" data-action="bulk-sort" data-value="${p}" ${n ? "" : "disabled"}><span class="dot" style="background:${PILE_DOT[p]}"></span>${p}</button>`).join("")}
+          <button class="btn btn-soft" data-action="bulk-waiting" ${n ? "" : "disabled"}>Mark waiting on claimant</button>
+          ${n ? '<button class="link-btn small" data-action="bulk-clear-selection">Clear selection</button>' : ""}
+        </div>
+        <div class="table-wrap">
+          <table class="grid">
+            <thead><tr>
+              <th><input type="checkbox" id="bulk-select-all" data-action="bulk-select-all" ${allChecked ? "checked" : ""} data-indeterminate="${n > 0 && !allChecked}" aria-label="Select all shown" /></th>
+              <th>Claim</th>${th("received", "Received")}<th>Type</th>${th("amount", "Amount", "num")}<th>People</th><th class="num">Prior</th><th>Missing</th>${th("fraud", "Fraud", "num")}<th>Pile</th>
+            </tr></thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+          ${rows.length ? "" : '<div class="empty">No claims match these filters.</div>'}
+        </div>
+      </section>
+      <aside class="card capture" aria-label="Captured sorting behaviour">
+        <div class="capture-head">
+          <h2><span class="live-dot"></span>Sorting behaviour captured</h2>
+          <div class="small muted" style="margin-top:4px;">Every filter and bulk action is logged. Phase 2 turns repeated patterns into suggested rules.</div>
+        </div>
+        <div class="capture-list">
+          ${shownLog.length ? shownLog.map(entry).join("") : '<div class="empty small">Nothing yet. Filter the table and sort a group of claims.</div>'}
+          ${recent.length > shownLog.length ? `<div class="small muted" style="padding:10px 0;">and ${recent.length - shownLog.length} earlier entries</div>` : ""}
+        </div>
+        <div class="capture-foot">
+          ${b.exampleLoaded.includes(state.insurer)
+            ? '<span class="small muted">Example week loaded. [INVENTED]</span>'
+            : '<button class="btn btn-outline" data-action="bulk-load-example" style="width:100%; justify-content:center;">Load an example week of sorting</button><div class="small muted" style="margin-top:6px;">Adds a week of made-up handler activity [INVENTED], so Phase 2 has enough to learn from.</div>'}
+        </div>
+      </aside>
+    </div>`;
+}
+
 /* =========================================================================
    Render and events
    ========================================================================= */
 
+// Scrolling panels keep their position when the view re-renders.
+const KEEP_SCROLL = ["[data-keep-scroll]", ".main", ".claim-rows", ".table-wrap", ".capture-list"];
+
 function render() {
-  const keep = document.querySelector("[data-keep-scroll]");
-  const scrollTop = keep ? keep.scrollTop : 0;
+  const scroll = KEEP_SCROLL.map((sel) => { const el = document.querySelector(sel); return el ? el.scrollTop : 0; });
   document.getElementById("topbar").innerHTML = renderTopbar();
   document.getElementById("view").innerHTML = state.view === "consumer" ? renderConsumer() : renderHandler();
-  const kept = document.querySelector("[data-keep-scroll]");
-  if (kept) kept.scrollTop = scrollTop;
+  KEEP_SCROLL.forEach((sel, i) => { const el = document.querySelector(sel); if (el) el.scrollTop = scroll[i]; });
+  document.querySelectorAll('[data-indeterminate="true"]').forEach((el) => { el.indeterminate = true; });
 }
 
 function parseFieldValue(el, raw) {
@@ -1258,6 +1541,34 @@ document.addEventListener("click", (e) => {
   if (action === "inbox-tab") { state.inbox.tab = value; render(); }
   if (action === "sort-claim") { sortOpenClaim(value); render(); }
   if (action === "request-info") { requestMissingInfo(); render(); }
+
+  const b = state.bulk;
+  if (action === "bulk-select") {
+    b.selected = b.selected.includes(value) ? b.selected.filter((id) => id !== value) : [...b.selected, value];
+    render();
+  }
+  if (action === "bulk-select-all") {
+    const shown = bulkRows(state.claims.filter((c) => c.insurer === state.insurer)).map((c) => c.id);
+    b.selected = shown.every((id) => b.selected.includes(id)) ? [] : shown;
+    render();
+  }
+  if (action === "bulk-clear-selection") { b.selected = []; render(); }
+  if (action === "bulk-sort") { bulkSort(value); render(); }
+  if (action === "bulk-waiting") { bulkMarkWaiting(); render(); }
+  if (action === "bulk-sort-by") { b.sortBy = value; render(); }
+  if (action === "bulk-clear-filters") {
+    b.filters = emptyFilters();
+    b.selected = [];
+    const count = bulkRows(state.claims.filter((c) => c.insurer === state.insurer)).length;
+    logCapture({ kind: "filter", filters: emptyFilters(), description: "No filters", count });
+    render();
+  }
+  if (action === "bulk-load-example") { loadExampleWeek(); render(); }
+  if (action === "open-in-inbox") {
+    state.inbox.tab = "all";
+    openClaim(value);
+    setState({ page: "inbox" });
+  }
 });
 
 // Typing updates the record without re-rendering the form, so focus stays put.
@@ -1282,7 +1593,13 @@ document.addEventListener("change", (e) => {
   const el = e.target.closest("[data-action]");
   if (el && el.dataset.action === "insurer") {
     state.inbox.openId = null;
+    state.bulk.selected = [];
     setState({ insurer: el.value });
+  }
+  const filter = e.target.closest("[data-filter]");
+  if (filter) {
+    setFilter(filter.dataset.filter, filter.value);
+    render();
   }
 });
 

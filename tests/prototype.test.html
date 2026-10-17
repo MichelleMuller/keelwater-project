@@ -463,6 +463,200 @@ test("inbox: a submitted claim arrives open, marked 'Just submitted', with what 
   assert(!app.$(".claim-detail img") && !app.w.pwned, "not run as HTML");
 });
 
+/* ---------- Bulk sorting (Phase 1) ---------- */
+
+function filterBy(app, key, value) {
+  const select = app.$(`[data-filter="${key}"]`);
+  if (!select) throw new Error(`no filter ${key}`);
+  select.value = value;
+  select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+}
+const tableIds = (app) => app.$$("tbody tr").map((r) => r.dataset.id);
+const claimById = (app, id) => app.ev(`state.claims.find(c => c.id === "${id}")`);
+const captureLog = (app) => app.ev("state.bulk.log");
+
+test("bulk: table shows the insurer's unsorted claims, newest first", async () => {
+  const app = await open("handler/bulk");
+  const todo = harbourTodo(app);
+  eq(tableIds(app), todo.map((c) => c.id));
+  eq(app.$$(".stat-value").map((s) => s.textContent), ["28", "28", "0", "0"]);
+});
+
+test("bulk: filters narrow the table, and combine", async () => {
+  const app = await open("handler/bulk");
+  filterBy(app, "type", "windscreen");
+  const ids = tableIds(app);
+  assert(ids.length > 0, "some windscreen claims");
+  assert(ids.every((id) => claimById(app, id).incident.type === "windscreen"));
+  filterBy(app, "amount", "under1k");
+  const expected = harbourTodo(app).filter((c) => c.incident.type === "windscreen" && c.damage.estimatedAmount < 1000).map((c) => c.id);
+  eq(tableIds(app), expected);
+  eq(app.$$(".stat-value")[1].textContent, String(expected.length));
+});
+
+test("bulk: every filter option works without errors", async () => {
+  const app = await open("handler/bulk");
+  for (const select of app.$$("[data-filter]")) {
+    const key = select.dataset.filter;
+    for (const opt of [...select.options]) {
+      filterBy(app, key, opt.value);
+      const shown = tableIds(app).map((id) => claimById(app, id));
+      const f = app.ev("state.bulk.filters");
+      assert(shown.every((c) => app.w.matchesFilters(c, f)), `${key}=${opt.value}`);
+    }
+    filterBy(app, key, key === "status" ? "unsorted" : "");
+  }
+});
+
+test("bulk: each filter change is captured with a plain description and count", async () => {
+  const app = await open("handler/bulk");
+  filterBy(app, "type", "windscreen");
+  filterBy(app, "thirdParty", "no");
+  const log = captureLog(app);
+  eq(log.length, 2);
+  eq([log[1].kind, log[1].description, log[1].count], ["filter", "Windscreen, no third party", tableIds(app).length]);
+  assert(app.$(".capture-list").textContent.includes("Filtered: Windscreen, no third party"));
+});
+
+test("bulk: sorting a selection updates each claim's pile and history, and captures the action", async () => {
+  const app = await open("handler/bulk");
+  filterBy(app, "type", "windscreen");
+  const shown = tableIds(app);
+  app.click("#bulk-select-all");
+  app.click(`tbody [data-value="${shown[0]}"]`);
+  eq(app.$(".action-bar strong").textContent, `${shown.length - 1} selected`);
+  app.click('.action-bar [data-action="bulk-sort"][data-value="Simple"]');
+  for (const id of shown.slice(1)) {
+    const c = claimById(app, id);
+    eq(c.pile, "Simple", id);
+    const h = c.history[c.history.length - 1];
+    eq(h.action, "Sorted into Simple");
+    assert(h.detail.includes("bulk sort") && h.detail.includes("Windscreen"), "history says how");
+  }
+  eq(claimById(app, shown[0]).pile, null, "left-out claim untouched");
+  const entry = captureLog(app).pop();
+  eq([entry.kind, entry.pile, entry.count, entry.excluded, entry.description], ["sort", "Simple", shown.length - 1, 1, "Windscreen"]);
+  eq(tableIds(app), [shown[0]], "sorted claims leave the unsorted view");
+  eq(app.ev("state.bulk.selected"), []);
+});
+
+test("bulk: claims sorted in bulk show as sorted in the inbox", async () => {
+  const app = await open("handler/bulk");
+  filterBy(app, "type", "windscreen");
+  const shown = tableIds(app);
+  app.click("#bulk-select-all");
+  app.click('.action-bar [data-action="bulk-sort"][data-value="Simple"]');
+  app.click('[data-action="page"][data-value="inbox"]');
+  eq(tabCounts(app), [28 - shown.length, shown.length, 28]);
+  app.click('[data-action="inbox-tab"][data-value="sorted"]');
+  eq(app.$$(".claim-row").map((r) => r.dataset.value).sort(), [...shown].sort());
+});
+
+test("bulk: 'mark waiting on claimant' only changes claims with something missing, and sets no pile", async () => {
+  const app = await open("handler/bulk");
+  app.click("#bulk-select-all");
+  app.click('[data-action="bulk-waiting"]');
+  const todo = harbourTodo(app);
+  for (const c of todo) {
+    eq(c.status, c.missingInfo.length ? "waiting on claimant" : "new", c.id);
+    eq(c.pile, null);
+  }
+  const entry = captureLog(app).pop();
+  eq([entry.kind, entry.count, entry.skipped], ["waiting", todo.filter((c) => c.missingInfo.length).length, todo.filter((c) => !c.missingInfo.length).length]);
+});
+
+test("bulk: action buttons are disabled until something is selected", async () => {
+  const app = await open("handler/bulk");
+  assert(app.$$(".action-bar .btn").every((b) => b.disabled));
+  app.click("tbody input");
+  assert(app.$$(".action-bar .btn").every((b) => !b.disabled));
+});
+
+test("bulk: select-all shows a part-selected state, and selection clears when filters or insurer change", async () => {
+  const app = await open("handler/bulk");
+  app.click("tbody input");
+  assert(app.$("#bulk-select-all").indeterminate, "part-selected");
+  filterBy(app, "injury", "no");
+  eq(app.ev("state.bulk.selected"), [], "cleared by filter");
+  app.click("tbody input");
+  const select = app.$('[data-action="insurer"]');
+  select.value = "northgate";
+  select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+  eq(app.ev("state.bulk.selected"), [], "cleared by insurer switch");
+});
+
+test("bulk: sort by amount and fraud score, highest first", async () => {
+  const app = await open("handler/bulk");
+  for (const [key, get] of [["amount", (c) => c.damage.estimatedAmount], ["fraud", (c) => c.fraud.score]]) {
+    app.click(`[data-action="bulk-sort-by"][data-value="${key}"]`);
+    const values = tableIds(app).map((id) => get(claimById(app, id)));
+    eq(values, [...values].sort((a, b) => b - a), key);
+  }
+});
+
+test("bulk: clear filters resets everything with one captured entry", async () => {
+  const app = await open("handler/bulk");
+  filterBy(app, "type", "collision");
+  filterBy(app, "injury", "yes");
+  app.click('[data-action="bulk-clear-filters"]');
+  eq(app.ev("state.bulk.filters"), app.ev("emptyFilters()"));
+  eq(tableIds(app).length, 28);
+  eq(captureLog(app).length, 3);
+  eq(captureLog(app)[2].description, "No filters");
+});
+
+test("bulk: example week loads once, is marked [INVENTED], and uses the insurer's currency", async () => {
+  const app = await open("handler/bulk");
+  app.click('[data-action="bulk-load-example"]');
+  const log = captureLog(app);
+  eq(log.length, app.ev("EXAMPLE_WEEK.reduce((s, t) => s + t.times, 0)"));
+  assert(log.every((e) => e.example && e.insurer === "harbour"));
+  assert(log.some((e) => e.description === "Windscreen, under £1,000, no third party"));
+  assert(!app.$('[data-action="bulk-load-example"]'), "button gone");
+  assert(app.$(".capture-list").textContent.includes("example [INVENTED]"));
+  const select = app.$('[data-action="insurer"]');
+  select.value = "fleetwise";
+  select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+  app.click('[data-action="bulk-load-example"]');
+  assert(captureLog(app).some((e) => e.insurer === "fleetwise" && e.description === "Windscreen, under $1,000, no third party"));
+});
+
+test("bulk: example week is the same every time", async () => {
+  const a = await open("handler/bulk");
+  a.click('[data-action="bulk-load-example"]');
+  const first = JSON.stringify(captureLog(a));
+  const b = await open("handler/bulk");
+  b.click('[data-action="bulk-load-example"]');
+  eq(JSON.stringify(captureLog(b)), first);
+});
+
+test("bulk: clicking a claim id opens it in the inbox", async () => {
+  const app = await open("handler/bulk");
+  const id = tableIds(app)[2];
+  app.click(`[data-action="open-in-inbox"][data-value="${id}"]`);
+  eq([app.ev("state.page"), app.ev("state.inbox.openId")], ["inbox", id]);
+  assert(app.$(".claim-detail").textContent.includes(id));
+});
+
+test("bulk: ticking a box keeps the table's scroll position", async () => {
+  const app = await open("handler/bulk");
+  const wrap = app.$(".table-wrap");
+  wrap.scrollTop = 200;
+  app.$$("tbody input")[10].click();
+  eq(app.$(".table-wrap").scrollTop, 200);
+});
+
+test("bulk: table and capture panel sit side by side, with no sideways scrolling", async () => {
+  const app = await open("handler/bulk");
+  const table = app.$(".bulk-table").getBoundingClientRect();
+  const panel = app.$(".capture").getBoundingClientRect();
+  assert(near(table.top, panel.top) && table.right < panel.left, "side by side");
+  const wrap = app.$(".table-wrap");
+  assert(wrap.scrollWidth <= wrap.clientWidth, `table overflows by ${wrap.scrollWidth - wrap.clientWidth}px`);
+  const bar = app.$(".action-bar");
+  assert(bar.getBoundingClientRect().height < 60, "action bar fits on one line");
+});
+
 /* ---------- Portability ---------- */
 
 test("single file: no external scripts, stylesheets, images or fonts", async () => {
