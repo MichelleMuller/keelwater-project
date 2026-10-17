@@ -906,17 +906,147 @@ test("automation: 'has a suggestion' filter, select all, confirm all", async () 
   eq(tableIds(app), []);
 });
 
-test("automation: sorting against a suggestion counts as an override", async () => {
+function giveReason(app, reason, note) {
+  app.click(`.dialog [data-action="override-reason"][data-value="${reason}"]`);
+  if (note !== undefined) app.type("#override-note", note);
+  app.click('[data-action="override-confirm"]');
+}
+
+test("automation: sorting against a suggestion asks why, then counts as an override with the reason", async () => {
   const app = await withExample();
   const key = accept(app, WINDSCREEN, "Simple");
   const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
   app.click(`tbody [data-value="${id}"]`);
   app.click('.action-bar [data-action="bulk-sort"][data-value="Needs a closer look"]');
-  eq(activeRule(app, key).overridden, 1);
+  assert(app.$(".dialog"), "reason dialog open");
+  assert(app.$(".dialog").textContent.includes("Why not Simple?"));
+  eq(claimById(app, id).pile, null, "nothing sorted until a reason is given");
+  assert(app.$('[data-action="override-confirm"]').disabled, "confirm needs a reason");
+  giveReason(app, "Liability is disputed");
+  assert(!app.$(".dialog"), "dialog closed");
+  eq(claimById(app, id).pile, "Needs a closer look");
+  const r = activeRule(app, key);
+  eq([r.overridden, r.overrideReasons.length, r.overrideReasons[0].reason, r.overrideReasons[0].to], [1, 1, "Liability is disputed", "Needs a closer look"]);
   const c = claimById(app, id);
-  assert(c.history[c.history.length - 1].detail.includes("overrode suggestion Simple"));
-  eq(captureLog(app).pop().overrides, 1);
+  assert(c.history[c.history.length - 1].detail.includes("overrode suggestion Simple: Liability is disputed"));
+  const entry = captureLog(app).pop();
+  eq([entry.overrides, entry.overrideReason], [1, "Liability is disputed"]);
   assert(app.$(".automation").textContent.includes("1 overridden"));
+  assert(app.$(".override-reasons").textContent.includes("Liability is disputed (1)"));
+});
+
+test("automation: the reason dialog can be cancelled (button or Escape) and 'Other' needs a note", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
+  const sortAgainst = () => {
+    if (!app.ev("state.bulk.selected").includes(id)) app.click(`tbody [data-value="${id}"]`);
+    app.click('.action-bar [data-action="bulk-sort"][data-value="Suspicious"]');
+  };
+  sortAgainst();
+  app.click('[data-action="override-cancel"]');
+  assert(!app.$(".dialog"));
+  eq(claimById(app, id).pile, null);
+  sortAgainst();
+  app.w.document.dispatchEvent(new app.w.KeyboardEvent("keydown", { key: "Escape" }));
+  assert(!app.$(".dialog"), "Escape closes");
+  eq(claimById(app, id).pile, null);
+  sortAgainst();
+  app.click('.dialog [data-action="override-reason"][data-value="Other"]');
+  assert(app.$('[data-action="override-confirm"]').disabled, "Other needs a note");
+  app.type("#override-note", "Claimant called, car was parked");
+  assert(!app.$('[data-action="override-confirm"]').disabled);
+  app.click('[data-action="override-confirm"]');
+  eq(claimById(app, id).pile, "Suspicious");
+  assert(claimById(app, id).history.pop().detail.includes("Other (Claimant called, car was parked)"));
+});
+
+test("automation: a bulk sort that agrees with every suggestion doesn't ask for a reason", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  filterBy(app, "suggested", "yes");
+  app.click("#bulk-select-all");
+  app.click('.action-bar [data-action="bulk-sort"][data-value="Simple"]');
+  assert(!app.$(".dialog"));
+  eq(tableIds(app), []);
+});
+
+test("automation: a mixed bulk sort only asks about the claims that go against their suggestion", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  filterBy(app, "type", "windscreen");
+  const ids = tableIds(app);
+  const against = ids.filter((id) => suggestion(app, id)?.pile === "Simple");
+  assert(against.length >= 1 && against.length < ids.length, "some with a Simple suggestion, some without");
+  app.click("#bulk-select-all");
+  app.click('.action-bar [data-action="bulk-sort"][data-value="Needs a closer look"]');
+  assert(app.$(".dialog").textContent.includes(`${against.length} of the ${ids.length} claims`));
+  giveReason(app, "Damage or amount doesn't fit the rule");
+  eq(activeRule(app, key).overridden, against.length);
+  for (const id of ids) eq(claimById(app, id).pile, "Needs a closer look", id);
+});
+
+test("automation: overrides lower the rule's kept % straight away, in the panel and the table", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  const before = app.ev(`ruleConfidence(state.automation.rules[0])`);
+  const [first, second] = harbourTodo(app).filter((c) => suggestion(app, c.id)?.pile === "Simple").map((c) => c.id);
+  app.click(`tbody [data-value="${first}"]`);
+  app.click('.action-bar [data-action="bulk-sort"][data-value="Needs a closer look"]');
+  giveReason(app, "Liability is disputed");
+  const after = app.ev(`ruleConfidence(state.automation.rules[0])`);
+  assert(after < before, `${after} < ${before}`);
+  const shown = `${Math.round(after * 100)}%`;
+  assert(app.$(`.rule-row[data-rule="${CSS.escape(key)}"] .rule-kept`).textContent.includes(shown));
+  const row = app.$(`tr[data-id="${second}"] .reason`);
+  assert(row.textContent.startsWith(shown), row.textContent);
+});
+
+test("inbox: an open claim shows its suggestion, and confirming it sorts and moves on", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
+  app.click(`[data-action="open-in-inbox"][data-value="${id}"]`);
+  app.ev(`state.inbox.tab = "todo"; render();`);
+  const box = app.$(".suggest-box");
+  assert(box && box.textContent.includes("Simple") && box.textContent.includes(WINDSCREEN), "suggestion with its rule");
+  assert(/\d+% kept/.test(box.textContent));
+  const sortedBefore = app.ev("state.inbox.sortedByYou");
+  app.click('[data-action="confirm-open"]');
+  const c = claimById(app, id);
+  eq([c.pile, c.history.pop().action], ["Simple", "Confirmed suggestion: Simple"]);
+  eq(activeRule(app, key).confirmed, 1);
+  eq(app.ev("state.inbox.sortedByYou"), sortedBefore + 1);
+  assert(app.ev("state.inbox.openId") !== id, "moved on to the next claim");
+});
+
+test("inbox: sorting against the suggestion asks why; sorting with it counts as a confirm", async () => {
+  const app = await withExample();
+  const key = accept(app, WINDSCREEN, "Simple");
+  const [a, b] = harbourTodo(app).filter((c) => suggestion(app, c.id)?.pile === "Simple").map((c) => c.id);
+  app.click(`[data-action="open-in-inbox"][data-value="${a}"]`);
+  app.click('.sort-actions [data-action="sort-claim"][data-value="Suspicious"]');
+  assert(app.$(".dialog"), "reason dialog");
+  eq(claimById(app, a).pile, null);
+  giveReason(app, "Fraud concern the score missed");
+  eq(claimById(app, a).pile, "Suspicious");
+  assert(claimById(app, a).history.pop().detail.includes("overrode suggestion Simple: Fraud concern the score missed"));
+  eq(activeRule(app, key).overrideReasons[0].reason, "Fraud concern the score missed");
+  app.click(`[data-action="open-claim"][data-value="${b}"]`);
+  app.click('.sort-actions [data-action="sort-claim"][data-value="Simple"]');
+  assert(!app.$(".dialog"));
+  eq(activeRule(app, key).confirmed, 1);
+});
+
+test("inbox: a held-back claim says why Simple was held back", async () => {
+  const app = await withExample();
+  accept(app, WINDSCREEN, "Simple");
+  const id = harbourTodo(app).find((c) => suggestion(app, c.id)?.pile === "Simple").id;
+  app.ev(`state.claims.find(c => c.id === "${id}").fraud.score = 0.8`);
+  app.click(`[data-action="open-in-inbox"][data-value="${id}"]`);
+  const box = app.$(".suggest-box");
+  assert(box.textContent.includes("Simple held back: high fraud score"), box.textContent);
+  assert(!app.$('[data-action="confirm-open"]'));
 });
 
 test("automation: auto-sort sorts matching claims that pass the checks, and can be undone", async () => {

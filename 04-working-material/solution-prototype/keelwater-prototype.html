@@ -247,6 +247,20 @@ table.grid input[type="checkbox"] { width: 15px; height: 15px; accent-color: var
 }
 .icon-btn:hover { background: var(--green-6); }
 table.grid .reason { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggest-box {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; padding: 8px 12px;
+  border-radius: var(--radius-2); background: var(--lavender-light);
+}
+.suggest-box { flex-wrap: nowrap; }
+.suggest-box .why { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggest-box .btn { height: 28px; font-size: 13px; flex: none; }
+.overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(0, 10, 52, 0.35); }
+.dialog { width: min(520px, calc(100vw - 32px)); padding: 20px; box-shadow: 0 12px 32px rgba(0, 10, 52, 0.25); }
+.dialog h2 { font-size: 18px; margin-bottom: 6px; }
+.dialog .reason-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+.dialog textarea.input { height: 64px; margin-top: 4px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.dialog-actions .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
 
 .capture { position: sticky; top: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: calc(100vh - 290px); }
 .capture-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--gray-4); }
@@ -565,6 +579,7 @@ const state = {
   highlightClaimId: null,
   inbox: { tab: "todo", openId: null, sortedByYou: 0 },
   bulk: { filters: emptyFilters(), selected: [], sortBy: "received", log: [], exampleLoaded: [] },
+  override: null, // the sort waiting for a reason because it goes against a suggestion
   automation: { rules: [], dismissed: [], changes: [], collapsed: false, showAllSuggested: false },
 };
 
@@ -1155,6 +1170,16 @@ function renderClaimDetail(c) {
     <button class="btn btn-pile" data-action="sort-claim" data-value="${p}" aria-pressed="${c.pile === p}">
       <span class="dot" style="background:${PILE_DOT[p]}"></span>${p}
     </button>`).join("");
+  const s = suggestionFor(c);
+  const suggestBox = !s ? ""
+    : s.pile ? `
+      <div class="suggest-box">
+        <span class="small muted">Suggested:</span>
+        <span class="badge ${PILE_STYLE[s.pile]}">${s.pile}</span>
+        <span class="small muted why" title="Rule: ${esc(ruleText(s.rule))}">${pct(ruleConfidence(s.rule))} kept · rule: ${esc(ruleText(s.rule))}</span>
+        <button class="btn" data-action="confirm-open">Confirm ${s.pile}</button>
+      </div>`
+    : `<div class="suggest-box"><span class="small muted why">Simple held back: ${s.heldBack} · rule: ${esc(ruleText(s.rule))}</span></div>`;
 
   return `
     <div class="detail-head">
@@ -1171,6 +1196,7 @@ function renderClaimDetail(c) {
         ${c.missingInfo.length && c.status !== "waiting on claimant"
           ? `<button class="btn btn-soft" data-action="request-info">Ask claimant for missing info</button>` : ""}
       </div>
+      ${suggestBox}
     </div>
     <div class="detail-body">
       ${c.missingInfo.length ? `
@@ -1242,17 +1268,42 @@ function openClaim(id) {
   state.inbox.openId = id;
 }
 
-function sortOpenClaim(pile) {
+// Like today's queue: move straight on to the next unsorted claim.
+function openNextUnsorted() {
+  const next = state.claims.find((x) => x.insurer === state.insurer && !x.pile);
+  if (state.inbox.tab === "todo") state.inbox.openId = next ? next.id : null;
+}
+
+function sortOpenClaim(pile, reason) {
   const c = state.claims.find((x) => x.id === state.inbox.openId);
   if (!c || c.pile === pile) return;
+  const s = suggestionFor(c);
+  const overrode = s && s.pile && s.pile !== pile;
+  if (overrode && !reason) {
+    state.override = { source: "inbox", pile, ids: [c.id], total: 1, reason: "", note: "" };
+    return;
+  }
+  if (overrode) recordOverride(s.rule, c, pile, reason);
+  else if (s && s.pile) s.rule.confirmed++;
   const before = c.pile;
   c.pile = pile;
   if (c.status !== "waiting on claimant") c.status = "sorted";
-  c.history.push({ at: new Date().toISOString(), actor: "you", action: before ? `Moved from ${before} to ${pile}` : `Sorted into ${pile}`, detail: "by hand, from the inbox" });
-  if (!before) state.inbox.sortedByYou++;
-  // Like today's queue: move straight on to the next unsorted claim.
-  const next = state.claims.find((x) => x.insurer === state.insurer && !x.pile);
-  if (!before && state.inbox.tab === "todo") state.inbox.openId = next ? next.id : null;
+  c.history.push({
+    at: new Date().toISOString(), actor: "you",
+    action: before ? `Moved from ${before} to ${pile}` : `Sorted into ${pile}`,
+    detail: `by hand, from the inbox${overrode ? ` · overrode suggestion ${s.pile}: ${reasonText(reason)}` : ""}`,
+  });
+  if (!before) { state.inbox.sortedByYou++; openNextUnsorted(); }
+}
+
+function confirmOpenSuggestion() {
+  const c = state.claims.find((x) => x.id === state.inbox.openId);
+  const s = c && suggestionFor(c);
+  if (!s || !s.pile) return;
+  s.rule.confirmed++;
+  sortBySuggestion(c, s, "you", `Confirmed suggestion: ${s.pile}`);
+  state.inbox.sortedByYou++;
+  openNextUnsorted();
 }
 
 function requestMissingInfo() {
@@ -1341,31 +1392,37 @@ function setFilter(key, value) {
   logCapture({ kind: "filter", filters: { ...b.filters }, description: describeFilters(b.filters, state.insurer), count });
 }
 
-function bulkSort(pile) {
+function bulkSort(pile, reason) {
   const b = state.bulk;
   const mine = state.claims.filter((c) => c.insurer === state.insurer);
   const shown = bulkRows(mine);
   const chosen = shown.filter((c) => b.selected.includes(c.id));
   if (!chosen.length) return;
+  const against = chosen.filter((c) => { const s = suggestionFor(c); return s && s.pile && s.pile !== pile; });
+  if (against.length && !reason) {
+    state.override = { source: "bulk", pile, ids: against.map((c) => c.id), total: chosen.length, reason: "", note: "" };
+    return;
+  }
   const description = describeFilters(b.filters, state.insurer);
   let overrides = 0;
   for (const c of chosen) {
     // Sorting against a rule's suggestion is an override; it weakens the rule.
     const s = suggestionFor(c);
     const overrode = s && s.pile && s.pile !== pile;
-    if (s && s.pile) { if (overrode) { s.rule.overridden++; overrides++; } else s.rule.confirmed++; }
+    if (s && s.pile) { if (overrode) { recordOverride(s.rule, c, pile, reason); overrides++; } else s.rule.confirmed++; }
     const before = c.pile;
     c.pile = pile;
     if (c.status !== "waiting on claimant") c.status = "sorted";
     c.history.push({
       at: new Date().toISOString(), actor: "you",
       action: before ? `Moved from ${before} to ${pile}` : `Sorted into ${pile}`,
-      detail: `bulk sort of ${chosen.length} claims · filter: ${description}${overrode ? ` · overrode suggestion ${s.pile}` : ""}`,
+      detail: `bulk sort of ${chosen.length} claims · filter: ${description}${overrode ? ` · overrode suggestion ${s.pile}: ${reasonText(reason)}` : ""}`,
     });
   }
   logCapture({
     kind: "sort", pile, filters: { ...b.filters }, description,
     count: chosen.length, excluded: shown.length - chosen.length, overrides, ids: chosen.map((c) => c.id),
+    ...(overrides ? { overrideReason: reasonText(reason) } : {}),
   });
   b.selected = [];
 }
@@ -1439,7 +1496,7 @@ function suggestionFor(c) {
   if (c.pile) return null;
   const rules = activeRules(c.insurer)
     .filter((r) => matchesRule(c, r))
-    .sort((x, y) => PILE_ORDER.indexOf(x.pile) - PILE_ORDER.indexOf(y.pile) || y.confidence - x.confidence);
+    .sort((x, y) => PILE_ORDER.indexOf(x.pile) - PILE_ORDER.indexOf(y.pile) || ruleConfidence(y) - ruleConfidence(x));
   let heldBack = null;
   for (const r of rules) {
     const block = r.pile === "Simple" ? simpleBlock(c) : null;
@@ -1449,10 +1506,78 @@ function suggestionFor(c) {
   return heldBack ? { pile: null, rule: heldBack.rule, heldBack: heldBack.reason } : null;
 }
 
+// Share of claims where handlers kept the rule's pile: what it was learned from, plus every
+// confirm and override since it was accepted. Overrides lower it straight away.
+function ruleConfidence(r) {
+  const kept = r.claims + (r.confirmed || 0);
+  return kept / (kept + r.excluded + (r.overridden || 0));
+}
+const pct = (x) => `${Math.round(x * 100)}%`;
+
+// Asked whenever a handler sorts against a suggestion (E-02: the decision is logged next to the suggestion).
+const OVERRIDE_REASONS = [
+  "Liability is disputed",
+  "Damage or amount doesn't fit the rule",
+  "Fraud concern the score missed",
+  "Claimant may be vulnerable",
+  "New information from the claimant",
+  "Other",
+];
+const reasonText = (r) => (r.note ? `${r.reason} (${r.note})` : r.reason);
+
+function recordOverride(rule, c, pile, reason) {
+  rule.overridden++;
+  rule.overrideReasons.push({ id: c.id, from: rule.pile, to: pile, reason: reason.reason, note: reason.note });
+}
+
+function topReasons(rule) {
+  const counts = {};
+  for (const o of rule.overrideReasons) counts[o.reason] = (counts[o.reason] || 0) + 1;
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([r, n]) => `${r} (${n})`).join(", ");
+}
+
+const overrideReady = (o) => Boolean(o.reason) && (o.reason !== "Other" || Boolean(o.note.trim()));
+
+function confirmOverride() {
+  const o = state.override;
+  if (!o || !overrideReady(o)) return;
+  state.override = null;
+  const reason = { reason: o.reason, note: o.note.trim() };
+  if (o.source === "bulk") bulkSort(o.pile, reason);
+  else sortOpenClaim(o.pile, reason);
+}
+
+function renderOverrideDialog() {
+  const o = state.override;
+  if (!o) return "";
+  const suggestions = o.ids.map((id) => suggestionFor(state.claims.find((c) => c.id === id)));
+  const piles = [...new Set(suggestions.map((s) => s.pile))];
+  const rules = [...new Set(suggestions.map((s) => ruleText(s.rule)))];
+  const who = o.ids.length === 1 ? `${o.ids[0]} was` : `${o.ids.length} of the ${o.total} claims were`;
+  return `
+    <div class="overlay">
+      <div class="card dialog" role="dialog" aria-modal="true" aria-labelledby="override-title">
+        <h2 id="override-title">Why not ${piles.join(" or ")}?</h2>
+        <p class="small muted">${who} suggested ${piles.join(" or ")} by ${rules.length === 1 ? "the rule" : "the rules"} “${rules.map(esc).join("”, “")}”.
+          You're sorting ${o.ids.length === 1 ? "it" : "them"} into <span class="badge ${PILE_STYLE[o.pile]}">${o.pile}</span>.
+          Your reason is saved on the claim and on the rule, so the rule can be improved.</p>
+        <div class="reason-chips" role="group" aria-label="Reason">
+          ${OVERRIDE_REASONS.map((r) => `<button class="chip" data-action="override-reason" data-value="${esc(r)}" aria-pressed="${o.reason === r}">${esc(r)}</button>`).join("")}
+        </div>
+        <label class="small" for="override-note">Note ${o.reason === "Other" ? "(needed for Other)" : "(optional)"}</label>
+        <textarea id="override-note" class="input" data-override-note>${esc(o.note)}</textarea>
+        <div class="dialog-actions">
+          <button class="btn btn-outline" data-action="override-cancel">Cancel</button>
+          <button class="btn" data-action="override-confirm" ${overrideReady(o) ? "" : "disabled"}>Sort into ${o.pile}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 function acceptRule(key) {
   const r = suggestedRules(state.insurer).find((x) => x.key === key);
   if (!r) return;
-  state.automation.rules.push({ ...r, mode: "suggest", confirmed: 0, overridden: 0, autoIds: [], acceptedAt: new Date(NOW_MS).toISOString() });
+  state.automation.rules.push({ ...r, mode: "suggest", confirmed: 0, overridden: 0, overrideReasons: [], autoIds: [], acceptedAt: new Date(NOW_MS).toISOString() });
   state.automation.changes.push({ at: new Date(NOW_MS).toISOString(), insurer: r.insurer, action: "Accepted rule", rule: ruleText(r), pile: r.pile });
 }
 
@@ -1542,12 +1667,13 @@ function renderAutomation(mine) {
   const autoSorted = active.reduce((s, r) => s + r.autoIds.length, 0);
   const support = (r) => `${r.times} times · ${r.claims} claims${r.excluded ? ` · ${r.excluded} left out by hand` : ""}`;
   const activeRows = active.map((r) => {
-    const kept = r.confirmed + r.overridden ? Math.round((r.confirmed / (r.confirmed + r.overridden)) * 100) : null;
+    const used = r.confirmed + r.overridden > 0;
     return `
       <div class="rule-row" data-rule="${esc(r.key)}">
         <div>
           <div><strong>${esc(ruleText(r))}</strong> → <span class="badge ${PILE_STYLE[r.pile]}">${r.pile}</span></div>
-          <div class="small muted">${support(r)} · ${Math.round(r.confidence * 100)}% kept when learned${kept !== null ? ` · since accepted: ${r.confirmed} confirmed, ${r.overridden} overridden` : ""}</div>
+          <div class="small muted">${support(r)} · <span class="rule-kept">${pct(ruleConfidence(r))} kept</span>${used ? ` · since accepted: ${r.confirmed} confirmed, ${r.overridden} overridden` : ""}</div>
+          ${r.overrideReasons.length ? `<div class="small muted override-reasons">Overridden because: ${esc(topReasons(r))}</div>` : ""}
         </div>
         <div class="small"><strong>${suggestionCount(r)}</strong> <span class="muted">suggested now</span>${r.autoIds.length ? `<div class="muted">${r.autoIds.length} auto-sorted</div>` : ""}</div>
         <div class="seg-light" role="group" aria-label="Mode">
@@ -1718,7 +1844,7 @@ function renderBulk(mine) {
         <span class="badge ${PILE_STYLE[s.pile]}">${s.pile}</span>
         <button class="icon-btn" data-action="confirm-suggestion" data-value="${c.id}" aria-label="Confirm ${s.pile} for ${c.id}" title="Confirm">✓</button>
       </div>
-      <div class="small muted reason" title="Rule: ${esc(ruleText(s.rule))}">${esc(ruleText(s.rule))} · ${Math.round(s.rule.confidence * 100)}%</div>`;
+      <div class="small muted reason" title="Rule: ${esc(ruleText(s.rule))}">${pct(ruleConfidence(s.rule))} · ${esc(ruleText(s.rule))}</div>`;
   };
   const th = (key, label, cls = "") => `<th class="${cls}"><button class="th-sort" data-action="bulk-sort-by" data-value="${key}" aria-pressed="${b.sortBy === key}">${label}</button></th>`;
   const tableRows = rows.map((c) => {
@@ -1750,7 +1876,7 @@ function renderBulk(mine) {
       : `<span class="badge ${PILE_STYLE[e.pile]}">${e.pile}</span>`;
     const notes = [
       e.kind === "sort" && e.excluded ? `${e.excluded} left out by hand` : "",
-      e.kind === "sort" && e.overrides ? `${e.overrides} overrode a suggestion` : "",
+      e.kind === "sort" && e.overrides ? `${e.overrides} overrode a suggestion${e.overrideReason ? `: ${e.overrideReason}` : ""}` : "",
       e.kind === "waiting" && e.skipped ? `${e.skipped} skipped, nothing missing` : "",
     ].filter(Boolean);
     const note = notes.length ? ` · ${notes.join(" · ")}` : "";
@@ -1836,7 +1962,7 @@ const KEEP_SCROLL = ["[data-keep-scroll]", ".main", ".claim-rows", ".table-wrap"
 function render() {
   const scroll = KEEP_SCROLL.map((sel) => { const el = document.querySelector(sel); return el ? el.scrollTop : 0; });
   document.getElementById("topbar").innerHTML = renderTopbar();
-  document.getElementById("view").innerHTML = state.view === "consumer" ? renderConsumer() : renderHandler();
+  document.getElementById("view").innerHTML = (state.view === "consumer" ? renderConsumer() : renderHandler()) + renderOverrideDialog();
   KEEP_SCROLL.forEach((sel, i) => { const el = document.querySelector(sel); if (el) el.scrollTop = scroll[i]; });
   document.querySelectorAll('[data-indeterminate="true"]').forEach((el) => { el.indeterminate = true; });
 }
@@ -1897,6 +2023,10 @@ document.addEventListener("click", (e) => {
   if (action === "open-claim") { openClaim(value); render(); }
   if (action === "inbox-tab") { state.inbox.tab = value; render(); }
   if (action === "sort-claim") { sortOpenClaim(value); render(); }
+  if (action === "confirm-open") { confirmOpenSuggestion(); render(); }
+  if (action === "override-reason") { state.override.reason = value; render(); }
+  if (action === "override-cancel") { state.override = null; render(); }
+  if (action === "override-confirm") { confirmOverride(); render(); }
   if (action === "request-info") { requestMissingInfo(); render(); }
 
   const b = state.bulk;
@@ -1945,6 +2075,11 @@ document.addEventListener("click", (e) => {
 
 // Typing updates the record without re-rendering the form, so focus stays put.
 document.addEventListener("input", (e) => {
+  if (e.target.matches("[data-override-note]") && state.override) {
+    state.override.note = e.target.value;
+    document.querySelector('[data-action="override-confirm"]').disabled = !overrideReady(state.override);
+    return;
+  }
   const el = e.target.closest("[data-field]");
   if (!el || el.dataset.action) return;
   setPath(state.form.data, el.dataset.field, parseFieldValue(el, el.value));
@@ -1973,6 +2108,10 @@ document.addEventListener("change", (e) => {
     setFilter(filter.dataset.filter, filter.value);
     render();
   }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && state.override) { state.override = null; render(); }
 });
 
 window.addEventListener("hashchange", () => { readHash(); render(); });
