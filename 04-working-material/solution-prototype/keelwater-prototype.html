@@ -193,6 +193,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; border-bottom: 1px solid var(--gray-4); }
 .filters .select { height: 30px; font-size: 13px; }
 .filters .select.active { box-shadow: inset 0 0 0 1.5px var(--rose); background-color: var(--rose-a3); }
+.sample-filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--gray-4); background: var(--lavender-light); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; padding: 4px 10px;
+  background: white; box-shadow: inset 0 0 0 1px var(--gray-6); cursor: pointer; font-size: 12px; font-weight: 500;
+}
+.chip:hover { box-shadow: inset 0 0 0 1px var(--violet); }
+.chip[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--violet); }
+.chip .count { color: var(--gray-11); font-weight: 400; }
 .link-btn { border: 0; background: transparent; padding: 0; cursor: pointer; color: var(--rose-text); font-weight: 500; }
 .link-btn:hover { text-decoration: underline; }
 .action-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--gray-4); background: var(--gray-2); min-height: 52px; }
@@ -1370,6 +1378,29 @@ function loadExampleWeek() {
   b.exampleLoaded.push(state.insurer);
 }
 
+// Filters handlers used in the example week that match a group (2+) of today's unsorted claims.
+function sampleFilters(mine) {
+  if (!state.bulk.exampleLoaded.includes(state.insurer)) return [];
+  const unsorted = mine.filter((c) => !c.pile);
+  return EXAMPLE_WEEK.map((t) => {
+    const filters = { ...emptyFilters(), ...t.filters };
+    return {
+      filters,
+      outcome: t.kind === "waiting" ? "Waiting on claimant" : t.pile,
+      times: t.times,
+      count: unsorted.filter((c) => matchesFilters(c, filters)).length,
+    };
+  }).filter((s) => s.count >= 2);
+}
+
+function applyFilters(preset) {
+  const b = state.bulk;
+  b.filters = { ...emptyFilters(), ...preset };
+  b.selected = [];
+  const count = bulkRows(state.claims.filter((c) => c.insurer === state.insurer)).length;
+  logCapture({ kind: "filter", filters: { ...b.filters }, description: describeFilters(b.filters, state.insurer), count });
+}
+
 function renderBulk(mine) {
   const b = state.bulk;
   const rows = bulkRows(mine);
@@ -1385,6 +1416,7 @@ function renderBulk(mine) {
       ${d.options.map(([v, label]) => `<option value="${v}" ${b.filters[d.key] === v ? "selected" : ""}>${label}</option>`).join("")}
     </select>`).join("");
   const anyFilter = Object.entries(b.filters).some(([k, v]) => (k === "status" ? v !== "unsorted" : v));
+  const samples = sampleFilters(mine);
 
   const th = (key, label, cls = "") => `<th class="${cls}"><button class="th-sort" data-action="bulk-sort-by" data-value="${key}" aria-pressed="${b.sortBy === key}">${label}</button></th>`;
   const tableRows = rows.map((c) => {
@@ -1435,6 +1467,16 @@ function renderBulk(mine) {
           ${filters}
           ${anyFilter ? '<button class="link-btn small" data-action="bulk-clear-filters">Clear filters</button>' : ""}
         </div>
+        ${samples.length ? `
+          <div class="sample-filters" aria-label="Sample filters">
+            <span class="small"><strong>Sample filters</strong> <span class="muted">from the example week:</span></span>
+            ${samples.map((s, i) => {
+              const on = JSON.stringify(s.filters) === JSON.stringify(b.filters);
+              return `<button class="chip" data-action="bulk-sample" data-value="${i}" aria-pressed="${on}" title="Handlers did this ${s.times} times last week">
+                ${esc(describeFilters(s.filters, state.insurer))} <span class="count">${s.count} claims · usually ${s.outcome}</span>
+              </button>`;
+            }).join("")}
+          </div>` : ""}
         <div class="action-bar ${n ? "has-selection" : ""}">
           <strong>${n ? `${n} selected` : "None selected"}</strong>
           <span class="muted small">Sort into:</span>
@@ -1564,6 +1606,10 @@ document.addEventListener("click", (e) => {
     render();
   }
   if (action === "bulk-load-example") { loadExampleWeek(); render(); }
+  if (action === "bulk-sample") {
+    const s = sampleFilters(state.claims.filter((c) => c.insurer === state.insurer))[Number(value)];
+    if (s) { applyFilters(s.filters); render(); }
+  }
   if (action === "open-in-inbox") {
     state.inbox.tab = "all";
     openClaim(value);

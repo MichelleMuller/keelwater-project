@@ -630,6 +630,58 @@ test("bulk: example week is the same every time", async () => {
   eq(JSON.stringify(captureLog(b)), first);
 });
 
+test("bulk: sample filters only appear once the example week is loaded", async () => {
+  const app = await open("handler/bulk");
+  assert(!app.$(".sample-filters"), "hidden before");
+  app.click('[data-action="bulk-load-example"]');
+  assert(app.$$(".sample-filters .chip").length >= 3, "at least three sample filters");
+});
+
+test("bulk: every sample filter gives a group of 2+ claims, for every insurer", async () => {
+  const app = await open("handler/bulk");
+  for (const insurer of ["harbour", "northgate", "fleetwise"]) {
+    const select = app.$('[data-action="insurer"]');
+    select.value = insurer;
+    select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+    app.click('[data-action="bulk-load-example"]');
+    const chips = app.$$(".sample-filters .chip");
+    assert(chips.length >= 2, `${insurer}: ${chips.length} sample filters`);
+    for (let i = 0; i < chips.length; i++) {
+      app.click(`.sample-filters [data-value="${i}"]`);
+      const shown = tableIds(app).length;
+      assert(shown >= 2, `${insurer} chip ${i}: ${shown} claims`);
+      assert(app.$(`.sample-filters [data-value="${i}"]`).textContent.includes(`${shown} claims`), `${insurer} chip ${i}: count matches table`);
+      eq(app.$(`.sample-filters [data-value="${i}"]`).getAttribute("aria-pressed"), "true");
+    }
+  }
+});
+
+test("bulk: a sample filter sets exactly its filters, is captured, and says what handlers usually did", async () => {
+  const app = await open("handler/bulk");
+  filterBy(app, "injury", "yes");
+  app.click('[data-action="bulk-load-example"]');
+  const chip = app.$(".sample-filters .chip");
+  const preset = app.ev("sampleFilters(state.claims.filter(c => c.insurer === 'harbour'))[0].filters");
+  app.click(".sample-filters .chip");
+  const f = app.ev("state.bulk.filters");
+  eq(f, preset, "filters are exactly the sample's, earlier ones replaced");
+  const entry = captureLog(app).pop();
+  eq(entry.kind, "filter");
+  eq(entry.description, app.w.describeFilters(f, "harbour"));
+  assert(/usually (Simple|Needs a closer look|Suspicious|Waiting on claimant)/.test(chip.textContent));
+});
+
+test("bulk: once a sample group is sorted, its chip goes away", async () => {
+  const app = await open("handler/bulk");
+  app.click('[data-action="bulk-load-example"]');
+  const before = app.$$(".sample-filters .chip").map((c) => c.textContent.split("claims")[0].trim());
+  app.click(".sample-filters .chip");
+  app.click("#bulk-select-all");
+  app.click('.action-bar [data-action="bulk-sort"][data-value="Simple"]');
+  const after = app.$$(".sample-filters .chip").map((c) => c.textContent.split("claims")[0].trim());
+  assert(!after.includes(before[0]), "sorted group no longer offered");
+});
+
 test("bulk: clicking a claim id opens it in the inbox", async () => {
   const app = await open("handler/bulk");
   const id = tableIds(app)[2];
