@@ -332,12 +332,19 @@ test("inbox: lists the insurer's unsorted claims, newest first, with tab counts"
   assert(app.$(".claim-detail .empty"), "nothing open yet");
 });
 
-test("inbox: the timer only starts when the first claim is opened", async () => {
+test("inbox: average time to sort is the brief's 11 min median and doesn't change as you sort", async () => {
   const app = await open("handler/inbox");
-  eq(app.ev("state.inbox.startedAt"), null);
-  eq(app.$("#inbox-timer").textContent, "0:00");
+  const card = () => app.$$(".stats .card")[2];
+  const check = () => {
+    eq(card().querySelector(".muted").textContent, "Avg. time to sort");
+    eq(card().querySelector(".stat-value").textContent, "11 min");
+    assert(card().textContent.includes("median, from arrival to sorted (brief)"));
+  };
+  check();
   app.click(".claim-row");
-  assert(app.ev("state.inbox.startedAt") > 0);
+  app.click('[data-action="sort-claim"][data-value="Simple"]');
+  app.click('[data-action="sort-claim"][data-value="Simple"]');
+  check();
 });
 
 test("inbox: opening a claim shows everything a handler reads", async () => {

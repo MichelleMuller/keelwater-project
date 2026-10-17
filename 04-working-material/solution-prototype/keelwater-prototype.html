@@ -493,7 +493,7 @@ const state = {
   insurer: "harbour",
   form: emptyForm(),
   highlightClaimId: null,
-  inbox: { tab: "todo", openId: null, sortedByYou: 0, startedAt: null },
+  inbox: { tab: "todo", openId: null, sortedByYou: 0 },
 };
 
 function emptyForm() {
@@ -1018,15 +1018,6 @@ function ago(iso) {
 const waitingOver4h = (c) => !c.pile && NOW_MS - new Date(c.receivedAt).getTime() > FOUR_HOURS;
 const typeLabel = (t) => (INCIDENT_TYPES.find((x) => x.value === t) || { label: t }).label;
 
-function clock(ms) {
-  const s = Math.floor(ms / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-
-function sessionTime() {
-  return state.inbox.startedAt ? Date.now() - state.inbox.startedAt : 0;
-}
-
 function inboxTabs(mine) {
   return {
     todo: mine.filter((c) => !c.pile),
@@ -1040,8 +1031,6 @@ function renderInbox(mine) {
   const tabs = inboxTabs(mine);
   const list = tabs[ib.tab];
   const open = mine.find((c) => c.id === ib.openId);
-  const time = sessionTime();
-  const avg = ib.sortedByYou ? clock(time / ib.sortedByYou) : "–";
 
   const rows = list.map((c) => `
     <button class="claim-row" data-action="open-claim" data-value="${c.id}" aria-current="${c.id === ib.openId}">
@@ -1062,7 +1051,7 @@ function renderInbox(mine) {
     <div class="stats stats-4">
       ${stat("To sort", tabs.todo.length, "each one opened and read by hand")}
       ${stat("Sorted by you", ib.sortedByYou, "this session")}
-      ${stat("Time spent", clock(time), `average ${avg} per claim`, "inbox-timer")}
+      ${stat("Avg. time to sort", "11 min", "median, from arrival to sorted (brief)")}
       ${stat("Waiting over 4 h", mine.filter(waitingOver4h).length, "since the claim arrived")}
     </div>
     <div class="inbox">
@@ -1178,7 +1167,6 @@ function renderClaimDetail(c) {
 }
 
 function openClaim(id) {
-  if (!state.inbox.startedAt) state.inbox.startedAt = Date.now();
   state.inbox.openId = id;
 }
 
@@ -1201,11 +1189,6 @@ function requestMissingInfo() {
   c.status = "waiting on claimant";
   c.history.push({ at: new Date().toISOString(), actor: "you", action: "Asked claimant for missing info", detail: c.missingInfo.join(", ") });
 }
-
-setInterval(() => {
-  const el = document.getElementById("inbox-timer");
-  if (el && state.inbox.startedAt) el.textContent = clock(sessionTime());
-}, 1000);
 
 /* =========================================================================
    Render and events
