@@ -332,13 +332,13 @@ test("inbox: lists the insurer's unsorted claims, newest first, with tab counts"
   assert(app.$(".claim-detail .empty"), "nothing open yet");
 });
 
-test("inbox: average time to sort is the brief's 11 min median and doesn't change as you sort", async () => {
+test("inbox: median time to sort is the brief's 11 min and doesn't change as you sort", async () => {
   const app = await open("handler/inbox");
   const card = () => app.$$(".stats .card")[2];
   const check = () => {
-    eq(card().querySelector(".muted").textContent, "Avg. time to sort");
+    eq(card().querySelector(".muted").textContent, "Median time to sort");
     eq(card().querySelector(".stat-value").textContent, "11 min");
-    assert(card().textContent.includes("median, from arrival to sorted (brief)"));
+    assert(card().textContent.includes("from arrival to sorted (brief)"));
   };
   check();
   app.click(".claim-row");

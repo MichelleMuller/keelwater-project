@@ -1051,7 +1051,7 @@ function renderInbox(mine) {
     <div class="stats stats-4">
       ${stat("To sort", tabs.todo.length, "each one opened and read by hand")}
       ${stat("Sorted by you", ib.sortedByYou, "this session")}
-      ${stat("Avg. time to sort", "11 min", "median, from arrival to sorted (brief)")}
+      ${stat("Median time to sort", "11 min", "from arrival to sorted (brief)")}
       ${stat("Waiting over 4 h", mine.filter(waitingOver4h).length, "since the claim arrived")}
     </div>
     <div class="inbox">
