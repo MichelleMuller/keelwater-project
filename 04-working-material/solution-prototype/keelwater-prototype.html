@@ -648,8 +648,8 @@ function textField(label, path, opts = {}) {
   return `
     <div class="field ${opts.full ? "full" : ""}">
       <label for="f-${path}">${label}</label>
-      ${opts.hint ? `<span class="hint">${opts.hint}</span>` : ""}
       ${control}
+      ${opts.hint ? `<span class="hint">${opts.hint}</span>` : ""}
     </div>`;
 }
 
@@ -658,11 +658,11 @@ function yesNo(label, path, opts = {}) {
   return `
     <div class="field ${opts.full ? "full" : ""}">
       <span class="field-label">${label}</span>
-      ${opts.hint ? `<span class="hint">${opts.hint}</span>` : ""}
       <div class="yes-no" role="group" aria-label="${esc(label)}">
         <button data-action="set" data-field="${path}" data-value="true" data-type="bool" aria-pressed="${v === true}">Yes</button>
         <button data-action="set" data-field="${path}" data-value="false" data-type="bool" aria-pressed="${v === false}">No</button>
       </div>
+      ${opts.hint ? `<span class="hint">${opts.hint}</span>` : ""}
     </div>`;
 }
 
@@ -739,17 +739,17 @@ function renderFormStep(step) {
       <div class="form-grid">
         <div class="field full">
           <span class="field-label">Photos of the damage</span>
-          <span class="hint">Simulated upload: each click adds a photo</span>
           <div class="photo-grid">${tiles}<button class="photo-add" data-action="add-photo">+ Add photo</button></div>
+          <span class="hint">Simulated upload: each click adds a photo</span>
         </div>
         <div class="field full">
           <span class="field-label">Repair estimate</span>
-          <span class="hint">A quote from a garage, if you have one</span>
           <div class="yes-no">
             <button data-action="set" data-field="damage.repairEstimate" data-value="${!d.damage.repairEstimate}" data-type="bool" aria-pressed="${d.damage.repairEstimate}">
               ${d.damage.repairEstimate ? "✓ Estimate uploaded" : "+ Upload estimate"}
             </button>
           </div>
+          <span class="hint">A quote from a garage, if you have one</span>
         </div>
       </div>`;
   }
