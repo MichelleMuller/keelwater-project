@@ -36,6 +36,8 @@ These come from [auto-sorting-requirements.md](../../02-research/auto-sorting-re
 
 Points where the requested flow needs a choice, with my recommendation. To decide together before the step they affect.
 
+> **Decided 2026-10-17 (Michelle):** P-01 the agent proposes, a human approves. P-02 scripted, grounded answers labelled as simulated. P-03 the insurer's branded form, used as a reference for the full user flow (not a Keelwater product claim). Technical approach: React + Radix Themes + React Flow, built with Vite into one inlined HTML file. Build step 0, then review.
+
 | # | Question | Recommendation | Affects step |
 |---|---|---|---|
 | P-01 | **Phase 3 "auto-optimises workflows":** does the agent change workflows itself? | **The agent proposes, a human approves.** Each proposal shows the evidence (e.g. override rate on a rule), a backtest on recent claims, and publishes as a new reversible version. Auto-applying rule changes would break E-06/E-07 and the NAIC bulletin's change control | 6 |
@@ -118,7 +120,7 @@ Real AI model calls, a backend, logins, a real fraud vendor connection, payments
 
 | Step | Status |
 |---|---|
-| 0. Scaffold and shell | not started |
+| 0. Scaffold and shell | **done 2026-10-17**, to review. Single-file build works offline (~1.3 MB); claimant/handler toggle; sidebar by phase; insurer switcher; 60 seeded claims across 3 insurers; deep links via URL hash |
 | 1. Consumer claim form | not started |
 | 2. Current state: inbox | not started |
 | 3. Phase 1: bulk sorting | not started |
