@@ -91,6 +91,14 @@ test("seed data: every claim's missing info matches the rules, and nothing is so
   }
 });
 
+test("seed data: roughly the brief's share of claims has waited over 4 hours (10–30%)", async () => {
+  const app = await open();
+  const now = new Date("2026-10-17T09:30:00Z").getTime();
+  const claims = app.ev("state.claims");
+  const late = claims.filter((c) => now - new Date(c.receivedAt).getTime() > 4 * 3600000).length / claims.length;
+  assert(late >= 0.1 && late <= 0.3, `${Math.round(late * 100)}% over 4 h`);
+});
+
 test("there are three piles; missing information is a status, not a pile (A-19)", async () => {
   const app = await open();
   eq(app.ev("PILES"), ["Simple", "Needs a closer look", "Suspicious"]);
@@ -307,6 +315,145 @@ test("submit: 'see it arrive' opens Harbour Mutual's inbox with the new claim co
   app.click('[data-action="goto-handler"]');
   eq([app.ev("state.view"), app.ev("state.page"), app.ev("state.insurer")], ["handler", "inbox", "harbour"]);
   eq(app.$(".stat-value").textContent.trim(), "29");
+});
+
+/* ---------- Inbox (current state) ---------- */
+
+const harbourTodo = (app) => app.ev("state.claims.filter(c => c.insurer === 'harbour' && !c.pile)");
+const tabCounts = (app) => app.$$(".tabs button").map((b) => Number(b.querySelector(".muted").textContent));
+
+test("inbox: lists the insurer's unsorted claims, newest first, with tab counts", async () => {
+  const app = await open("handler/inbox");
+  const ids = app.$$(".claim-row").map((r) => r.dataset.value);
+  eq(ids, harbourTodo(app).map((c) => c.id));
+  const times = harbourTodo(app).map((c) => c.receivedAt);
+  eq(times, [...times].sort().reverse(), "newest first");
+  eq(tabCounts(app), [28, 0, 28]);
+  assert(app.$(".claim-detail .empty"), "nothing open yet");
+});
+
+test("inbox: the timer only starts when the first claim is opened", async () => {
+  const app = await open("handler/inbox");
+  eq(app.ev("state.inbox.startedAt"), null);
+  eq(app.$("#inbox-timer").textContent, "0:00");
+  app.click(".claim-row");
+  assert(app.ev("state.inbox.startedAt") > 0);
+});
+
+test("inbox: opening a claim shows everything a handler reads", async () => {
+  const app = await open("handler/inbox");
+  const c = harbourTodo(app).find((x) => x.missingInfo.length && x.parties.thirdPartyInvolved);
+  app.click(`.claim-row[data-value="${c.id}"]`);
+  const text = app.$(".claim-detail").textContent;
+  for (const s of [c.claimant.name, c.id, c.incident.description, c.fraud.vendor, c.policy.number, ...c.missingInfo]) {
+    assert(text.includes(s), `detail shows ${s}`);
+  }
+  eq(app.$$(".photo-strip .photo-tile").length, c.damage.photos);
+  eq(app.$(".claim-row[aria-current='true']").dataset.value, c.id, "row is highlighted");
+});
+
+test("inbox: sorting a claim updates the record, history and counter, then opens the next one", async () => {
+  const app = await open("handler/inbox");
+  const [first, second] = harbourTodo(app);
+  app.click(`.claim-row[data-value="${first.id}"]`);
+  app.click('[data-action="sort-claim"][data-value="Simple"]');
+  const c = app.ev(`state.claims.find(c => c.id === "${first.id}")`);
+  eq(c.pile, "Simple");
+  const last = c.history[c.history.length - 1];
+  eq([last.actor, last.action], ["you", "Sorted into Simple"]);
+  eq(app.ev("state.inbox.sortedByYou"), 1);
+  eq(app.ev("state.inbox.openId"), second.id, "next claim opened");
+  eq(tabCounts(app), [27, 1, 28]);
+  assert(!app.$(`.claim-row[data-value="${first.id}"]`), "gone from To sort");
+  app.click('[data-action="inbox-tab"][data-value="sorted"]');
+  eq(app.$$(".claim-row").map((r) => r.dataset.value), [first.id]);
+});
+
+test("inbox: changing the pile of a sorted claim is logged as a move and not counted twice", async () => {
+  const app = await open("handler/inbox");
+  const first = harbourTodo(app)[0];
+  app.click('[data-action="inbox-tab"][data-value="all"]');
+  app.click(`.claim-row[data-value="${first.id}"]`);
+  app.click('[data-action="sort-claim"][data-value="Simple"]');
+  eq(app.ev("state.inbox.openId"), first.id, "stays open in the All tab");
+  app.click('[data-action="sort-claim"][data-value="Suspicious"]');
+  const c = app.ev(`state.claims.find(c => c.id === "${first.id}")`);
+  eq(c.pile, "Suspicious");
+  eq(c.history[c.history.length - 1].action, "Moved from Simple to Suspicious");
+  eq(app.ev("state.inbox.sortedByYou"), 1);
+});
+
+test("inbox: asking for missing info sets a status, not a pile (A-19)", async () => {
+  const app = await open("handler/inbox");
+  const c0 = harbourTodo(app).find((x) => x.missingInfo.length);
+  app.click(`.claim-row[data-value="${c0.id}"]`);
+  app.click('[data-action="request-info"]');
+  let c = app.ev(`state.claims.find(c => c.id === "${c0.id}")`);
+  eq([c.status, c.pile], ["waiting on claimant", null]);
+  eq(c.history[c.history.length - 1].action, "Asked claimant for missing info");
+  assert(!app.$('[data-action="request-info"]'), "can't ask twice");
+  assert(app.$(`.claim-row[data-value="${c0.id}"] .badge.waiting`).textContent.includes("Waiting on claimant"));
+  app.click('[data-action="sort-claim"][data-value="Needs a closer look"]');
+  c = app.ev(`state.claims.find(c => c.id === "${c0.id}")`);
+  eq([c.status, c.pile], ["waiting on claimant", "Needs a closer look"], "status survives sorting");
+});
+
+test("inbox: claims with nothing missing have no 'ask claimant' button", async () => {
+  const app = await open("handler/inbox");
+  const c = harbourTodo(app).find((x) => !x.missingInfo.length);
+  app.click(`.claim-row[data-value="${c.id}"]`);
+  assert(!app.$('[data-action="request-info"]'));
+  assert(!app.$(".claim-detail .callout"));
+});
+
+test("inbox: 'waiting over 4 h' counts unsorted claims that arrived more than 4 hours ago", async () => {
+  const app = await open("handler/inbox");
+  const now = new Date("2026-10-17T09:30:00Z").getTime();
+  const expected = harbourTodo(app).filter((c) => now - new Date(c.receivedAt).getTime() > 4 * 3600000).length;
+  assert(expected > 0, "seed data has some late claims");
+  eq(Number(app.$$(".stat-value")[3].textContent), expected);
+  eq(app.$$(".claim-row .badge.late").length, expected);
+});
+
+test("inbox: sorting every claim ends on 'All claims sorted'", async () => {
+  const app = await open("handler/inbox");
+  app.click(".claim-row");
+  for (let i = 0; i < 28; i++) app.click('[data-action="sort-claim"][data-value="Simple"]');
+  eq(tabCounts(app), [0, 28, 28]);
+  assert(app.$(".claim-detail").textContent.includes("All claims sorted"));
+  assert(app.$(".claim-rows").textContent.includes("Nothing left to sort"));
+});
+
+test("inbox: switching insurer closes the open claim", async () => {
+  const app = await open("handler/inbox");
+  app.click(".claim-row");
+  const select = app.$('[data-action="insurer"]');
+  select.value = "fleetwise";
+  select.dispatchEvent(new app.w.Event("change", { bubbles: true }));
+  eq(app.ev("state.inbox.openId"), null);
+  eq(tabCounts(app), [12, 0, 12]);
+});
+
+test("inbox: list and claim sit side by side within the window", async () => {
+  const app = await open("handler/inbox");
+  app.click(".claim-row");
+  const list = app.$(".inbox-list").getBoundingClientRect();
+  const detail = app.$(".claim-detail").getBoundingClientRect();
+  assert(near(list.top, detail.top), "tops line up");
+  assert(list.right < detail.left, "list is left of the claim");
+  assert(detail.bottom <= app.w.innerHeight, `claim panel fits the window (${Math.round(detail.bottom)} > ${app.w.innerHeight})`);
+});
+
+test("inbox: a submitted claim arrives open, marked 'Just submitted', with what the claimant typed escaped", async () => {
+  const app = await open();
+  app.click('[data-action="fill-example"]');
+  app.ev(`state.form.data.incident.description = '<img src=x onerror="window.pwned=1">'`);
+  app.click('[data-action="submit-claim"]');
+  app.click('[data-action="goto-handler"]');
+  eq(app.ev("state.inbox.openId"), "CLM-2001");
+  assert(app.$('.claim-row[data-value="CLM-2001"] .badge.new'), "badge in the list");
+  assert(app.$(".claim-detail").textContent.includes('<img src=x'), "shown as text");
+  assert(!app.$(".claim-detail img") && !app.w.pwned, "not run as HTML");
 });
 
 /* ---------- Portability ---------- */

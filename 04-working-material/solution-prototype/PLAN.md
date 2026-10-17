@@ -118,7 +118,7 @@ Real AI model calls, a backend, logins, a real fraud vendor connection, payments
 |---|---|
 | 0. Scaffold and shell | **done 2026-10-17**, to review. Plain HTML file, works offline (~145 KB); claimant/handler toggle; sidebar by phase; insurer switcher; 60 seeded claims across 3 insurers; deep links via URL hash |
 | 1. Consumer claim form | **done 2026-10-17**, to review. Harbour Mutual branded form in 6 steps (details, what happened, vehicle and damage, other people, photos and documents, review) with an "example claim" shortcut. Floating panel shows the claim record building live; fields the insurer's systems add are marked ⏳. The review step says what's still missing, but the claimant can send anyway (missing info is a status, A-19). Submitting creates CLM-2001+ in the handler's data, with a button through to the inbox |
-| 2. Current state: inbox | not started |
+| 2. Current state: inbox | **done 2026-10-17**, to review. Claims list (To sort / Sorted / All) beside the open claim: every field, photos, fraud vendor score, missing info, history. Pile buttons; "Ask claimant for missing info" sets a status, not a pile. After sorting, the next claim opens, as in today's queue. Counters: to sort, sorted by you, time spent (real timer from the first claim opened), waiting over 4 h. A claim sent from the form arrives open and marked "Just submitted". Seed arrival times changed so about a quarter of the queue has waited over 4 h, closer to the brief. 13 new tests (41 browser tests in all) |
 | 3. Phase 1: bulk sorting | not started |
 | 4. Phase 2a: rules from behaviour | not started |
 | 5. Phase 2b: workflow builder | not started |
