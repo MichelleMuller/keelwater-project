@@ -145,8 +145,113 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: #0f4c5c; color: white; padding: 14px 32px; display: flex; align-items: center;
   gap: 10px; font-weight: 600; font-size: 18px;
 }
-.consumer-body { max-width: 720px; margin: 0 auto; padding: 48px 20px; }
 .consumer-body h1 { font-size: 28px; margin-bottom: 8px; }
+
+/* ---------- Claimant form ---------- */
+.consumer-layout {
+  display: grid; grid-template-columns: minmax(0, 640px) 440px; gap: 32px;
+  justify-content: center; align-items: start; padding: 32px 24px 64px;
+}
+.consumer-body h2 { font-size: 22px; margin-bottom: 4px; }
+
+.stepper { display: flex; gap: 6px; margin-bottom: 20px; }
+.stepper button {
+  flex: 1; border: 0; background: transparent; padding: 0; cursor: pointer; text-align: left;
+  font-size: 12px; color: var(--gray-10);
+}
+.stepper button::before {
+  content: ""; display: block; height: 4px; border-radius: 2px; background: var(--gray-5); margin-bottom: 6px;
+}
+.stepper button[data-state="done"]::before { background: #0f4c5c; opacity: 0.5; }
+.stepper button[data-state="current"]::before { background: #0f4c5c; }
+.stepper button[data-state="current"] { color: var(--gray-12); font-weight: 600; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.form-grid .full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label, .field-label { font-weight: 600; font-size: 14px; }
+.field .hint { font-size: 12px; color: var(--gray-11); margin-top: -2px; }
+.input {
+  height: 38px; padding: 0 12px; border-radius: var(--radius-2); border: 0; background: white;
+  box-shadow: inset 0 0 0 1px var(--gray-7); width: 100%;
+}
+textarea.input { height: 96px; padding: 10px 12px; resize: vertical; }
+.input:focus { outline: 2px solid #0f4c5c; outline-offset: -1px; }
+
+.choice-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.choice-card, .yes-no button {
+  border: 0; border-radius: var(--radius-3); background: white; box-shadow: inset 0 0 0 1px var(--gray-7);
+  padding: 12px; cursor: pointer; text-align: left; font-weight: 500;
+}
+.choice-card:hover, .yes-no button:hover { box-shadow: inset 0 0 0 1px var(--gray-9); }
+.choice-card[aria-pressed="true"], .yes-no button[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 2px #0f4c5c; background: #e8f1f3;
+}
+.choice-card .emoji { display: block; font-size: 20px; margin-bottom: 4px; }
+.yes-no { display: flex; gap: 8px; }
+.yes-no button { padding: 8px 20px; }
+
+.btn-insurer { background: #0f4c5c; }
+.btn-insurer:hover { background: #0b3a47; }
+.form-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--gray-4); }
+
+.photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.photo-tile {
+  aspect-ratio: 4 / 3; border-radius: var(--radius-3); background: linear-gradient(135deg, #cfd8dc, #eceff1);
+  display: flex; align-items: center; justify-content: center; position: relative; font-size: 22px;
+}
+.photo-tile button {
+  position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; border: 0;
+  background: rgba(0, 0, 0, 0.55); color: white; cursor: pointer; font-size: 12px; line-height: 1;
+}
+.photo-add {
+  aspect-ratio: 4 / 3; border-radius: var(--radius-3); border: 1.5px dashed var(--gray-8); background: white;
+  cursor: pointer; color: var(--gray-11); font-weight: 500;
+}
+.photo-add:hover { border-color: #0f4c5c; color: #0f4c5c; }
+
+.callout {
+  display: flex; gap: 10px; padding: 12px 14px; border-radius: var(--radius-3);
+  background: var(--blue-3); color: var(--blue-11); font-size: 14px;
+}
+.callout.success { background: var(--green-3); color: var(--green-11); }
+.summary-list { display: grid; grid-template-columns: 180px 1fr; gap: 6px 16px; margin: 0; }
+.summary-list dt { color: var(--gray-11); }
+.summary-list dd { margin: 0; }
+
+/* ---------- Floating data schema panel ---------- */
+.schema-panel {
+  position: sticky; top: 24px; background: var(--navy); color: #d6dbf5; border-radius: var(--radius-4);
+  box-shadow: 0 16px 40px rgba(0, 10, 52, 0.28); overflow: hidden; max-height: calc(100vh - 140px);
+  display: flex; flex-direction: column;
+}
+.schema-head { padding: 14px 16px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.schema-head-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.schema-title { color: white; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rose); animation: pulse 1.6s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(235, 63, 199, 0.6); } 70% { box-shadow: 0 0 0 8px rgba(235, 63, 199, 0); } 100% { box-shadow: 0 0 0 0 rgba(235, 63, 199, 0); } }
+.schema-sub { font-size: 12px; color: rgba(214, 219, 245, 0.7); margin-top: 4px; }
+.schema-meter { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.12); margin-top: 10px; overflow: hidden; }
+.schema-meter span { display: block; height: 100%; background: var(--rose); transition: width 0.3s; }
+.schema-body {
+  padding: 12px 16px 16px; overflow: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.schema-line { display: block; border-radius: 3px; padding: 0 4px; margin: 0 -4px; }
+.schema-line.flash { animation: flash 1.4s ease-out; }
+@keyframes flash { 0% { background: rgba(235, 63, 199, 0.45); } 100% { background: transparent; } }
+.j-key { color: var(--lavender); }
+.j-str { color: #9be9a8; }
+.j-num { color: #79c0ff; }
+.j-bool { color: #ff9bd9; }
+.j-null { color: #7d84a8; }
+.j-pending { color: #7d84a8; font-style: italic; }
+.j-section { color: #7d84a8; }
+.schema-foot {
+  padding: 10px 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 12px;
+  display: flex; align-items: center; gap: 8px; color: rgba(214, 219, 245, 0.85);
+}
+.schema-foot .arrow { color: var(--rose); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -337,7 +442,25 @@ const state = {
   view: "consumer",
   page: "inbox",
   insurer: "harbour",
+  form: emptyForm(),
+  highlightClaimId: null,
 };
+
+function emptyForm() {
+  return {
+    step: -1, // -1 = start page, 0..5 = form steps, 6 = submitted
+    lastChanged: null,
+    submittedId: null,
+    data: {
+      claimant: { name: "", email: "", phone: "" },
+      policy: { number: "" },
+      vehicle: { reg: "", make: "", model: "", year: "" },
+      incident: { date: "2026-10-16", type: "", location: "", description: "", policeReport: null, policeRef: "" },
+      parties: { thirdPartyInvolved: null, thirdParty: { name: "", insurer: "", reg: "" }, injuries: null, injuryDetails: "", witnesses: 0 },
+      damage: { estimatedAmount: "", drivable: null, photos: 0, repairEstimate: false },
+    },
+  };
+}
 
 function readHash() {
   const [view, page] = location.hash.replace("#", "").split("/");
@@ -397,23 +520,370 @@ function renderTopbar() {
 }
 
 /* =========================================================================
-   Claimant view (step 1 builds the form and the live schema panel)
+   Claimant view: Harbour Mutual's claim form (powered by Keelwater), with a
+   floating panel showing the structured claim record the sorting runs on.
    ========================================================================= */
+
+const FORM_STEPS = ["Your details", "What happened", "Vehicle and damage", "Other people", "Photos and documents", "Review"];
+
+const INCIDENT_TYPES = [
+  { value: "collision", label: "Collision", emoji: "🚗" },
+  { value: "windscreen", label: "Windscreen", emoji: "🪟" },
+  { value: "theft", label: "Theft", emoji: "🔓" },
+  { value: "vandalism", label: "Vandalism", emoji: "🔨" },
+  { value: "weather", label: "Weather or flood", emoji: "🌧️" },
+  { value: "other", label: "Something else", emoji: "❓" },
+];
+
+const EXAMPLE_FORM = {
+  claimant: { name: "Alex Morgan", email: "alex.morgan@example.com", phone: "07700 900123" },
+  policy: { number: "HA-482913" },
+  vehicle: { reg: "KX21 FHD", make: "VW", model: "Golf", year: 2021 },
+  incident: { date: "2026-10-16", type: "collision", location: "Roundabout on the A34, Newbury", description: "A van joined the roundabout without stopping and hit my driver's door. We swapped details at the scene.", policeReport: false, policeRef: "" },
+  parties: { thirdPartyInvolved: true, thirdParty: { name: "D. Hart (van driver)", insurer: "Admiral", reg: "" }, injuries: false, injuryDetails: "", witnesses: 1 },
+  damage: { estimatedAmount: 3200, drivable: true, photos: 3, repairEstimate: false },
+};
+
+function getPath(obj, path) {
+  return path.split(".").reduce((o, k) => (o == null ? o : o[k]), obj);
+}
+
+function setPath(obj, path, value) {
+  const keys = path.split(".");
+  const last = keys.pop();
+  keys.reduce((o, k) => o[k], obj)[last] = value;
+}
+
+// The claim record as the claimant builds it. Fields the claimant doesn't provide are
+// marked pending: the insurer's systems add them on submit.
+const pending = (from) => ({ __pending: from });
+
+function formRecord(d) {
+  const thirdParty = d.parties.thirdPartyInvolved === true;
+  const record = {
+    id: pending("assigned on submit"),
+    insurer: "harbour",
+    channel: "web form",
+    claimant: { ...d.claimant, priorClaims5y: pending("claims history") },
+    policy: { number: d.policy.number, startDate: pending("policy system"), cover: pending("policy system"), excess: pending("policy system") },
+    vehicle: { ...d.vehicle, value: pending("valuation service") },
+    incident: {
+      date: d.incident.date, type: d.incident.type, location: d.incident.location, description: d.incident.description,
+      policeReport: d.incident.policeReport,
+      ...(d.incident.policeReport ? { policeRef: d.incident.policeRef } : {}),
+    },
+    parties: {
+      thirdPartyInvolved: d.parties.thirdPartyInvolved,
+      ...(thirdParty ? { thirdParty: { ...d.parties.thirdParty } } : {}),
+      injuries: d.parties.injuries,
+      ...(d.parties.injuries ? { injuryDetails: d.parties.injuryDetails } : {}),
+      witnesses: d.parties.witnesses,
+    },
+    damage: { ...d.damage },
+  };
+  record.missingInfo = requiredItems({
+    incident: { type: d.incident.type, policeReport: d.incident.policeReport === true },
+    parties: { thirdPartyInvolved: thirdParty, injuries: d.parties.injuries === true, thirdParty: d.parties.thirdParty },
+    damage: { photos: d.damage.photos, estimatedAmount: Number(d.damage.estimatedAmount) || 0, repairEstimate: d.damage.repairEstimate },
+  });
+  record.fraud = pending(`${INSURERS.harbour.fraudVendor}, on submit`);
+  return record;
+}
+
+// Share of claimant-provided fields that are filled in, for the panel's progress bar.
+function formCompleteness(d) {
+  const paths = ["claimant.name", "claimant.email", "claimant.phone", "policy.number", "vehicle.reg", "vehicle.make", "vehicle.model", "vehicle.year",
+    "incident.type", "incident.location", "incident.description", "damage.estimatedAmount", "damage.drivable", "parties.thirdPartyInvolved", "parties.injuries", "incident.policeReport"];
+  const filled = paths.filter((p) => { const v = getPath(d, p); return v !== "" && v !== null && v !== undefined; }).length;
+  return filled / paths.length;
+}
+
+// Submitting turns the record into a full claim: the insurer's systems fill the pending fields.
+function submitForm() {
+  const d = state.form.data;
+  const rec = formRecord(d);
+  const id = `CLM-${2000 + state.claims.filter((c) => c.id.startsWith("CLM-2")).length + 1}`;
+  const now = new Date("2026-10-17T09:30:00Z").toISOString();
+  const value = { VW: 15000, BMW: 24000, Tesla: 32000, Ford: 9000 }[d.vehicle.make] || 12000;
+  const amount = Number(d.damage.estimatedAmount) || 0;
+  const reasons = [];
+  let score = 0.18;
+  if (d.incident.type === "theft") { score += 0.15; reasons.push("Theft claim"); }
+  if (amount > value * 1.1) { score += 0.2; reasons.push("Claimed amount above vehicle value"); }
+
+  const claim = {
+    ...rec,
+    id,
+    receivedAt: now,
+    claimant: { ...rec.claimant, priorClaims5y: 0 },
+    policy: { ...rec.policy, startDate: "2023-04-02", cover: "comprehensive", excess: 250 },
+    vehicle: { ...rec.vehicle, year: Number(d.vehicle.year) || 2020, value },
+    incident: { ...rec.incident, policeReport: d.incident.policeReport === true },
+    parties: { ...rec.parties, thirdPartyInvolved: d.parties.thirdPartyInvolved === true, injuries: d.parties.injuries === true },
+    damage: { ...rec.damage, estimatedAmount: amount, drivable: d.damage.drivable !== false },
+    fraud: { score: Math.round(score * 100) / 100, vendor: INSURERS.harbour.fraudVendor, reasons },
+    suggestion: null,
+    pile: null,
+    status: "new",
+    history: [
+      { at: now, actor: "system", action: "Claim received", detail: "via Harbour Mutual web form" },
+      { at: now, actor: "system", action: `Fraud score received from ${INSURERS.harbour.fraudVendor}`, detail: `score ${Math.round(score * 100) / 100}` },
+    ],
+  };
+  state.claims.unshift(claim);
+  state.form.step = 6;
+  state.form.submittedId = id;
+  state.highlightClaimId = id;
+}
+
+/* ----- Form field helpers ----- */
+
+function textField(label, path, opts = {}) {
+  const v = getPath(state.form.data, path);
+  const attrs = `id="f-${path}" class="input" data-field="${path}" ${opts.type === "number" ? 'data-type="number"' : ""} placeholder="${esc(opts.placeholder || "")}"`;
+  const control = opts.textarea
+    ? `<textarea ${attrs}>${esc(v)}</textarea>`
+    : `<input ${attrs} type="${opts.type || "text"}" value="${esc(v)}" ${opts.prefix ? 'inputmode="numeric"' : ""}/>`;
+  return `
+    <div class="field ${opts.full ? "full" : ""}">
+      <label for="f-${path}">${label}</label>
+      ${opts.hint ? `<span class="hint">${opts.hint}</span>` : ""}
+      ${control}
+    </div>`;
+}
+
+function yesNo(label, path, opts = {}) {
+  const v = getPath(state.form.data, path);
+  return `
+    <div class="field ${opts.full ? "full" : ""}">
+      <span class="field-label">${label}</span>
+      ${opts.hint ? `<span class="hint">${opts.hint}</span>` : ""}
+      <div class="yes-no" role="group" aria-label="${esc(label)}">
+        <button data-action="set" data-field="${path}" data-value="true" data-type="bool" aria-pressed="${v === true}">Yes</button>
+        <button data-action="set" data-field="${path}" data-value="false" data-type="bool" aria-pressed="${v === false}">No</button>
+      </div>
+    </div>`;
+}
+
+/* ----- Form steps ----- */
+
+function renderFormStep(step) {
+  const d = state.form.data;
+  if (step === 0) {
+    return `
+      <h2>Your details</h2>
+      <p class="muted">So we can find your policy and keep you updated.</p>
+      <div class="form-grid">
+        ${textField("Full name", "claimant.name", { full: true, placeholder: "As it appears on your policy" })}
+        ${textField("Email", "claimant.email", { type: "email" })}
+        ${textField("Phone", "claimant.phone", { type: "tel" })}
+        ${textField("Policy number", "policy.number", { placeholder: "e.g. HA-123456", hint: "On your policy documents or in the app" })}
+        ${textField("Vehicle registration", "vehicle.reg", { placeholder: "e.g. AB12 CDE" })}
+      </div>`;
+  }
+  if (step === 1) {
+    return `
+      <h2>What happened?</h2>
+      <p class="muted">Pick the closest match. You can explain more below.</p>
+      <div class="form-grid">
+        <div class="field full">
+          <span class="field-label">Type of incident</span>
+          <div class="choice-cards" role="group" aria-label="Type of incident">
+            ${INCIDENT_TYPES.map((t) => `
+              <button class="choice-card" data-action="set" data-field="incident.type" data-value="${t.value}" aria-pressed="${d.incident.type === t.value}">
+                <span class="emoji" aria-hidden="true">${t.emoji}</span>${t.label}
+              </button>`).join("")}
+          </div>
+        </div>
+        ${textField("When did it happen?", "incident.date", { type: "date" })}
+        ${textField("Where did it happen?", "incident.location", { placeholder: "Road, town or postcode" })}
+        ${textField("Tell us what happened", "incident.description", { textarea: true, full: true, placeholder: "In your own words" })}
+      </div>`;
+  }
+  if (step === 2) {
+    return `
+      <h2>Your vehicle and the damage</h2>
+      <p class="muted">A rough idea is fine. We'll confirm the cost with a repairer.</p>
+      <div class="form-grid">
+        ${textField("Make", "vehicle.make", { placeholder: "e.g. Ford" })}
+        ${textField("Model", "vehicle.model", { placeholder: "e.g. Fiesta" })}
+        ${textField("Year", "vehicle.year", { type: "number", placeholder: "e.g. 2019" })}
+        ${textField("Estimated repair cost (£)", "damage.estimatedAmount", { type: "number", placeholder: "e.g. 1200", hint: "Your best guess, or a garage quote" })}
+        ${yesNo("Can the car still be driven safely?", "damage.drivable", { full: true })}
+      </div>`;
+  }
+  if (step === 3) {
+    return `
+      <h2>Other people involved</h2>
+      <p class="muted">This helps us work out who was at fault and who we need to contact.</p>
+      <div class="form-grid">
+        ${yesNo("Was another vehicle or person involved?", "parties.thirdPartyInvolved", { full: true })}
+        ${d.parties.thirdPartyInvolved ? `
+          ${textField("Their name", "parties.thirdParty.name")}
+          ${textField("Their insurer", "parties.thirdParty.insurer", { placeholder: "If you know it" })}
+          ${textField("Their vehicle registration", "parties.thirdParty.reg", { placeholder: "e.g. WX19 PLK" })}
+          ${textField("Number of witnesses", "parties.witnesses", { type: "number" })}` : ""}
+        ${yesNo("Was anyone hurt?", "parties.injuries", { full: true })}
+        ${d.parties.injuries ? textField("Who was hurt, and how?", "parties.injuryDetails", { textarea: true, full: true }) : ""}
+        ${yesNo("Did you report it to the police?", "incident.policeReport", { full: true, hint: "Needed for theft, injuries and accidents with another vehicle" })}
+        ${d.incident.policeReport ? textField("Police reference number", "incident.policeRef", { placeholder: "e.g. REF-12345" }) : ""}
+      </div>`;
+  }
+  if (step === 4) {
+    const tiles = Array.from({ length: d.damage.photos }, (_, i) => `
+      <div class="photo-tile" aria-label="Photo ${i + 1}">📷<button data-action="remove-photo" aria-label="Remove photo ${i + 1}">✕</button></div>`).join("");
+    return `
+      <h2>Photos and documents</h2>
+      <p class="muted">Photos of the damage help us settle your claim faster.</p>
+      <div class="form-grid">
+        <div class="field full">
+          <span class="field-label">Photos of the damage</span>
+          <span class="hint">Simulated upload: each click adds a photo</span>
+          <div class="photo-grid">${tiles}<button class="photo-add" data-action="add-photo">+ Add photo</button></div>
+        </div>
+        <div class="field full">
+          <span class="field-label">Repair estimate</span>
+          <span class="hint">A quote from a garage, if you have one</span>
+          <div class="yes-no">
+            <button data-action="set" data-field="damage.repairEstimate" data-value="${!d.damage.repairEstimate}" data-type="bool" aria-pressed="${d.damage.repairEstimate}">
+              ${d.damage.repairEstimate ? "✓ Estimate uploaded" : "+ Upload estimate"}
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }
+  // Review
+  const rec = formRecord(d);
+  const type = INCIDENT_TYPES.find((t) => t.value === d.incident.type);
+  const yn = (v) => (v === true ? "Yes" : v === false ? "No" : "Not answered");
+  return `
+    <h2>Check and send</h2>
+    <p class="muted">Make sure everything looks right before you send it.</p>
+    <dl class="summary-list" style="margin-top:16px;">
+      <dt>Name</dt><dd>${esc(d.claimant.name) || "—"}</dd>
+      <dt>Policy</dt><dd>${esc(d.policy.number) || "—"}</dd>
+      <dt>Vehicle</dt><dd>${esc([d.vehicle.make, d.vehicle.model, d.vehicle.year].filter(Boolean).join(" ")) || "—"} ${d.vehicle.reg ? `(${esc(d.vehicle.reg)})` : ""}</dd>
+      <dt>What happened</dt><dd>${type ? type.label : "—"}, ${esc(d.incident.date)}, ${esc(d.incident.location) || "location not given"}</dd>
+      <dt>Estimated cost</dt><dd>${d.damage.estimatedAmount ? "£" + Number(d.damage.estimatedAmount).toLocaleString("en-GB") : "—"}</dd>
+      <dt>Another vehicle involved</dt><dd>${yn(d.parties.thirdPartyInvolved)}</dd>
+      <dt>Anyone hurt</dt><dd>${yn(d.parties.injuries)}</dd>
+      <dt>Photos</dt><dd>${d.damage.photos}</dd>
+    </dl>
+    ${rec.missingInfo.length ? `
+      <div class="callout" style="margin-top:20px;">
+        <span aria-hidden="true">ℹ️</span>
+        <div><strong>You can send this now.</strong> To settle your claim we'll also need: ${rec.missingInfo.map(esc).join(", ")}. You can add these any time from your claim page.</div>
+      </div>` : `
+      <div class="callout success" style="margin-top:20px;"><span aria-hidden="true">✓</span><div>You've given us everything we need to get started.</div></div>`}`;
+}
+
+function renderFormPage() {
+  const f = state.form;
+  if (f.step === -1) {
+    return `
+      <div class="card card-lg">
+        <h1>Make a car insurance claim</h1>
+        <p class="muted">Tell us what happened. It takes about 5 minutes, and you can add photos and documents as you go.</p>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button class="btn btn-lg btn-insurer" data-action="form-step" data-value="0">Start your claim</button>
+          <button class="btn btn-lg btn-outline" data-action="fill-example">Fill with an example claim</button>
+        </div>
+      </div>`;
+  }
+  if (f.step === 6) {
+    const claim = state.claims.find((c) => c.id === f.submittedId);
+    return `
+      <div class="card card-lg">
+        <div class="callout success" style="margin-bottom:16px;"><span aria-hidden="true">✓</span><div><strong>Claim sent.</strong> Your reference is <strong>${claim.id}</strong>.</div></div>
+        <h2>What happens next</h2>
+        <p class="muted">Harbour Mutual's claims team will review your claim and contact you within one working day.</p>
+        ${claim.missingInfo.length ? `<p>We still need: <strong>${claim.missingInfo.map(esc).join(", ")}</strong>.</p>` : ""}
+        <div class="form-actions">
+          <button class="btn btn-outline" data-action="form-reset">Start another claim</button>
+          <button class="btn" data-action="goto-handler">See it arrive in the handler's inbox →</button>
+        </div>
+        <p class="muted small" style="margin-top:8px;">Prototype: switches to the claims team's view of the same claim.</p>
+      </div>`;
+  }
+  const stepper = FORM_STEPS.map((name, i) => `
+    <button data-action="form-step" data-value="${i}" data-state="${i < f.step ? "done" : i === f.step ? "current" : "todo"}">${name}</button>`).join("");
+  return `
+    <div class="card card-lg">
+      <div class="stepper">${stepper}</div>
+      ${renderFormStep(f.step)}
+      <div class="form-actions">
+        <button class="btn btn-outline" data-action="form-step" data-value="${f.step - 1}">${f.step === 0 ? "Cancel" : "← Back"}</button>
+        ${f.step === FORM_STEPS.length - 1
+          ? `<button class="btn btn-insurer btn-lg" data-action="submit-claim">Send my claim</button>`
+          : `<button class="btn btn-insurer" data-action="form-step" data-value="${f.step + 1}">Continue →</button>`}
+      </div>
+    </div>`;
+}
+
+/* ----- Floating schema panel ----- */
+
+function jsonHtml(value, path = "", indent = 0) {
+  const pad = "  ".repeat(indent);
+  const flash = (p) => (p && p === state.form.lastChanged ? " flash" : "");
+  const scalar = (v) => {
+    if (v && typeof v === "object" && "__pending" in v) return `<span class="j-pending">⏳ from ${esc(v.__pending)}</span>`;
+    if (v === null || v === undefined) return `<span class="j-null">null</span>`;
+    if (typeof v === "boolean") return `<span class="j-bool">${v}</span>`;
+    if (typeof v === "number") return `<span class="j-num">${v}</span>`;
+    if (v === "") return `<span class="j-str">""</span>`;
+    return `<span class="j-str">"${esc(v)}"</span>`;
+  };
+  if (Array.isArray(value)) {
+    if (!value.length) return "[]";
+    return "[\n" + value.map((v) => `${pad}  ${scalar(v)}`).join(",\n") + `\n${pad}]`;
+  }
+  if (value && typeof value === "object" && !("__pending" in value)) {
+    const entries = Object.entries(value);
+    const lines = entries.map(([k, v], i) => {
+      const p = path ? `${path}.${k}` : k;
+      const comma = i < entries.length - 1 ? "," : "";
+      const inner = v && typeof v === "object" && !("__pending" in v) ? jsonHtml(v, p, indent + 1) : scalar(v);
+      return `<span class="schema-line${flash(p)}">${pad}  <span class="j-key">"${k}"</span>: ${inner}${comma}</span>`;
+    });
+    return "{" + lines.join("") + `${pad}}`;
+  }
+  return scalar(value);
+}
+
+function renderSchemaPanel() {
+  const d = state.form.data;
+  const rec = state.form.step === 6 ? state.claims.find((c) => c.id === state.form.submittedId) : formRecord(d);
+  const pct = state.form.step === 6 ? 100 : Math.round(formCompleteness(d) * 100);
+  const display = { ...rec };
+  delete display.history;
+  return `
+    <div class="schema-head">
+      <div class="schema-head-row">
+        <span class="schema-title"><span class="live-dot"></span>Claim record</span>
+        <span class="badge" style="background:rgba(255,255,255,0.1); color:#d6dbf5;">${pct}% complete</span>
+      </div>
+      <div class="schema-sub">The structured data Keelwater builds from the form, live. This is what the sorting runs on.</div>
+      <div class="schema-meter"><span style="width:${pct}%"></span></div>
+    </div>
+    <div class="schema-body">${jsonHtml(display)}</div>
+    <div class="schema-foot">
+      <span class="arrow">→</span>
+      <span>${state.form.step === 6
+        ? `Sent to the sorting system as <strong style="color:white;">${rec.id}</strong>.`
+        : `On submit, this feeds the sorting system. Fields marked ⏳ are added by the insurer's systems.`}</span>
+    </div>`;
+}
 
 function renderConsumer() {
   return `
-    <div class="consumer">
+    <div class="consumer" data-keep-scroll>
       <div class="insurer-brand-bar">
         <span aria-hidden="true">⚓</span> Harbour Mutual
-        <span class="small" style="opacity:0.75; font-weight:400; margin-left:8px;">Car insurance</span>
+        <span class="small" style="opacity:0.75; font-weight:400; margin-left:8px;">Car insurance claims</span>
       </div>
-      <div class="consumer-body">
-        <div class="card card-lg">
-          <h1>Make a car insurance claim</h1>
-          <p class="muted">Tell us what happened. It takes about 5 minutes, and you can add photos and documents as you go.</p>
-          <button class="btn btn-lg" disabled>Start your claim</button>
-          <p class="muted small">Step 1 builds the claim form and the live data schema panel.</p>
-        </div>
+      <div class="consumer-layout">
+        <div class="consumer-body">${renderFormPage()}</div>
+        <aside class="schema-panel" id="schema-panel" aria-label="Live claim record">${renderSchemaPanel()}</aside>
       </div>
     </div>`;
 }
@@ -482,16 +952,78 @@ function stat(label, value) {
    ========================================================================= */
 
 function render() {
+  const keep = document.querySelector("[data-keep-scroll]");
+  const scrollTop = keep ? keep.scrollTop : 0;
   document.getElementById("topbar").innerHTML = renderTopbar();
   document.getElementById("view").innerHTML = state.view === "consumer" ? renderConsumer() : renderHandler();
+  const kept = document.querySelector("[data-keep-scroll]");
+  if (kept) kept.scrollTop = scrollTop;
+}
+
+function parseFieldValue(el, raw) {
+  if (el.dataset.type === "bool") return raw === "true";
+  if (el.dataset.type === "number") return raw === "" ? "" : Number(raw);
+  return raw;
 }
 
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-action]");
   if (!el || el.tagName === "SELECT") return;
   const { action, value } = el.dataset;
+  const form = state.form;
+
   if (action === "view") setState({ view: value });
   if (action === "page") setState({ page: value });
+
+  if (action === "form-step") {
+    form.step = Math.max(-1, Math.min(FORM_STEPS.length - 1, Number(value)));
+    render();
+    document.querySelector("[data-keep-scroll]").scrollTop = 0;
+  }
+  if (action === "set") {
+    setPath(form.data, el.dataset.field, parseFieldValue(el, value));
+    form.lastChanged = el.dataset.field;
+    render();
+  }
+  if (action === "add-photo" || action === "remove-photo") {
+    form.data.damage.photos = Math.max(0, form.data.damage.photos + (action === "add-photo" ? 1 : -1));
+    form.lastChanged = "damage.photos";
+    render();
+  }
+  if (action === "fill-example") {
+    form.data = JSON.parse(JSON.stringify(EXAMPLE_FORM));
+    form.step = FORM_STEPS.length - 1;
+    form.lastChanged = null;
+    render();
+  }
+  if (action === "submit-claim") {
+    submitForm();
+    form.lastChanged = null;
+    render();
+  }
+  if (action === "form-reset") {
+    state.form = emptyForm();
+    render();
+  }
+  if (action === "goto-handler") setState({ view: "handler", page: "inbox", insurer: "harbour" });
+});
+
+// Typing updates the record without re-rendering the form, so focus stays put.
+document.addEventListener("input", (e) => {
+  const el = e.target.closest("[data-field]");
+  if (!el || el.dataset.action) return;
+  setPath(state.form.data, el.dataset.field, parseFieldValue(el, el.value));
+  state.form.lastChanged = el.dataset.field;
+  const panel = document.getElementById("schema-panel");
+  const body = panel.querySelector(".schema-body");
+  const bodyScroll = body ? body.scrollTop : 0;
+  panel.innerHTML = renderSchemaPanel();
+  const flashed = panel.querySelector(".schema-line.flash");
+  const newBody = panel.querySelector(".schema-body");
+  if (flashed && newBody) {
+    const top = flashed.offsetTop - newBody.offsetTop;
+    newBody.scrollTop = top < bodyScroll || top > bodyScroll + newBody.clientHeight - 40 ? top - 80 : bodyScroll;
+  }
 });
 
 document.addEventListener("change", (e) => {
