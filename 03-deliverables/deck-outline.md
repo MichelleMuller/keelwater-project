@@ -221,7 +221,7 @@ The anchor for every decision that follows. Three groups, each wanting something
 
 - **First:** bulk sorting + user action capture + waiting-on-claimant status. 
 - **Next:** missing-information flagging and auto-request; suggested piles with reasons in the table.
-- **Later:** per-insurer workflows with fraud vendor gate; Workflow Agent; claims processing beyond sorting.
+- **Later:** per-insurer workflows with fraud vendor gate; Claim sorting agent; claims processing beyond sorting.
 - **Won't do:** pause bulk sorting; build our own fraud model; let an LLM make the sorting decision; auto-deny or reduce a claim; assume one global model for all customers; revive the shelved prototype as-is.
 - *Visual:* four columns, with "won't do" as clearly as the others.
 
@@ -241,7 +241,7 @@ The spine of the deck and of the Sales and CS story. Each release ships value on
 | **1. Bulk sorting** (week 6) | Table, filters, multi-select, sort many at once; waiting-on-claimant status                                                                                              | Every filter + bulk action captured: how handlers really sort |
 | **2. Suggestions**           | Rules learned from handler behaviour; suggested pile + reasons in the table; confirm or override; missing info detected and requested automatically                      | Override data; agreement with handlers per rule               |
 | **3. Workflows**             | Per-insurer workflow: missing info → fraud gate (vendor score) → complexity → Simple only if every check passes. Shadow → suggest → auto-route above an agreed threshold | Proven accuracy per customer; audit trail                     |
-| **4. Workflow Agent**        | Answers questions about any claim; proposes workflow changes with evidence and a backtest; a human approves                                                              | Path to claims processing beyond sorting                      |
+| **4. Claim sorting agent**   | Answers questions about any claim; proposes workflow changes with evidence and a backtest; a human approves                                                              | Path to claims processing beyond sorting                      |
 
 
 - Timing beyond release 1 to agree with the tech lead after discovery; flag as indicative.

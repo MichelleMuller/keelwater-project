@@ -111,7 +111,7 @@ Click-through, live in the browser:
 5. **Workflow builder:** one workflow per insurer: fraud check, then information check, then the rules, first match wins; no match goes to Needs a closer look. Each stack shows how many of the last 30 days' claims would land there and how often each rule agrees with handlers. Draft, test run, publish, with versions you can restore.
 6. **Switch insurer:** a simple-heavy insurer learns mostly Simple rules; a complex-heavy one learns almost none.
 
-- **Not built yet:** the Workflow Agent and the per-claim audit view. All data is invented.
+- **Not built yet:** the claim sorting agent's answers (the side chat on each page shows suggested questions, but replies are placeholders) and the per-claim audit view. All data is invented.
 - **UX point:** human review has to be meaningful. A handler clicking confirm on everything is automation bias, which regulators warn about. Showing the reason, logging overrides and spot checks keep it honest.
 
 ### 14. The release path · 45 sec
