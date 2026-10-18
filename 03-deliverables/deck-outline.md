@@ -229,7 +229,7 @@ The anchor for every decision that follows. Three groups, each wanting something
 
 A single slide that hands over to the live prototype. Click-through steps are in the talk track.
 
-- **On the slide:** "From one claim at a time to workflow automation", with a screenshot strip: claim form → inbox → bulk sorting → automation panel → workflow builder. A link to [keelwater-prototype.html](../04-working-material/solution-prototype/keelwater-prototype.html), and "All data invented".
+- **On the slide:** "From one claim at a time to workflow automation", with a screenshot strip: claim form → inbox → bulk sorting → automation panel → workflow builder. A link to [keelwater-prototype.html](solution-prototype/keelwater-prototype.html), and "All data invented".
 
 ### 14. The release path: from bulk sorting to workflow automation · Q3, Q4, Q5
 
@@ -388,7 +388,7 @@ To fill in at the end. Candidates: competitor deep dive; open models and dataset
 
 ## Working material to submit
 
-- The solution prototype, with [PLAN.md](../04-working-material/solution-prototype/PLAN.md) showing the decisions and revisions
+- The solution prototype, with [PLAN.md](solution-prototype/PLAN.md) showing the decisions and revisions
 - The [AI usage log](../04-working-material/ai-usage-log.md), including the question-form screenshot
 
 ---

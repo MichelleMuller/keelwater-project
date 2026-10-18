@@ -18,7 +18,7 @@ Take-home assignment (Senior/Lead PM, Xelix). Keelwater is fictional: B2B claims
 
 | What | File |
 |---|---|
-| **Solution prototype** (claim form → inbox → bulk sorting → workflow builder → agent). Open the HTML file by double-clicking | [`keelwater-prototype.html`](04-working-material/solution-prototype/keelwater-prototype.html) · [plan and progress](04-working-material/solution-prototype/PLAN.md) · [how to run](04-working-material/solution-prototype/README.md) |
+| **Solution prototype** (claim form → inbox → bulk sorting → workflow builder → agent). Open the HTML file by double-clicking | [`keelwater-prototype.html`](03-deliverables/solution-prototype/keelwater-prototype.html) · [plan and progress](03-deliverables/solution-prototype/PLAN.md) · [how to run](03-deliverables/solution-prototype/README.md) |
 | Sample-data sorting prototype: gradient-boosted model with per-claim reasons | [`results.md`](04-working-material/prototype/results.md) · [`sorting_prototype.py`](04-working-material/prototype/sorting_prototype.py) |
 | Time to sort: distribution and what claims are waiting on (charts) | [`time-to-sort-distribution.md`](02-research/time-to-sort-distribution.md) · [PNG for the deck](02-research/assets/time-to-sort-causes.png) |
 | Research index (triage, auto-sorting requirements, examiner requirements, internal data, customer signal, Kaggle review) | [`02-research/README.md`](02-research/README.md) |
@@ -37,7 +37,7 @@ Take-home assignment (Senior/Lead PM, Xelix). Keelwater is fictional: B2B claims
 - [ ] Research: competitor deep dive
 - [x] Decide bulk sorting: **ship it** as the validation layer for automation (no tabular view exists today)
 - [x] Sample-data sorting prototype (working material)
-- [ ] Solution prototype: step 0 of 7 done ([progress](04-working-material/solution-prototype/PLAN.md#9-progress))
+- [ ] Solution prototype: step 0 of 7 done ([progress](03-deliverables/solution-prototype/PLAN.md#9-progress))
 - [ ] Build deck
 - [ ] Record walkthrough (≤20 min, incl. ≤5 min on AI use + lifecycle)
 
