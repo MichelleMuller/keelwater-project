@@ -115,7 +115,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .handler { display: flex; flex: 1; min-height: 0; }
 .sidebar {
-  width: 248px; flex-shrink: 0; border-right: 1px solid var(--gray-5); background: var(--gray-1);
+  width: 200px; flex-shrink: 0; border-right: 1px solid var(--gray-5); background: var(--gray-1);
   padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto;
 }
 .nav-group-label {
@@ -132,10 +132,42 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .nav-item svg { flex-shrink: 0; }
 
 .main { flex: 1; min-width: 0; overflow-y: auto; }
-.page { padding: 28px 32px; max-width: 1400px; }
+.page { padding: 24px 24px; max-width: 1400px; }
 .page-header { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
 .page-header h1 { font-size: 28px; font-weight: 700; }
 .page-header p { margin: 0; max-width: 720px; }
+
+/* ---------- Workflow Agent side chat ---------- */
+.agent-panel {
+  width: 300px; flex-shrink: 0; border-left: 1px solid var(--gray-5); background: var(--gray-1);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.agent-panel.collapsed { width: 44px; }
+.agent-head { display: flex; align-items: center; gap: 8px; padding: 14px 12px 12px 16px; border-bottom: 1px solid var(--gray-5); }
+.agent-head .agent-title { font-weight: 700; }
+.agent-head .agent-sub { font-size: 12px; color: var(--gray-11); }
+.agent-head .btn { margin-left: auto; }
+.agent-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.agent-empty { color: var(--gray-11); font-size: 13px; }
+.agent-msg { padding: 8px 12px; border-radius: var(--radius-3); max-width: 90%; font-size: 14px; }
+.agent-msg.you { align-self: flex-end; background: var(--rose-a3); }
+.agent-msg.agent { align-self: flex-start; background: white; box-shadow: inset 0 0 0 1px var(--gray-5); }
+.agent-msg-page { font-size: 11px; color: var(--gray-10); margin-bottom: 2px; }
+.agent-prompts { display: flex; flex-direction: column; gap: 6px; padding: 12px 16px; border-top: 1px solid var(--gray-5); }
+.agent-prompts-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-10); }
+.agent-prompt {
+  border: 0; border-radius: var(--radius-2); background: white; box-shadow: inset 0 0 0 1px var(--gray-6);
+  padding: 6px 10px; font-size: 13px; text-align: left; cursor: pointer;
+}
+.agent-prompt:hover { box-shadow: inset 0 0 0 1px var(--gray-9); }
+.agent-input { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--gray-5); }
+.agent-input .input { height: 32px; }
+.agent-rail {
+  flex: 1; border: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; gap: 10px; padding: 14px 0; font-weight: 600; color: var(--gray-12);
+}
+.agent-rail:hover { background: var(--gray-3); }
+.agent-rail span { writing-mode: vertical-rl; }
 
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 720px; margin-bottom: 20px; }
 .stat-value { font-size: 28px; font-weight: 700; }
@@ -190,6 +222,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- Bulk sorting (Phase 1) ---------- */
 .bulk { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
 .bulk-table { padding: 0; overflow: hidden; }
+.handler:has(.agent-panel:not(.collapsed)) .bulk { grid-template-columns: minmax(0, 1fr) 240px; }
+.handler:has(.agent-panel:not(.collapsed)) table.grid th, .handler:has(.agent-panel:not(.collapsed)) table.grid td { padding-left: 6px; padding-right: 6px; }
+.handler:has(.agent-panel:not(.collapsed)) table.grid .reason { max-width: 72px; }
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; border-bottom: 1px solid var(--gray-4); }
 .filters .select { height: 30px; font-size: 13px; }
 .filters .select.active { box-shadow: inset 0 0 0 1.5px var(--rose); background-color: var(--rose-a3); }
@@ -648,7 +683,7 @@ const pastClaims = (insurer) => PAST_CLAIMS.filter((c) => c.insurer === insurer)
    State and routing. The URL hash picks the view: #consumer, #handler/bulk, ...
    ========================================================================= */
 
-const PAGES = ["inbox", "bulk", "workflow", "agent"];
+const PAGES = ["inbox", "bulk", "workflow"];
 
 const state = {
   claims: seedClaims(),
@@ -662,6 +697,7 @@ const state = {
   override: null, // the sort waiting for a reason because it goes against a suggestion
   automation: { rules: [], gates: {}, dismissed: [], changes: [], collapsed: false, showAllSuggested: false, notice: null },
   workflows: {}, // per insurer: published versions, the draft being edited, the last test run
+  agent: { open: true, messages: [], asked: [], draft: "" }, // one conversation that follows the handler across pages
 };
 
 function emptyForm() {
@@ -1114,22 +1150,18 @@ const NAV = [
   { page: "inbox", label: "Inbox", phase: "Current", icon: "inbox" },
   { page: "bulk", label: "Bulk sorting", phase: "Phase 1", icon: "table" },
   { page: "workflow", label: "Workflow builder", phase: "Phase 2", icon: "workflow" },
-  { page: "agent", label: "Workflow Agent", phase: "Phase 3", icon: "agent" },
 ];
 
 const PAGE_INFO = {
   inbox: { title: "Inbox", step: 2, description: "How sorting works today: every claim arrives here and a handler opens and sorts each one by hand." },
   bulk: { title: "Bulk sorting", step: 3, description: "A table of every claim with filters and multi-select. Every filter and bulk action is captured to inform automation rules." },
   workflow: { title: "Workflow builder", step: 5, description: "A sample workflow per insurer, separate from bulk sorting: fraud check first, then missing information, then rules from bulk sorting decide the stack. Click a node to edit it, test on the last 30 days, then publish a new version." },
-  agent: { title: "Workflow Agent", step: 6, description: "An AI layer over all claim and workflow data: answers questions about any claim and proposes workflow improvements for a human to approve." },
 };
 
 function renderHandler() {
   const info = PAGE_INFO[state.page];
   const ins = INSURERS[state.insurer];
   const mine = state.claims.filter((c) => c.insurer === state.insurer);
-  const unsorted = mine.filter((c) => !c.pile).length;
-  const missing = mine.filter((c) => c.missingInfo.length > 0).length;
 
   const nav = NAV.map((item) => `
     <div class="nav-group-label">${item.phase}</div>
@@ -1137,16 +1169,7 @@ function renderHandler() {
       ${icon(item.icon)} ${item.label}
     </button>`).join("");
 
-  const body = state.page === "inbox" ? renderInbox(mine) : state.page === "bulk" ? renderBulk(mine) : state.page === "workflow" ? renderWorkflow() : `
-    <div class="stats">
-      ${stat("Claims", mine.length)}
-      ${stat("Not sorted yet", unsorted)}
-      ${stat("Missing information", missing)}
-    </div>
-    <div class="card" style="max-width:720px; display:flex; gap:8px; align-items:center;">
-      <span class="badge">Step ${info.step}</span>
-      <span class="muted">This screen is built in step ${info.step} of the plan.</span>
-    </div>`;
+  const body = state.page === "bulk" ? renderBulk(mine) : state.page === "workflow" ? renderWorkflow() : renderInbox(mine);
 
   return `
     <div class="handler">
@@ -1161,7 +1184,85 @@ function renderHandler() {
           ${body}
         </div>
       </main>
+      ${renderAgent()}
     </div>`;
+}
+
+/* ----- Workflow Agent: a side chat on every page. Replies are placeholders. ----- */
+
+function agentPrompts() {
+  const open = state.page === "inbox" && state.claims.find((c) => c.id === state.inbox.openId);
+  const queue = {
+    inbox: [
+      ...(open ? [`Summarise claim ${open.id} for me`, `What's still missing on ${open.id}?`, `Have we seen this claimant or vehicle before?`] : []),
+      "Which claims have waited longest?",
+      "Which claims could I sort in one go?",
+      "What's missing across my claims today?",
+      "How many claims did I sort this week?",
+    ],
+    bulk: [
+      "Which filter would sort the most claims at once?",
+      "Show claims waiting on information for over 2 days",
+      "Why is a suggested rule paused?",
+      "Which rule do handlers disagree with most?",
+      "What did my team sort most this week?",
+    ],
+    workflow: [
+      "Which rule disagrees with handlers most?",
+      "What happens if I lower the fraud score to 0.5?",
+      "Why do some claims match no rule?",
+      "Suggest a rule for the Needs a closer look stack",
+      "What changed between the last two versions?",
+    ],
+  }[state.page] || [];
+  return queue.filter((p) => !state.agent.asked.includes(p)).slice(0, 3);
+}
+
+const AGENT_SOURCES = {
+  inbox: "this insurer's claims and their history",
+  bulk: "the claims table and your team's sorting log",
+  workflow: "the live workflow, its test runs and the last 30 days of claims",
+};
+
+function askAgent(text) {
+  const q = String(text || "").trim();
+  if (!q) return;
+  const a = state.agent;
+  a.messages.push({ from: "you", text: q, page: state.page });
+  a.messages.push({ from: "agent", text: `Placeholder answer: this demo doesn't answer yet. The real Workflow Agent would answer from ${AGENT_SOURCES[state.page]}, show the claims it used, and leave any change for you to approve.`, page: state.page });
+  if (!a.asked.includes(q)) a.asked.push(q);
+  a.draft = "";
+}
+
+function renderAgent() {
+  const a = state.agent;
+  if (!a.open) {
+    return `<aside class="agent-panel collapsed" aria-label="Workflow Agent">
+      <button class="agent-rail" data-action="agent-toggle" title="Open the Workflow Agent">${icon("agent")}<span>Workflow Agent</span></button>
+    </aside>`;
+  }
+  const messages = a.messages.length ? a.messages.map((m) => `
+    <div class="agent-msg ${m.from}">
+      ${m.from === "you" ? `<div class="agent-msg-page">On ${esc(PAGE_INFO[m.page].title)}</div>` : ""}
+      ${esc(m.text)}
+    </div>`).join("") : `<p class="agent-empty">Ask about claims, sorting or the workflow. The chat stays with you as you move between pages.</p>`;
+  const prompts = agentPrompts();
+  return `<aside class="agent-panel" aria-label="Workflow Agent">
+    <div class="agent-head">
+      ${icon("agent")}
+      <div><div class="agent-title">Workflow Agent</div><div class="agent-sub">Demo: replies are placeholders</div></div>
+      <button class="btn btn-outline btn-sm" data-action="agent-toggle" title="Hide the Workflow Agent">Hide</button>
+    </div>
+    <div class="agent-messages">${messages}</div>
+    ${prompts.length ? `<div class="agent-prompts">
+      <div class="agent-prompts-label">Suggested for ${esc(PAGE_INFO[state.page].title)}</div>
+      ${prompts.map((p) => `<button class="agent-prompt" data-action="agent-ask" data-value="${esc(p)}">${esc(p)}</button>`).join("")}
+    </div>` : ""}
+    <div class="agent-input">
+      <input class="input" data-agent-input placeholder="Ask the Workflow Agent…" value="${esc(a.draft)}" aria-label="Message the Workflow Agent" />
+      <button class="btn btn-sm" data-action="agent-send">Send</button>
+    </div>
+  </aside>`;
 }
 
 function stat(label, value, sub = "", id = "") {
@@ -2628,6 +2729,8 @@ function render() {
   document.getElementById("topbar").innerHTML = renderTopbar();
   document.getElementById("view").innerHTML = (state.view === "consumer" ? renderConsumer() : renderHandler()) + renderOverrideDialog();
   KEEP_SCROLL.forEach((sel, i) => { const el = document.querySelector(sel); if (el) el.scrollTop = scroll[i]; });
+  const chat = document.querySelector(".agent-messages");
+  if (chat) chat.scrollTop = chat.scrollHeight;
   document.querySelectorAll('[data-indeterminate="true"]').forEach((el) => { el.indeterminate = true; });
 }
 
@@ -2645,6 +2748,9 @@ document.addEventListener("click", (e) => {
 
   if (action === "view") setState({ view: value });
   if (action === "page") setState({ page: value });
+  if (action === "agent-toggle") { state.agent.open = !state.agent.open; render(); }
+  if (action === "agent-ask") { askAgent(value); render(); }
+  if (action === "agent-send") { askAgent(state.agent.draft); render(); }
 
   if (action === "form-step") {
     form.step = Math.max(-1, Math.min(FORM_STEPS.length - 1, Number(value)));
@@ -2758,6 +2864,7 @@ document.addEventListener("click", (e) => {
 
 // Typing updates the record without re-rendering the form, so focus stays put.
 document.addEventListener("input", (e) => {
+  if (e.target.matches("[data-agent-input]")) { state.agent.draft = e.target.value; return; }
   if (e.target.matches("[data-override-note]") && state.override) {
     state.override.note = e.target.value;
     document.querySelector('[data-action="override-confirm"]').disabled = !overrideReady(state.override);
@@ -2797,6 +2904,11 @@ document.addEventListener("change", (e) => {
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && state.override) { state.override = null; render(); }
+  if (e.key === "Enter" && e.target.matches("[data-agent-input]")) {
+    askAgent(state.agent.draft);
+    render();
+    document.querySelector("[data-agent-input]")?.focus();
+  }
 });
 
 window.addEventListener("hashchange", () => { readHash(); render(); });

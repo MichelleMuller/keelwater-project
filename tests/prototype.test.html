@@ -125,7 +125,7 @@ test("required items: a complete windscreen claim needs nothing", async () => {
 /* ---------- Routing and shell ---------- */
 
 test("every view renders", async () => {
-  for (const hash of ["consumer", "handler/inbox", "handler/bulk", "handler/workflow", "handler/agent"]) {
+  for (const hash of ["consumer", "handler/inbox", "handler/bulk", "handler/workflow"]) {
     const app = await open(hash);
     assert(app.$("#topbar").innerHTML.length > 0, `${hash}: topbar`);
     assert(app.$("#view").innerHTML.length > 0, `${hash}: view`);
@@ -159,9 +159,117 @@ test("switching insurer changes the handler's claims", async () => {
 });
 
 test("the workflow agent is called Workflow Agent", async () => {
-  const app = await open("handler/agent");
-  assert(app.$(".sidebar").textContent.includes("Workflow Agent"));
+  const app = await open("handler/inbox");
+  assert(app.$(".agent-panel").textContent.includes("Workflow Agent"));
   assert(!/hyper.?operator/i.test(app.doc.body.textContent), "no 'hyper-operator' anywhere");
+});
+
+/* ---------- Workflow Agent side chat ---------- */
+
+const agentPromptTexts = (app) => app.$$(".agent-prompt").map((b) => b.textContent.trim());
+
+test("Phase 3 is gone: three pages in the nav, and #handler/agent falls back to the inbox", async () => {
+  const app = await open("handler/agent");
+  eq(app.$$(".sidebar .nav-item").map((b) => b.textContent.trim()), ["Inbox", "Bulk sorting", "Workflow builder"]);
+  assert(!app.$(".sidebar").textContent.includes("Phase 3"), "no Phase 3 label");
+  eq(app.ev("state.page"), "inbox");
+});
+
+test("agent chat: open by default on all three pages, next to the page", async () => {
+  for (const page of ["inbox", "bulk", "workflow"]) {
+    const app = await open(`handler/${page}`);
+    const panel = app.$(".handler > .agent-panel");
+    assert(panel && !panel.classList.contains("collapsed"), `${page}: chat open`);
+    const main = app.$(".main").getBoundingClientRect(), side = panel.getBoundingClientRect();
+    assert(near(main.right, side.left), `${page}: chat sits right of the page`);
+    assert(near(side.right, 1440), `${page}: chat reaches the right edge`);
+  }
+});
+
+test("agent chat: each page has its own suggested prompts, at most three", async () => {
+  const app = await open("handler/inbox");
+  const seen = {};
+  for (const page of ["inbox", "bulk", "workflow"]) {
+    app.click(`.sidebar [data-value="${page}"]`);
+    seen[page] = agentPromptTexts(app);
+    eq(seen[page].length, 3, `${page}: three prompts`);
+    assert(app.$(".agent-prompts-label").textContent.includes(app.ev("PAGE_INFO")[page].title), `${page}: label names the page`);
+  }
+  assert(seen.inbox.every((p) => !seen.bulk.includes(p) && !seen.workflow.includes(p)), "inbox prompts are its own");
+  assert(seen.bulk.every((p) => !seen.workflow.includes(p)), "bulk and workflow prompts differ");
+  assert(seen.workflow.some((p) => /rule|fraud|version/i.test(p)), "workflow prompts are about the workflow");
+});
+
+test("agent chat: an open inbox claim puts questions about that claim first", async () => {
+  const app = await open("handler/inbox");
+  const id = app.ev("state.claims.find((c) => c.insurer === 'harbour').id");
+  app.ev(`state.inbox.openId = ${JSON.stringify(id)}; render()`);
+  const prompts = agentPromptTexts(app);
+  assert(prompts[0].includes(id) && prompts[1].includes(id), `got ${JSON.stringify(prompts)}`);
+});
+
+test("agent chat: clicking a prompt asks it, gets a placeholder reply, and the next prompt moves up", async () => {
+  const app = await open("handler/bulk");
+  const before = agentPromptTexts(app);
+  app.click(".agent-prompt");
+  const msgs = app.$$(".agent-msg");
+  eq(msgs.length, 2);
+  assert(msgs[0].classList.contains("you") && msgs[0].textContent.includes(before[0]), "your question shows");
+  assert(msgs[1].classList.contains("agent") && /placeholder/i.test(msgs[1].textContent), "reply is a placeholder");
+  const after = agentPromptTexts(app);
+  assert(!after.includes(before[0]), "asked prompt leaves the queue");
+  eq(after.slice(0, 2), before.slice(1), "the rest move up");
+  eq(after.length, 3, "a new one fills the gap");
+});
+
+test("agent chat: typing and pressing Enter or Send asks; blank messages do nothing", async () => {
+  const app = await open("handler/workflow");
+  app.type("[data-agent-input]", "   ");
+  app.click('[data-action="agent-send"]');
+  eq(app.$$(".agent-msg").length, 0, "blank ignored");
+  app.type("[data-agent-input]", "Why is Fleetwise different?");
+  app.click('[data-action="agent-send"]');
+  eq(app.$$(".agent-msg").length, 2);
+  assert(app.$(".agent-msg.you").textContent.includes("Why is Fleetwise different?"));
+  eq(app.$("[data-agent-input]").value, "", "input clears");
+  const input = app.type("[data-agent-input]", "And Northgate?");
+  input.dispatchEvent(new app.w.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  eq(app.$$(".agent-msg").length, 4, "Enter sends");
+});
+
+test("agent chat: the conversation follows you across pages and survives other re-renders", async () => {
+  const app = await open("handler/inbox");
+  app.click(".agent-prompt");
+  app.click('.sidebar [data-value="bulk"]');
+  eq(app.$$(".agent-msg").length, 2, "still there on bulk sorting");
+  assert(app.$(".agent-msg-page").textContent.includes("Inbox"), "question remembers its page");
+  app.type("[data-agent-input]", "half-typed");
+  app.click('.sidebar [data-value="workflow"]');
+  eq(app.$("[data-agent-input]").value, "half-typed", "draft survives navigation");
+  eq(app.$$(".agent-msg").length, 2);
+});
+
+test("agent chat: Hide collapses it to a strip and gives the page the room back", async () => {
+  const app = await open("handler/bulk");
+  const wide = app.$(".main").getBoundingClientRect().width;
+  app.click('.agent-head [data-action="agent-toggle"]');
+  const panel = app.$(".agent-panel");
+  assert(panel.classList.contains("collapsed"), "collapsed");
+  assert(panel.getBoundingClientRect().width < 60, "slim strip");
+  assert(app.$(".main").getBoundingClientRect().width > wide + 250, "page gets wider");
+  app.click('.sidebar [data-value="workflow"]');
+  assert(app.$(".agent-panel").classList.contains("collapsed"), "stays hidden across pages");
+  app.click(".agent-rail");
+  assert(!app.$(".agent-panel").classList.contains("collapsed"), "strip reopens it");
+});
+
+test("agent chat: asking never changes claims or workflows", async () => {
+  const app = await open("handler/workflow");
+  const before = app.ev("JSON.stringify([state.claims, state.workflows, state.automation])");
+  app.click(".agent-prompt");
+  app.click('.sidebar [data-value="bulk"]');
+  app.click(".agent-prompt");
+  eq(app.ev("JSON.stringify([state.claims, state.workflows, state.automation])"), before);
 });
 
 /* ---------- Claim form ---------- */
@@ -764,8 +872,9 @@ test("bulk: table and capture panel sit side by side, with no sideways scrolling
   assert(near(table.top, panel.top) && table.right < panel.left, "side by side");
   const wrap = app.$(".table-wrap");
   assert(wrap.scrollWidth <= wrap.clientWidth, `table overflows by ${wrap.scrollWidth - wrap.clientWidth}px`);
-  const bar = app.$(".action-bar");
-  assert(bar.getBoundingClientRect().height < 60, "action bar fits on one line");
+  assert(app.$(".action-bar").getBoundingClientRect().height < 100, "action bar fits on two lines next to the chat");
+  app.click('.agent-head [data-action="agent-toggle"]');
+  assert(app.$(".action-bar").getBoundingClientRect().height < 60, "action bar fits on one line with the chat hidden");
 });
 
 /* ---------- Automation (Phase 2): rules learned from behaviour ---------- */
@@ -1452,10 +1561,12 @@ test("workflow: node types, canvas and editor sit side by side with no sideways 
   const app = await open("handler/workflow");
   const [p, c, e] = [".wf-legend", ".wf-canvas", ".wf-editor"].map((s) => app.$(s).getBoundingClientRect());
   assert(p.right < c.left && c.right < e.left && near(p.top, c.top) && near(c.top, e.top), "three columns");
-  const grid = app.$(".wf-grid");
-  assert(grid.scrollWidth <= grid.clientWidth, `grid overflows by ${grid.scrollWidth - grid.clientWidth}px`);
+  const fits = (sel) => { const el = app.$(sel); return el.scrollWidth <= el.clientWidth; };
+  assert(fits(".wf-grid"), "with the chat open, only the canvas scrolls sideways, not the page");
+  app.click('.agent-head [data-action="agent-toggle"]');
+  assert(fits(".wf-grid"), "grid fits with the chat hidden");
   const canvas = app.$(".wf-canvas");
-  assert(canvas.scrollWidth <= canvas.clientWidth, `canvas overflows by ${canvas.scrollWidth - canvas.clientWidth}px`);
+  assert(canvas.scrollWidth <= canvas.clientWidth, `canvas overflows by ${canvas.scrollWidth - canvas.clientWidth}px with the chat hidden`);
   assert(app.$(".wf-bar").getBoundingClientRect().height < 90, "top bar fits");
 });
 
