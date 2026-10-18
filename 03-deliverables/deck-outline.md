@@ -12,17 +12,17 @@ Slide-by-slide plan for the deck and the ≤20 minute recording, in seven sectio
 ## Time budget
 
 
-| Section                                                                | Slides | Time         |
-| ---------------------------------------------------------------------- | ------ | ------------ |
-| 1. My understanding of the brief                                       | 1–3    | 1.5 min      |
-| 2. The data, my assumptions, and how I'd collect what's missing        | 4–8    | 4 min        |
-| 3. Personas: the ecosystem                                             | 9      | 1 min        |
-| 4. The solution: what we ship and what we don't                        | 10–13  | 5 min        |
-| 5. Safe and valuable                                                   | 14–16  | 2 min        |
-| 6. GTM and Customer Success, plus what I cut                           | 17–19  | 2 min        |
-| **Main content**                                                       |        | **15.5 min** |
-| 7. How I used AI; where it got it wrong; how the lifecycle is changing | 20–22  | 4.5 min      |
-| **Total**                                                              |        | **20 min**   |
+| Section | Slides | Time |
+|---|---|---|
+| 1. My understanding of the brief, and the answer up front | 1–4 | 2.5 min |
+| 2. The data, my assumptions, and how I'd collect what's missing | 5–9 | 4 min |
+| 3. Personas: the ecosystem | 10 | 1 min |
+| 4. The solution: what we ship and what we don't, incl. live prototype | 11–14 | 4.75 min |
+| 5. Safe and valuable | 15–17 | 2 min |
+| 6. GTM and Customer Success, plus what I cut | 18–20 | 1.5 min |
+| **Main content** | | **15.75 min** |
+| 7. How I used AI; where it got it wrong; how the lifecycle is changing | 21–23 | 4 min |
+| **Total** | | **19.75 min** |
 
 
 Tight. Slides marked *(backup)* in the appendix are for the panel session, not the recording.
@@ -35,19 +35,33 @@ Tight. Slides marked *(backup)* in the appendix are for the panel session, not t
 
 Keelwater: the roadmap towards automated claim sorting. Name, date. 
 
+The talk track for every slide, with the longer details that don't need to be on the slides, is in [talk-track.md](talk-track.md).
+
 ### 2. The brief, as I understand it · Q1
 
 One slide that restates the situation in my own words, so the panel can check I've read it the way they meant it.
 
 - **Keelwater:** claims software for ~180 enterprise insurers. Handlers spend most of their day in it. We assume motor claims **[INVENTED]**.
 - **Sorting:** a handler puts each new claim in one of three piles: Simple (pay quickly), Needs a closer look (check the details), Suspicious (investigate). It changes the handler's day and how fast people get paid.
-- **The pressure:** customers, Sales and CS are asking for sorting to happen automatically, and a competitor has launched it. 
-- **The constraints:** insurers must explain every claim decision to the customer and the regulator. 
-- **Work in flight:** bulk sorting is halfway built and ships in 6 weeks. A data team prototype that predicts the pile has been on hold for 18 months.
+- **The pressure:** customers, Sales and CS are asking for sorting to happen automatically, and a competitor has launched it. Customers in the pipeline are waiting on it, and a top-10 account might churn at renewal. That sets the urgency and the timeline: **5 months**.
+- **The constraints:** insurers must explain every claim decision to the customer and the regulator. Before anything ships, it goes through several rounds of approval: the customer's IT (information and security) and their AI governance board, region by region. We have to meet every obligation as a sub-processor, and so does the AI model we choose. *(Detail in the talk track.)*
+- **Work in flight:**
+  - **Bulk sorting** is halfway built and ships in 6 weeks. My assumption: handlers work in an inbox, one claim at a time, so they need a table view to sort many at once (A-01).
+  - **A data team prototype** that predicts the pile has been on hold for 18 months. It was built on Kaggle sample data: useful as a visual cue to steer customer conversations, not something to build on (A-11).
 - **The ask:** show how I'd move this forward. Five questions: the problem and my confidence; what to find out first; priorities, including bulk sorting; signal to measurement, including where AI fits and when automation is safe; and what to tell Sales and CS.
 - *Visual:* the three piles as cards, the in-flight work and constraints around them. *Source:* [assignment-brief.md](../00-brief/assignment-brief.md).
 
-### 3. The signal: what it tells us, and what it doesn't · Q1, Q4 (first signal)
+### 3. The answer up front · Q1, Q3, Q5
+
+A busy leadership team and a commercial team that wants an answer get it before the detail.
+
+- **The problem:** customers want clean claims paid faster without paying out fraud, with their handlers in control and every decision explainable. The slow claims are waiting on information or a third party, not on fraud checks **[INVENTED]**.
+- **How confident I am:** high that the demand is real; medium on what "automatic" means to buyers; low on how accurate automated sorting can be, because nothing has been tested on real Keelwater claims yet.
+- **The recommendation:** ship bulk sorting in 6 weeks as release 1. Then automate in steps: missing-information flagging, suggested piles learned from how handlers sort, then per-insurer workflows with the insurer's fraud vendor as a gate.
+- **What we tell Sales and CS:** one story. Bulk sorting is the first release towards workflow automation.
+- *Visual:* four short blocks, one per line above. The release path (slide 14) as a thin strip along the bottom.
+
+### 4. The signal: what it tells us, and what it doesn't · Q1, Q4 (first signal)
 
 - **What it tells us:** demand is real and coming from every direction. Several large customers asking; 6 deals worth £2.3M ARR, incl. the biggest in the pipeline; 3 accounts in reviews, one top-10 renewing in 5 months; ~40 tickets; a competitor launched last quarter.
 - **What it doesn't tell us:** the deals only "mention" automatic sorting. Nothing says:
@@ -63,18 +77,26 @@ One slide that restates the situation in my own words, so the panel can check I'
 
 ## Section 2. The data, my assumptions, and how I'd collect what's missing
 
-### 4. The facts the brief gives us, and what doesn't add up · Q1
+### 5. The facts the brief gives us, and what doesn't add up · Q1
 
 - **The data points, with simple arithmetic on top:**
   - 2.1M claims sorted in 12 months: ~175k a month, ~11.7k per customer a year on average.
   - Median time to sort: 11 minutes. Most claims aren't slow.
   - 15% take over 4 hours: ~315k claims a year.
   - 3.4% moved to a different pile within 30 days: ~71k claims a year. The human baseline any automation is compared against.
-- **What seemed inconsistent:** the brief measures time to sort from when a claim **arrives**, so it includes queue time before anyone opens it. An 11-minute median means half of all claims are queued, read and sorted within 11 minutes. That only works if claims are picked up almost immediately, around the clock: 128 of the 168 hours in a week fall outside a 9–5 weekday. Without teams across time zones, every evening and weekend claim would pass 4 hours and the >4h share would be far above 15%. I take the brief at face value and flag it (A-18, A-22).
+- **The metrics, defined:**
+
+| Metric | From | To | In the brief? |
+|---|---|---|---|
+| **Time to sort** | Claim arrives | Claim is sorted | Yes: median 11 min, 15% over 4h |
+| **Sort processing time** | A handler opens the claim | Claim is sorted | No. A first data ask |
+| **Re-sort rate** | Claim is sorted | Moved to a different pile within 30 days | Yes: 3.4% |
+
+- **What seemed inconsistent:** an 11-minute median from arrival includes queue time, which only works if claims are picked up around the clock (A-18, A-22). *(Detail in the talk track.)*
 - *Visual:* the illustrative time-to-sort curve on a log time axis, with the 11 min and 4 h lines marked: a fast majority and a long stalled tail that holds most of the waiting time. Labelled illustrative: fitted to two data points. [time-to-sort-distribution.svg](../02-research/assets/time-to-sort-distribution.svg).
 - *Sources:* [fact-sheet.md](../00-brief/fact-sheet.md), [time-to-sort-distribution.md](../02-research/time-to-sort-distribution.md).
 
-### 5. Facts, gaps, assumptions: what they mean for the need · Q1
+### 6. Facts, gaps, assumptions: what they mean for the need · Q1
 
 Each fact from the brief leaves a gap. I filled each gap with an assumption or invented data **[INVENTED]**, and each one changed my understanding of what customers need and where the value is.
 
@@ -82,19 +104,18 @@ Each fact from the brief leaves a gap. I filled each gap with an assumption or i
 | Fact from the brief                 | The gap                     | What I assumed or invented                                                                                                                                           | What it changes about the need and the value                                                                                      |
 | ----------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | 15% of claims take over 4h          | Why?                        | Waiting on the claimant 48%, third party 28%, injury 15%, fraud 6%. No "waiting on claimant" status exists, so handlers leave those claims unsorted (A-13, A-19)     | The speed problem is stuck claims, not fraud. A waiting-on-claimant status and missing-information flagging are cheap, early wins |
-|                                     |                             |                                                                                                                                                                      |                                                                                                                                   |
 | 2.1M claims across ~180 customers   | Is every customer the same? | Three segments: simple-heavy (55% of claims), mixed (33%), complex-heavy (12%), each with a different main problem (A-07)                                            | One model for everyone won't work. Per-insurer rules and thresholds                                                               |
 | ~40 tickets mention sorting         | What do they say?           | 22 of 40 are about sorting many claims at once; 3 customers filed 18                                                                                                 | Bulk sorting answers a real, concentrated pain. Ship it                                                                           |
 | 6 deals "mention" automatic sorting | What are buyers buying?     | Speed, confidence that fraud is caught within that cycle, and an expert in the loop. Most already have a fraud vendor. None asked for automatic payment (A-03, I-06) | Sell speed you can trust: suggestions a handler confirms, using the insurer's own fraud vendor                                    |
 | Bulk sorting takes ~12 weeks        | Why so long?                | There's no table view today; handlers sort one claim at a time (A-01)                                                                                                | Bulk sorting is the foundation: suggestions need a table to appear in (A-21)                                                      |
 | A prototype, shelved 18 months      | What is it?                 | A gradient-boosted model trained on public sample data with rule-made labels. Per-claim reasons possible, never tested on real claims (A-11)                         | A concept for customer sessions, not a shortcut to automation                                                                     |
-| Every decision must be explainable  | To what standard?           | US NAIC bulletin, UK GDPR 22A–D, FCA Consumer Duty: decision records, human review, no automated denial                                                              | Explainability is a selling point, and it rules out an LLM making the decision                                                    |
+| Every decision must be explainable  | To what standard?           | Regulation depends on the country or region of business (US NAIC bulletin, UK GDPR 22A–D, FCA Consumer Duty): decision records, human review, no automated denial    | Explainability is a selling point, and it rules out an LLM making the decision                                                    |
 
 
 - *Visual:* the cause-split chart: the time-to-sort curve with each section split by what claims are waiting on. [time-to-sort-causes.png](../02-research/assets/time-to-sort-causes.png).
 - *Sources:* [assumptions-log.md](../01-thinking/assumptions-log.md), [internal-data.md](../02-research/internal-data.md), [customer-signal.md](../02-research/customer-signal.md), [examiner-requirements.md](../02-research/examiner-requirements.md).
 
-### 6. The questions I'd ask, and how I'd collect the answers · Q2
+### 7. The questions I'd ask, and how I'd collect the answers · Q2
 
 Before deciding anything: a quick review of the data to size the problem and check we're building the right thing. Then three sets of questions.
 
@@ -119,24 +140,23 @@ Before deciding anything: a quick review of the data to size the problem and che
 - *Visual:* two lanes on a timeline, internal and external, converging at week 6.
 - *Sources:* [brainstorm-raw.md](../01-thinking/brainstorm-raw.md), [brainstorm-organised.md](../01-thinking/brainstorm-organised.md) §2.
 
-### 7. Who I'd work with closely, and what each answer changes · Q2
+### 8. Who I'd work with closely, and what each answer changes · Q2
 
 
 | Who                                     | What I'd ask                                                                                                               | What it changes                                                |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | **Data team**                           | Full time-to-sort histogram, split by customer, pile and cause (first ask); re-sort directions; is the prototype reusable  | Which segment and cause to fix first; reuse or restart         |
-| **Tech lead and squad**                 | What bulk sorting actually includes; can we log every filter and bulk action from day one; is there an audit log per claim | Whether bulk sorting doubles as the data source for automation |
-| **Designer**                            | How handlers sort today; where suggestions would sit in the table                                                          | Whether suggestions save real time                             |
+| **Designer, tech lead and squad**       | Build bulk sorting so we can iterate and add automated rules later; log every filter and bulk action from day one; make sure we don't design in bias; show handlers what's been done or auto-sorted so they can give feedback | Bulk sorting becomes the foundation and data source for automation, not a dead end |
 | **AEs**                                 | What each of the 6 buyers asked for, in their words; blocker or checklist item; what's been promised                       | What we show, and by when                                      |
 | **CSMs and account managers**           | What the 3 accounts and the top-10 renewal need to see                                                                     | Pilot customers and the near-term commitment                   |
-| **Support**                             | What the 40 tickets say, and who filed them -                                                                              | Bulk sorting pain vs automation demand                         |
+| **Support**                             | I run the thematic analysis of the 40 tickets myself, with AI, to see the main needs and who has them. From Support: label new tickets and flag them as they come in | Bulk sorting pain vs automation demand, kept up to date |
 | **Legal; customers' IT and governance** | Can we use claims data; what explanation and sign-off do automated decisions need                                          | What we can automate vs only suggest                           |
 
 
-- **Where AI speeds this up:** thematic analysis of Gong calls and tickets; all the answers to this info in one place, recording transcripts analysis, etc.  why bulk sorting was prioritised from old records instead of new interviews.
+- **Where AI speeds this up:** thematic analysis of Gong calls, recording transcripts and tickets; all the answers in one place; working out why bulk sorting was prioritised from old records instead of new interviews.
 - *Source:* [open-questions.md](../01-thinking/open-questions.md).
 
-### 8. The problem, and how confident I am · Q1
+### 9. The problem, and how confident I am · Q1
 
 - **The problem:** handlers can't move clean claims fast enough, and the slow ones are stuck waiting on information or a third party with no way to flag it. Buyers want that speed only if fraud is still caught before payment and every sort can be explained to their regulator.
 - **Confidence:**
@@ -144,16 +164,16 @@ Before deciding anything: a quick review of the data to size the problem and che
 
 | Confident                                                     | Less sure                                           | Don't know yet                                                             | What would raise confidence                                                                                                                                  |
 | ------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Demand is real; speed is the ask; bulk sorting is a real pain | The cause split; the segments; what each deal needs | Accuracy on real claims; data-sharing rights; the competitor's weak points | The time-to-sort histogram; calls with customers who want it and the ones in the pipeline; get a design partner to work through the claim lifecycle togehter |
+| Demand is real; speed is the ask; bulk sorting is a real pain | The cause split; the segments; what each deal needs | Accuracy on real claims; data-sharing rights; the competitor's weak points | The time-to-sort histogram; calls with customers who want it and the ones in the pipeline; get a design partner to work through the claim lifecycle together |
 
 
-- **How my view changed:** I started at "fraud is the blocker"  Research and deal signal moved me to "speed is the ask; fraud screening is the licence to automate,
+- **How my view changed:** I started at "fraud is the blocker". Research and deal signal moved me to "speed is the ask; fraud screening is the licence to automate".
 
 ---
 
 ## Section 3. Personas: the ecosystem
 
-### 9. Who we're building for · Q1, Q5
+### 10. Who we're building for · Q1, Q5
 
 The anchor for every decision that follows. Three groups, each wanting something different from the same feature.
 
@@ -184,7 +204,7 @@ The anchor for every decision that follows. Three groups, each wanting something
 
 ## Section 4. The solution: what we ship and what we don't
 
-### 10. The bulk sorting decision · Q3
+### 11. The bulk sorting decision · Q3
 
 - **Options:**
   1. **Ship it as the validation layer** for automation.
@@ -197,7 +217,7 @@ The anchor for every decision that follows. Three groups, each wanting something
   - It produces what automation needs: the filters handlers actually use become the first rules, and their bulk actions become labelled data.
 - **The prototype confirms the order:** suggestions need a table to appear in; the shelved model was trained on sample data and isn't ready; bulk sorting generates the real data it lacked.
 
-### 11. First, next, later, won't do · Q3
+### 12. First, next, later, won't do · Q3
 
 - **First:** bulk sorting + user action capture + waiting-on-claimant status. 
 - **Next:** missing-information flagging and auto-request; suggested piles with reasons in the table.
@@ -205,20 +225,13 @@ The anchor for every decision that follows. Three groups, each wanting something
 - **Won't do:** pause bulk sorting; build our own fraud model; let an LLM make the sorting decision; auto-deny or reduce a claim; assume one global model for all customers; revive the shelved prototype as-is.
 - *Visual:* four columns, with "won't do" as clearly as the others.
 
-### 12. Prototype walkthrough (2–3 min) · Q4
+### 13. Prototype walkthrough (2–3 min) · Q4
 
-[keelwater-prototype.html](../04-working-material/solution-prototype/keelwater-prototype.html) 
+A single slide that hands over to the live prototype. Click-through steps are in the talk track.
 
-1. Claimant fills in the insurer's form; the claim record builds live beside it.
-2. Handler inbox today: one claim at a time.
-3. Release 1, bulk sorting: filter, select, sort; the capture panel logs each action in plain words.
-4. Release 2, automation panel: rules learned from the example week, Suggest / Auto-sort switch (Suspicious stays suggest-only), suggestions with reasons in the table, confirm or override.
-5. Switch insurer: a simple-heavy insurer learns mostly Simple rules; a complex-heavy one learns almost none.
+- **On the slide:** "From one claim at a time to workflow automation", with a screenshot strip: claim form → inbox → bulk sorting → automation panel → workflow builder. A link to [keelwater-prototype.html](../04-working-material/solution-prototype/keelwater-prototype.html), and "All data invented".
 
-- Say what's not built yet (workflow builder, Workflow Agent, audit tab) and that all data is invented.
-- **UX point to make:** human review has to be meaningful. A handler clicking "confirm" on everything is automation bias, which regulators warn about. Override reasons and spot checks keep it honest.
-
-### 13. The release path: from bulk sorting to workflow automation · Q3, Q4, Q5
+### 14. The release path: from bulk sorting to workflow automation · Q3, Q4, Q5
 
 The spine of the deck and of the Sales and CS story. Each release ships value on its own and earns the right to the next.
 
@@ -238,7 +251,7 @@ The spine of the deck and of the Sales and CS story. Each release ships value on
 
 ## Section 5. Safe and valuable
 
-### 14. How we know it's safe · Q4
+### 15. How we know it's safe · Q4
 
 **Reduce the surface area of uncertainty.** Use the LLM where it's most useful, finding the patterns in how handlers already decide, and keep it away from the decision itself.
 
@@ -254,7 +267,7 @@ The spine of the deck and of the Sales and CS story. Each release ships value on
 - **Who decides:** a threshold agreed with each customer before go-live, not set by us alone.
 - *Sources:* [auto-sorting-requirements.md](../02-research/auto-sorting-requirements.md), [examiner-requirements.md](../02-research/examiner-requirements.md) (checklist E-01 to E-14).
 
-### 15. How we measure success · Q4
+### 16. How we measure success · Q4
 
 
 | Release         | Leading                                               | Lagging                                       |
@@ -269,7 +282,7 @@ The spine of the deck and of the Sales and CS story. Each release ships value on
 - **Three time metrics:** time to first look (the queue), time to sort (the brief's), end-to-end to payment (what the claimant and the FCA see).
 - Analytics and action capture live **before** the bulk sorting launch.
 
-### 16. From signal to measurement: where AI fits · Q4
+### 17. From signal to measurement: where AI fits · Q4
 
 One row per stage, so "where AI changes how I work, where it doesn't, what stays mine" is answered in one place.
 
@@ -287,7 +300,7 @@ One row per stage, so "where AI changes how I work, where it doesn't, what stays
 
 ## Section 6. GTM and Customer Success
 
-### 17. What we tell them · Q5
+### 18. What we tell them · Q5
 
 - **The story:** bulk sorting is the first release towards workflow automation. It's how your handlers teach the system how they sort, and it's what makes automation explainable to your regulator.
 - **What wins against the competitor:** sorting inside the workflow handlers already use, with the fraud vendor the insurer already pays for, and a reason for every sort that compliance can read (4 of 6 buyers saw the competitor's demo **[INVENTED]**).
@@ -296,7 +309,7 @@ One row per stage, so "where AI changes how I work, where it doesn't, what stays
 - **Never promise:** automatic payment, automatic denial, our own fraud detection, dates beyond release 1 before the tech lead agrees them.
 - **Assets:** battle card, objection handling, a vendor evidence pack for insurers' governance teams (E-13), generated from the repo and checked by me.
 
-### 18. When · Q5
+### 19. When · Q5
 
 
 | When                      | Who                                                   | What                                                                                                                     |
@@ -308,7 +321,7 @@ One row per stage, so "where AI changes how I work, where it doesn't, what stays
 | Before renewal (~month 4) | Top-10 account                                        | Show release 2 working on their data                                                                                     |
 
 
-### 19. What I cut, and why · checklist
+### 20. What I cut, and why · checklist
 
 To fill in at the end. Candidates: competitor deep dive; open models and datasets; prototype refinements, a real eval on synthetic claims.
 
@@ -316,7 +329,7 @@ To fill in at the end. Candidates: competitor deep dive; open models and dataset
 
 ## Section 7. How I used AI, and where it got it wrong (≤5 min combined)
 
-### 20. How I used AI · closing ask 1
+### 21. How I used AI · closing ask 1
 
 1. **The repo as a context hub.** Everything lives in a git repo that an LLM or agent can query: the brief, my brainstorm, assumptions, research with sources, decisions, prototypes.
   - **For me:** agents start with full context, so research, the prototype and this deck are faster, easier and more accurate.
@@ -327,7 +340,7 @@ To fill in at the end. Candidates: competitor deep dive; open models and dataset
 
 - *Visual:* repo map at the centre, with arrows out to research, prototype, deck and GTM material.
 
-### 21. Where AI got it wrong · closing ask 1
+### 22. Where AI got it wrong · closing ask 1
 
 
 | Where AI got it wrong                                                                           | What it affected                                                     | How I caught it                                                                                                            | What we learn                                                                                                                                                      |
@@ -340,11 +353,11 @@ To fill in at the end. Candidates: competitor deep dive; open models and dataset
 
 *Recording:* walk through the table, then go deep on one row. Suggest the middle-pile row, because it would have changed the product.
 
-### 22. How the lifecycle is changing · closing ask 2
+### 23. How the lifecycle is changing · closing ask 2
 
 - **Discovery compresses:** thematic analysis of calls and tickets takes hours, not weeks. The bottleneck moves to asking the right questions and checking the answers.
 - **Prototypes become the spec:** a clickable prototype with tests in a day, so we validate with customers before committing the squad. A workflow builder is days, not a quarter.
-- **Judgement and reading become the job:** every error on slide 21 was caught by me reading or using the output.
+- **Judgement and reading become the job:** every error on slide 22 was caught by me reading or using the output.
 - **Decisions have to be explicit:** AI writes fluently enough that unmade decisions look made.
 - **What I'd prioritise at Keelwater:**
   - A shared context hub (calls, tickets, research, decisions) that agents and people both use.
@@ -383,26 +396,25 @@ To fill in at the end. Candidates: competitor deep dive; open models and dataset
 ## Coverage check
 
 
-| Brief asks                                                          | Slides                                                                                                      |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Q1. What problem, how confident                                     | 2, 3, 4, 5, 8, 9                                                                                            |
-| Q2. What to find out before committing the squad, and how, quickly  | 6, 7                                                                                                        |
-| Q3. Prioritise: first, can wait, won't do, incl. bulk sorting       | 10, 11, 13                                                                                                  |
-| Q4. Signal → decision → validation → delivery → measurement         | 16 (the whole arc), plus 3 (signal), 10 (decision), 12 and 14 (validation), 13 (delivery), 15 (measurement) |
-| Q4. Where AI changes how I work, where it doesn't, what stays mine  | 16, supported by 7, 14                                                                                      |
-| Q4. Safe and valuable enough before automating                      | 14, 15                                                                                                      |
-| Q5. What to tell Sales and CS, and when                             | 9, 17, 18                                                                                                   |
-| How I used AI, incl. where I overrode it and one thing it got wrong | 20, 21                                                                                                      |
-| How the lifecycle is changing; what I'd change at Keelwater         | 22                                                                                                          |
-| Invented items flagged                                              | 1, 5, plus [INVENTED] tags on slides 10, 17                                                                 |
-| What I cut and why                                                  | 19                                                                                                          |
-| 1–2 pieces of working material                                      | Working material section                                                                                    |
-| Something for each panellist                                        | PM: 5, 8, 9, 11 · Engineer: 14, 16 · Designer: 9, 12 · Commercial: 3, 9, 13, 17, 18                         |
+| Brief asks | Slides |
+|---|---|
+| Q1. What problem, how confident | 2, 3, 4, 5, 6, 9, 10 |
+| Q2. What to find out before committing the squad, and how, quickly | 7, 8 |
+| Q3. Prioritise: first, can wait, won't do, incl. bulk sorting | 3, 11, 12, 14 |
+| Q4. Signal → decision → validation → delivery → measurement | 17 (the whole arc), plus 4 (signal), 11 (decision), 13 and 15 (validation), 14 (delivery), 16 (measurement) |
+| Q4. Where AI changes how I work, where it doesn't, what stays mine | 17, supported by 8, 15 |
+| Q4. Safe and valuable enough before automating | 15, 16 |
+| Q5. What to tell Sales and CS, and when | 3, 10, 18, 19 |
+| How I used AI, incl. where I overrode it and one thing it got wrong | 21, 22; the overrides are in the talk track for slide 21 |
+| How the lifecycle is changing; what I'd change at Keelwater | 23 |
+| Invented items flagged | [INVENTED] tags on slides 2, 3, 6, 11, 18; say it on slide 1 in the talk track |
+| What I cut and why | 20 |
+| 1–2 pieces of working material | Working material section |
+| Something for each panellist | PM: 3, 6, 9, 10, 12 · Engineer: 15, 17 · Designer: 8, 10, 13 · Commercial: 2, 4, 10, 14, 18, 19 |
 
 
 **Open:**
 
-- [ ] **No answer-up-front slide.** The deck now opens with the brief. A busy leadership team may want the recommendation on slide 2; option to add a one-line "where I land" to slide 2
-- [ ] Confirm the consumer persona on slide 9 (drafted from research)
-- [ ] Fill in slide 19 (what I cut) at the end
-- [ ] Indicative timing for releases 2–4 (slide 13)
+- [ ] Confirm the consumer persona on slide 10 (drafted from research)
+- [ ] Fill in slide 20 (what I cut) at the end
+- [ ] Indicative timing for releases 2–4 (slide 14)
