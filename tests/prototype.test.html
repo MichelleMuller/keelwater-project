@@ -158,16 +158,16 @@ test("switching insurer changes the handler's claims", async () => {
   eq(app.$(".stat-value").textContent.trim(), "20");
 });
 
-test("the agent is called Claim sorting agent, open or collapsed", async () => {
+test("the agent is called Claims sorting agent, open or collapsed", async () => {
   const app = await open("handler/inbox");
-  eq(app.$(".agent-rail").textContent.trim(), "Claim sorting agent");
+  eq(app.$(".agent-rail").textContent.trim(), "Claims sorting agent");
   app.click(".agent-rail");
-  eq(app.$(".agent-title").textContent.trim(), "Claim sorting agent");
+  eq(app.$(".agent-title").textContent.trim(), "Claims sorting agent");
   assert(!/workflow agent/i.test(app.doc.body.textContent), "old name gone");
   assert(!/hyper.?operator/i.test(app.doc.body.textContent), "no 'hyper-operator' anywhere");
 });
 
-/* ---------- Claim sorting agent side chat ---------- */
+/* ---------- Claims sorting agent side chat ---------- */
 
 const agentPromptTexts = (app) => app.$$(".agent-prompt").map((b) => b.textContent.trim());
 async function openAgent(hash) {

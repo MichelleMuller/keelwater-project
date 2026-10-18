@@ -137,7 +137,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .page-header h1 { font-size: 28px; font-weight: 700; }
 .page-header p { margin: 0; max-width: 720px; }
 
-/* ---------- Claim sorting agent side chat ---------- */
+/* ---------- Claims sorting agent side chat ---------- */
 .agent-panel {
   width: 300px; flex-shrink: 0; border-left: 1px solid var(--gray-5); background: var(--gray-1);
   display: flex; flex-direction: column; min-height: 0;
@@ -1188,7 +1188,7 @@ function renderHandler() {
     </div>`;
 }
 
-/* ----- Claim sorting agent: a side chat on every page. Replies are placeholders. ----- */
+/* ----- Claims sorting agent: a side chat on every page. Replies are placeholders. ----- */
 
 function agentPrompts() {
   const open = state.page === "inbox" && state.claims.find((c) => c.id === state.inbox.openId);
@@ -1237,8 +1237,8 @@ function askAgent(text) {
 function renderAgent() {
   const a = state.agent;
   if (!a.open) {
-    return `<aside class="agent-panel collapsed" aria-label="Claim sorting agent">
-      <button class="agent-rail" data-action="agent-toggle" title="Open the claim sorting agent">${icon("agent")}<span>Claim sorting agent</span></button>
+    return `<aside class="agent-panel collapsed" aria-label="Claims sorting agent">
+      <button class="agent-rail" data-action="agent-toggle" title="Open the claims sorting agent">${icon("agent")}<span>Claims sorting agent</span></button>
     </aside>`;
   }
   const messages = a.messages.length ? a.messages.map((m) => `
@@ -1247,11 +1247,11 @@ function renderAgent() {
       ${esc(m.text)}
     </div>`).join("") : `<p class="agent-empty">Ask about claims, sorting or the workflow. The chat stays with you as you move between pages.</p>`;
   const prompts = agentPrompts();
-  return `<aside class="agent-panel" aria-label="Claim sorting agent">
+  return `<aside class="agent-panel" aria-label="Claims sorting agent">
     <div class="agent-head">
       ${icon("agent")}
-      <div><div class="agent-title">Claim sorting agent</div><div class="agent-sub">Demo: replies are placeholders</div></div>
-      <button class="btn btn-outline btn-sm" data-action="agent-toggle" title="Hide the claim sorting agent">Hide</button>
+      <div><div class="agent-title">Claims sorting agent</div><div class="agent-sub">Demo: replies are placeholders</div></div>
+      <button class="btn btn-outline btn-sm" data-action="agent-toggle" title="Hide the claims sorting agent">Hide</button>
     </div>
     <div class="agent-messages">${messages}</div>
     ${prompts.length ? `<div class="agent-prompts">
@@ -1259,7 +1259,7 @@ function renderAgent() {
       ${prompts.map((p) => `<button class="agent-prompt" data-action="agent-ask" data-value="${esc(p)}">${esc(p)}</button>`).join("")}
     </div>` : ""}
     <div class="agent-input">
-      <input class="input" data-agent-input placeholder="Ask the claim sorting agent…" value="${esc(a.draft)}" aria-label="Message the claim sorting agent" />
+      <input class="input" data-agent-input placeholder="Ask the claims sorting agent…" value="${esc(a.draft)}" aria-label="Message the claims sorting agent" />
       <button class="btn btn-sm" data-action="agent-send">Send</button>
     </div>
   </aside>`;
