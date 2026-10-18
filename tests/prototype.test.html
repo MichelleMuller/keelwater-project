@@ -158,15 +158,23 @@ test("switching insurer changes the handler's claims", async () => {
   eq(app.$(".stat-value").textContent.trim(), "20");
 });
 
-test("the workflow agent is called Workflow Agent", async () => {
+test("the agent is called Claim sorting agent, open or collapsed", async () => {
   const app = await open("handler/inbox");
-  assert(app.$(".agent-panel").textContent.includes("Workflow Agent"));
+  eq(app.$(".agent-rail").textContent.trim(), "Claim sorting agent");
+  app.click(".agent-rail");
+  eq(app.$(".agent-title").textContent.trim(), "Claim sorting agent");
+  assert(!/workflow agent/i.test(app.doc.body.textContent), "old name gone");
   assert(!/hyper.?operator/i.test(app.doc.body.textContent), "no 'hyper-operator' anywhere");
 });
 
-/* ---------- Workflow Agent side chat ---------- */
+/* ---------- Claim sorting agent side chat ---------- */
 
 const agentPromptTexts = (app) => app.$$(".agent-prompt").map((b) => b.textContent.trim());
+async function openAgent(hash) {
+  const app = await open(hash);
+  app.click(".agent-rail");
+  return app;
+}
 
 test("Phase 3 is gone: three pages in the nav, and #handler/agent falls back to the inbox", async () => {
   const app = await open("handler/agent");
@@ -175,11 +183,16 @@ test("Phase 3 is gone: three pages in the nav, and #handler/agent falls back to 
   eq(app.ev("state.page"), "inbox");
 });
 
-test("agent chat: open by default on all three pages, next to the page", async () => {
+test("agent chat: collapsed to a strip by default on all three pages; opened, it sits next to the page", async () => {
   for (const page of ["inbox", "bulk", "workflow"]) {
     const app = await open(`handler/${page}`);
+    const strip = app.$(".handler > .agent-panel");
+    assert(strip && strip.classList.contains("collapsed"), `${page}: collapsed by default`);
+    assert(strip.getBoundingClientRect().width < 60, `${page}: slim strip`);
+    assert(!app.$(".agent-messages, .agent-prompts"), `${page}: no chat body while collapsed`);
+    app.click(".agent-rail");
     const panel = app.$(".handler > .agent-panel");
-    assert(panel && !panel.classList.contains("collapsed"), `${page}: chat open`);
+    assert(!panel.classList.contains("collapsed"), `${page}: opens`);
     const main = app.$(".main").getBoundingClientRect(), side = panel.getBoundingClientRect();
     assert(near(main.right, side.left), `${page}: chat sits right of the page`);
     assert(near(side.right, 1440), `${page}: chat reaches the right edge`);
@@ -187,7 +200,7 @@ test("agent chat: open by default on all three pages, next to the page", async (
 });
 
 test("agent chat: each page has its own suggested prompts, at most three", async () => {
-  const app = await open("handler/inbox");
+  const app = await openAgent("handler/inbox");
   const seen = {};
   for (const page of ["inbox", "bulk", "workflow"]) {
     app.click(`.sidebar [data-value="${page}"]`);
@@ -201,7 +214,7 @@ test("agent chat: each page has its own suggested prompts, at most three", async
 });
 
 test("agent chat: an open inbox claim puts questions about that claim first", async () => {
-  const app = await open("handler/inbox");
+  const app = await openAgent("handler/inbox");
   const id = app.ev("state.claims.find((c) => c.insurer === 'harbour').id");
   app.ev(`state.inbox.openId = ${JSON.stringify(id)}; render()`);
   const prompts = agentPromptTexts(app);
@@ -209,7 +222,7 @@ test("agent chat: an open inbox claim puts questions about that claim first", as
 });
 
 test("agent chat: clicking a prompt asks it, gets a placeholder reply, and the next prompt moves up", async () => {
-  const app = await open("handler/bulk");
+  const app = await openAgent("handler/bulk");
   const before = agentPromptTexts(app);
   app.click(".agent-prompt");
   const msgs = app.$$(".agent-msg");
@@ -223,7 +236,7 @@ test("agent chat: clicking a prompt asks it, gets a placeholder reply, and the n
 });
 
 test("agent chat: typing and pressing Enter or Send asks; blank messages do nothing", async () => {
-  const app = await open("handler/workflow");
+  const app = await openAgent("handler/workflow");
   app.type("[data-agent-input]", "   ");
   app.click('[data-action="agent-send"]');
   eq(app.$$(".agent-msg").length, 0, "blank ignored");
@@ -238,7 +251,7 @@ test("agent chat: typing and pressing Enter or Send asks; blank messages do noth
 });
 
 test("agent chat: the conversation follows you across pages and survives other re-renders", async () => {
-  const app = await open("handler/inbox");
+  const app = await openAgent("handler/inbox");
   app.click(".agent-prompt");
   app.click('.sidebar [data-value="bulk"]');
   eq(app.$$(".agent-msg").length, 2, "still there on bulk sorting");
@@ -250,7 +263,7 @@ test("agent chat: the conversation follows you across pages and survives other r
 });
 
 test("agent chat: Hide collapses it to a strip and gives the page the room back", async () => {
-  const app = await open("handler/bulk");
+  const app = await openAgent("handler/bulk");
   const wide = app.$(".main").getBoundingClientRect().width;
   app.click('.agent-head [data-action="agent-toggle"]');
   const panel = app.$(".agent-panel");
@@ -264,7 +277,7 @@ test("agent chat: Hide collapses it to a strip and gives the page the room back"
 });
 
 test("agent chat: asking never changes claims or workflows", async () => {
-  const app = await open("handler/workflow");
+  const app = await openAgent("handler/workflow");
   const before = app.ev("JSON.stringify([state.claims, state.workflows, state.automation])");
   app.click(".agent-prompt");
   app.click('.sidebar [data-value="bulk"]');
@@ -866,7 +879,7 @@ test("bulk: ticking a box keeps the table's scroll position", async () => {
 });
 
 test("bulk: table and capture panel sit side by side, with no sideways scrolling", async () => {
-  const app = await open("handler/bulk");
+  const app = await openAgent("handler/bulk");
   const table = app.$(".bulk-table").getBoundingClientRect();
   const panel = app.$(".capture").getBoundingClientRect();
   assert(near(table.top, panel.top) && table.right < panel.left, "side by side");
@@ -1288,6 +1301,7 @@ test("automation: every rule change is recorded (accept, mode, undo, turn off)",
 
 test("automation: panel can be hidden, and the table still fits with the Suggested column", async () => {
   const app = await withExample();
+  app.click(".agent-rail");
   accept(app, WINDSCREEN, "Simple");
   accept(app, COLLISION_TP, "Needs a closer look");
   const wrap = app.$(".table-wrap");
@@ -1558,7 +1572,7 @@ test("bulk sorting: Simple claims at or above the senior-review amount are held 
 });
 
 test("workflow: node types, canvas and editor sit side by side with no sideways scrolling", async () => {
-  const app = await open("handler/workflow");
+  const app = await openAgent("handler/workflow");
   const [p, c, e] = [".wf-legend", ".wf-canvas", ".wf-editor"].map((s) => app.$(s).getBoundingClientRect());
   assert(p.right < c.left && c.right < e.left && near(p.top, c.top) && near(c.top, e.top), "three columns");
   const fits = (sel) => { const el = app.$(sel); return el.scrollWidth <= el.clientWidth; };
